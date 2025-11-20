@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Perfil del Piloto | CK</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Russo+One&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.6);
+            --text-main: #f1f5f9;
+            --accent: #3b82f6;
+            --gold: #fbbf24;
+            --silver: #94a3b8;
+            --bronze: #d97706;
+        }
+
+        * { box-sizing: border-box; }
+
+        /* --- Estilos Globales y Fondo --- */
+        body {
+            font-family: 'Montserrat', sans-serif;
+            margin: 0;
+            padding: 1rem;
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.15) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(239, 68, 68, 0.15) 0%, transparent 20%);
+            color: var(--text-main);
+            min-height: 100vh;
+        }
+
+        /* --- Estilos del Contenedor --- */
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        /* --- Botón de Regreso --- */
+        .back-link {
+            display: inline-block;
+            margin-bottom: 2rem;
+            text-decoration: none;
+            color: var(--accent);
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+        .back-link:hover {
+            color: #60a5fa;
+        }
+
+        /* --- Card del Perfil --- */
+        .profile-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .avatar-lg {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 1.5rem;
+            border: 5px solid var(--accent);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.8);
+        }
+        
+        .name-lg {
+            font-family: 'Russo One', sans-serif;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+        }
+
+        .team-lg {
+            font-size: 1rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+        }
+
+        .points-box {
+            background: #1e293b;
+            padding: 1rem;
+            border-radius: 12px;
+            margin-top: 2rem;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            box-shadow: inset 0 0 10px rgba(59, 130, 246, 0.2);
+        }
+
+        .points-box h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1rem;
+            color: var(--accent);
+            margin: 0;
+            text-transform: uppercase;
+        }
+
+        .points-lg {
+            font-family: 'Russo One', sans-serif;
+            font-size: 3.5rem;
+            margin: 0.5rem 0 0;
+            color: var(--gold);
+            text-shadow: 0 0 10px var(--gold);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="./" class="back-link"><i class="fa-solid fa-arrow-left"></i> Volver a la Clasificación</a>
+        
+        <div id="profile-content">
+            </div>
+    </div>
+
+<script>
+// ==========================================
+// ⚙️ CONFIGURACIÓN
+// ==========================================
+
+// PEGA AQUÍ EL ENLACE "PUBLICAR EN LA WEB" (FORMATO CSV) DE TU GOOGLE SHEET
+const GOOGLE_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTlPsGq-SypD4WPitvnR7JcluA8_6-5ePtuzyf5zFGJ31eppN55iUIHsKo0oduOZ9AVyVTf6VkPvTyu/pub?output=csv";
+
+// ==========================================
+// 🚀 LÓGICA DE CARGA Y RENDERIZADO DEL PERFIL
+// ==========================================
+
+// 1. Obtener el nombre del piloto de la URL
+function getDriverNameFromUrl() {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('driver'); 
+}
+
+// Función auxiliar para leer el CSV crudo
+function parseCSV(csvText) {
+    const lines = csvText.split('\n');
+    const drivers = [];
+    
+    for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+        
+        const parts = line.split(',');
+        
+        if (parts.length >= 3) {
+            drivers.push({
+                name: parts[0].trim(),
+                team: parts[1].trim(),
+                points: parseInt(parts[2].trim()) || 0,
+                photo: parts[3] ? parts[3].trim() : "https://www.w3schools.com/howto/img_avatar.png" 
+            });
+        }
+    }
+    return drivers;
+}
+
+// 2. Renderizar el perfil
+function renderProfile(driver) {
+    const contentDiv = document.getElementById('profile-content');
+    
+    if (!driver) {
+        contentDiv.innerHTML = '<div class="profile-card"><h1 style="color:#ef4444;">¡Error! Piloto no encontrado.</h1></div>';
+        return;
+    }
+
+    const profileHTML = `
+        <div class="profile-card">
+            <img src="${driver.photo}" alt="${driver.name}" class="avatar-lg">
+            <div class="name-lg">${driver.name}</div>
+            <div class="team-lg">${driver.team}</div>
+
+            <div class="points-box">
+                <h2>PUNTOS TOTALES</h2>
+                <div class="points-lg">${driver.points}</div>
+            </div>
+            
+        </div>
+    `;
+    
+    contentDiv.innerHTML = profileHTML;
+}
+
+// 3. Función principal de carga
+async function loadDriverProfile() {
+    const driverName = getDriverNameFromUrl();
+    const contentDiv = document.getElementById('profile-content');
+
+    if (!driverName) {
+        contentDiv.innerHTML = '<div class="profile-card"><h1 style="color:#ef4444;">Error: No se especificó un piloto.</h1></div>';
+        return;
+    }
+    
+    contentDiv.innerHTML = '<div style="text-align:center; color:#94a3b8;"><i class="fa-solid fa-spinner fa-spin"></i> Cargando perfil...</div>';
+
+    try {
+        const response = await fetch(GOOGLE_CSV_LINK);
+        const data = await response.text();
+        const drivers = parseCSV(data);
+        
+        // Buscar al piloto. Se usa el nombre (decodeURIComponent) como clave.
+        const targetDriver = drivers.find(d => d.name === decodeURIComponent(driverName));
+        
+        renderProfile(targetDriver);
+
+    } catch (error) {
+        console.error("Error al cargar el Google Sheet:", error);
+        contentDiv.innerHTML = '<div class="profile-card"><h1 style="color:#ef4444;">Error de conexión. Inténtalo de nuevo.</h1></div>';
+    }
+}
+
+// Iniciar al cargar la página
+document.addEventListener('DOMContentLoaded', loadDriverProfile);
+</script>
+
+</body>
+</html>
