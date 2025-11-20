@@ -1,8 +1,8 @@
 const CACHE_NAME = 'clasificacion-ck-cache-v1';
 const urlsToCache = [
   './', // Ruta raíz (index.html)
-  'index.html',
-  'manifest.json',
+  './index.html',
+  './manifest.json',
   'https://img.icons8.com/ios-filled/50/trophy.png',
   'https://img.icons8.com/ios-filled/512/trophy.png',
   // Fuentes y CSS externos usados en el index.html
