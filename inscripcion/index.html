@@ -26,20 +26,20 @@
             padding: 1rem 0;
             margin-bottom: 2rem;
             border-bottom: 1px solid rgba(59, 130, 246, 0.2);
-            width: 100%; /* Ocupa el 100% del ancho del main-wrapper */
-            max-width: 500px; /* Limita al ancho del formulario para centrado visual */
+            /* AHORA OCUPA TODO EL ANCHO DISPONIBLE */
+            width: 100%; 
         }
         
         .nav-link {
             font-family: 'Montserrat', sans-serif;
             text-decoration: none;
             font-weight: 700;
-            color: #94a3b8; /* Gris claro */
+            color: #94a3b8;
             transition: color 0.3s, text-shadow 0.3s;
         }
         
         .nav-link:hover {
-            color: var(--accent); /* Azul Neón */
+            color: var(--accent);
             text-shadow: 0 0 5px rgba(59, 130, 246, 0.8);
         }
 
@@ -54,30 +54,34 @@
             margin: 0;
             padding: 2rem;
             min-height: 100vh;
-            /* ¡QUITAMOS EL FLEXBOX DE AQUÍ! */
+            
+            /* CONFIGURADO PARA APILAR NAV y MAIN-WRAPPER */
+            display: flex;
+            flex-direction: column; 
+            align-items: center;
         }
 
         /* --- NUEVO ENVOLTORIO PARA ALINEACIÓN --- */
         .main-wrapper {
+            /* Se mantiene para centrar el contenido y ocupar el ancho del body */
             display: flex;
             flex-direction: column;
-            align-items: center; /* Centra horizontalmente todo (nav y container) */
-            min-height: 100vh;
+            align-items: center;
             width: 100%;
         }
         
         /* --- ESTILOS DEL CONTENEDOR (CARD) --- */
         .container {
-            max-width: 500px;
-            width: 100%;
+            /* CAMBIO: Aumento el ancho máximo para que ocupe más espacio */
+            **max-width: 800px;** width: 90%;
             background: var(--card-bg);
             backdrop-filter: blur(10px);
             border-radius: 20px;
             border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 1.5rem;
+            padding: 2.5rem;
             box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
-            animation: fadeIn 1s ease-out;
-            margin-bottom: 2rem; /* Espacio inferior */
+            animation: fadeIn 0.8s ease-out;
+            margin-bottom: 2rem;
         }
 
         @keyframes fadeIn {
@@ -178,68 +182,67 @@
     </style>
 </head>
 <body>
-<div class="main-wrapper">
+    
     <nav class="navbar">
       <a href="../" class="nav-link">🏆 Clasificación</a>
       <a href="../inscripcion/" class="nav-link">📝 Preinscripción</a>
       <a href="../sorteo/" class="nav-link">🏎️ Sorteo</a>
     </nav>
-    
-    <div class="container">
-        <h1><i class="fa-solid fa-flag-checkered"></i>Preinscripción Canary Karting</h1>
-        
-        <div class="form-group">
-            <label for="nombre" class="centered-text">¿Quieres correr con nosotros?
-                <p></p> Lee detenidamente nuestro documento de reglas y rellena el siguiente formulario.
-            </label>
+
+    <div class="main-wrapper">
+        <div class="container">
+            <h1><i class="fa-solid fa-flag-checkered"></i>Preinscripción Canary Karting</h1>
+            
+            <div class="form-group">
+                <label for="nombre" class="centered-text">¿Quieres correr con nosotros?
+                    <p></p> Lee detenidamente nuestro documento de reglas y rellena el siguiente formulario.
+                </label>
+            </div>
+            
+            <div class="form-group">
+                <a href="https://drive.google.com/file/d/18RiuNlUViofUXUaP6URrBIJwfPEFuGr3/view?usp=sharing" target="_blank" class="neon-link">
+                    <i class="fa-solid fa-file-pdf"></i> Normativa Preinscripción
+                </a>
+            </div>
+            
+            <form id="registration-form">
+                <div class="form-group">
+                    <label for="nombre">Nombre Completo</label>
+                    <input type="text" id="nombre" name="nombre" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Correo Electrónico</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="telefono">Teléfono</label>
+                    <input type="tel" id="telefono" name="telefono">
+                </div>
+
+                <div class="form-group">
+                    <label for="experiencia">¿Tienes experiencia previa en karting? ¿En qué circuitos de la isla has corrido?</label>
+                    <input type="text" id="experiencia" name="experiencia">
+                </div>
+
+                <div class="form-group">
+                    <label for="tiempos">¿Cuales son tus mejores tiempos por circuito? </label>
+                    <small>Dejar en blanco si no los sabes</small>
+                    <input type="text" id="tiempos" name="tiempos">
+                </div>
+
+                <div class="form-group">
+                    <label for="peso">¿Peso aproximado? </label>
+                    <input type="text" id="peso" name="peso">
+                </div>
+            
+                <button type="submit" id="submit-button">Enviar Solicitud</button>
+                
+                <div id="form-message"></div>
+            </form>
         </div>
-        
-        <div class="form-group">
-            <a href="https://drive.google.com/file/d/18RiuNlUViofUXUaP6URrBIJwfPEFuGr3/view?usp=sharing" target="_blank" class="neon-link">
-                <i class="fa-solid fa-file-pdf"></i> Normativa Preinscripción
-            </a>
-        </div>
-        
-        <form id="registration-form">
-            <div class="form-group">
-                <label for="nombre">Nombre Completo</label>
-                <input type="text" id="nombre" name="nombre" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="email">Correo Electrónico</label>
-                <input type="email" id="email" name="email" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="telefono">Teléfono</label>
-                <input type="tel" id="telefono" name="telefono">
-            </div>
-
-            <div class="form-group">
-                <label for="telefono">¿Tienes experiencia previa en karting? ¿En qué circuitos de la isla has corrido?</label>
-                <input type="text" id="experiencia" name="experiencia">
-            </div>
-
-            <div class="form-group">
-                <label for="telefono">¿Cuales son tus mejores tiempos por circuito? </label>
-                <small>Dejar en blanco si no los sabes</small>
-                <input type="text" id="tiempos" name="tiempos">
-            </div>
-
-            <div class="form-group">
-                <label for="telefono">¿Peso aproximado? </label>
-                <input type="text" id="peso" name="peso">
-            </div>
-        
-            <button type="submit" id="submit-button">Enviar Solicitud</button>
-            
-            <div id="form-message"></div>
-        </form>
-    </div>
-</div> 
-
-<script>
+    </div> <script>
 // === CONFIGURACIÓN ===
 // ⬅️ PEGA AQUÍ LA URL DE DESPLIEGUE DE TU GOOGLE APPS SCRIPT
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxWb10NHe9l6-w10l9qHwJZbG1jzs3G4V26_i3pG4jSUMNbyvmhMvwOvH0KltfpsNOy/exec"; 
