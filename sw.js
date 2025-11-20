@@ -3,8 +3,8 @@ const urlsToCache = [
   './', // Ruta raíz (index.html)
   'index.html',
   'manifest.json',
-  '/images/icon-192x192.png',
-  '/images/icon-512x512.png',
+  'https://img.icons8.com/ios-filled/50/trophy.png',
+  'https://img.icons8.com/ios-filled/512/trophy.png',
   // Fuentes y CSS externos usados en el index.html
   'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Russo+One&display=swap',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css'
