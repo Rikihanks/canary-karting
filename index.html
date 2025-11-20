@@ -1,407 +1,588 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Clasificación General CK</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Russo+One&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-    <style>
-        .navbar {
-            display: flex;
-            justify-content: center;
-            gap: 2rem;
-            padding: 1rem 0;
-            margin-bottom: 2rem;
-            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
-            width: 100%;
-        }
+    <meta charset="UTF-8" />
 
-        .nav-link {
-            font-family: 'Montserrat', sans-serif;
-            text-decoration: none;
-            font-weight: 700;
-            color: #94a3b8;
-            transition: color 0.3s, text-shadow 0.3s;
-        }
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Clasificación General CK</title>
 
-        .nav-link:hover {
-            color: var(--accent);
-            text-shadow: 0 0 5px rgba(59, 130, 246, 0.8);
-        }
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Russo+One&display=swap"
+        rel="stylesheet">
 
-        :root {
-            --bg-color: #0f172a;
-            --card-bg: rgba(30, 41, 59, 0.6);
-            --text-main: #f1f5f9;
-            --accent: #3b82f6;
-            --gold: #fbbf24;
-            --silver: #94a3b8;
-            --bronze: #d97706;
-        }
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-        * { box-sizing: border-box; }
+    <link rel="manifest" href="./manifest.json">
 
-        body {
-            font-family: 'Montserrat', sans-serif;
-            margin: 0;
-            padding: 1rem;
-            background-color: var(--bg-color);
-            background-image: 
-                radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.15) 0%, transparent 20%),
-                radial-gradient(circle at 90% 80%, rgba(239, 68, 68, 0.15) 0%, transparent 20%);
-            color: var(--text-main);
-            min-height: 100vh;
-        }
+    <style>
+        .navbar {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            padding: 1rem 0;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+            width: 100%;
+        }
 
-        /* Título Brillante */
-        h1 {
-            font-family: 'Russo One', sans-serif;
-            text-align: center;
-            font-size: 2.5rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 2rem;
-            
-            background: linear-gradient(180deg, #ffffff 20%, #bae6fd 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            filter: drop-shadow(0 0 5px rgba(59, 130, 246, 0.6)) 
-                    drop-shadow(0 4px 4px rgba(0, 0, 0, 0.5));
-        }
+        .nav-link {
+            font-family: 'Montserrat', sans-serif;
+            text-decoration: none;
+            font-weight: 700;
+            color: #94a3b8;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
 
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
+        .nav-link:hover {
+            color: var(--accent);
+            text-shadow: 0 0 5px rgba(59, 130, 246, 0.8);
+        }
 
-        /* --- ESTILOS DE ENLACE --- */
-        .podium-card-link, .list-item-link {
-            text-decoration: none;
-            color: inherit;
-            display: block;
-            transition: transform 0.2s;
-        }
-        .podium-card-link:hover .podium-card, .list-item-link:hover .list-item {
-            transform: translateY(-5px) scale(1.01);
-            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.5);
-        }
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.6);
+            --text-main: #f1f5f9;
+            --accent: #3b82f6;
+            --gold: #fbbf24;
+            --silver: #94a3b8;
+            --bronze: #d97706;
+        }
 
-        /* --- PODIO (Top 3) --- */
-.podium {
-    display: flex;
-    justify-content: center;
-    align-items: flex-end; /* Alinea las tarjetas desde abajo (efecto pedestal) */
-    gap: 1rem;
-    margin-bottom: 3rem;
-    padding-top: 1rem;
-}
+        * {
+            box-sizing: border-box;
+        }
 
-.podium-card {
-    background: var(--card-bg);
-    backdrop-filter: blur(10px);
-    border-radius: 16px;
-    padding: 1.5rem;
-    text-align: center;
-    position: relative;
-    width: 30%;
-    min-height: 200px; /* Altura base mínima */
-    display: flex; /* Asegura el centrado vertical en la card */
-    flex-direction: column;
-    justify-content: center; /* Centro el contenido verticalmente */
-    border: 1px solid rgba(255,255,255,0.1);
-    transition: all 0.2s;
-}
+        body {
+            font-family: 'Montserrat', sans-serif;
+            margin: 0;
+            padding: 1rem;
+            background-color: var(--bg-color);
+            background-image:
+                radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.15) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(239, 68, 68, 0.15) 0%, transparent 20%);
+            color: var(--text-main);
+            min-height: 100vh;
+        }
 
-/* --- ANIMACIÓN DE PULSO DE NEÓN (Sin cambios) --- */
-        @keyframes glowPulseGold {
-            0% { box-shadow: 0 0 15px rgba(251, 191, 36, 0.3), inset 0 0 10px rgba(251, 191, 36, 0.1); border-color: rgba(251, 191, 36, 0.5); }
-            100% { box-shadow: 0 0 35px rgba(251, 191, 36, 0.6), inset 0 0 20px rgba(251, 191, 36, 0.2); border-color: rgba(251, 191, 36, 1); }
-        }
-        @keyframes glowPulseSilver {
-            0% { box-shadow: 0 0 15px rgba(148, 163, 184, 0.3); border-color: rgba(148, 163, 184, 0.5); }
-            100% { box-shadow: 0 0 30px rgba(148, 163, 184, 0.5); border-color: rgba(148, 163, 184, 1); }
-        }
-        @keyframes glowPulseBronze {
-            0% { box-shadow: 0 0 15px rgba(217, 119, 6, 0.3); border-color: rgba(217, 119, 6, 0.5); }
-            100% { box-shadow: 0 0 30px rgba(217, 119, 6, 0.6); border-color: rgba(217, 119, 6, 1); }
-        }
+        /* Título Brillante */
+        h1 {
+            font-family: 'Russo One', sans-serif;
+            text-align: center;
+            font-size: 2.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 2rem;
 
-/* 🥇 ORO */
-.rank-1 { 
-    order: 2; /* 1er puesto en el centro */
-    transform: scale(1.05); /* Ligeramente más grande */
-    min-height: 280px; /* Más alto que el resto */
-    z-index: 2; 
-    animation: glowPulseGold 2s infinite alternate ease-in-out;
-}
+            background: linear-gradient(180deg, #ffffff 20%, #bae6fd 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            filter: drop-shadow(0 0 5px rgba(59, 130, 246, 0.6)) drop-shadow(0 4px 4px rgba(0, 0, 0, 0.5));
+        }
 
-/* 🥈 PLATA */
-.rank-2 { 
-    order: 1; /* 2do puesto a la izquierda */
-    min-height: 240px; /* Altura intermedia */
-    margin-bottom: 0; /* Eliminar el margen negativo anterior */
-    animation: glowPulseSilver 3s infinite alternate ease-in-out;
-}
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
 
-/* 🥉 BRONCE */
-.rank-3 { 
-    order: 3; /* 3er puesto a la derecha */
-    min-height: 220px; /* El más bajo */
-    margin-bottom: 0; /* Eliminar el margen negativo anterior */
-    animation: glowPulseBronze 3s infinite alternate ease-in-out;
-}
+        /* --- ESTILOS DE ENLACE --- */
+        .podium-card-link,
+        .list-item-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            transition: transform 0.2s;
+        }
 
-/* --- RESPONSIVE MOBILE (Mejorado) --- */
-@media (max-width: 600px) {
-    .podium {
-        flex-direction: column;
-        align-items: center;
-        gap: 1.5rem;
-    }
-    
-    .podium-card {
-        width: 100%;
-        min-height: auto; /* Dejamos la altura flexible en móvil */
-        order: unset !important; /* Desactiva el orden para que salgan 1, 2, 3 en vertical */
-        margin-bottom: 0;
-        display: flex;
-        flex-direction: row; /* Hacemos las tarjetas horizontales en móvil */
-        align-items: center;
-        text-align: left;
-        padding: 1rem;
-    }
+        .podium-card-link:hover .podium-card,
+        .list-item-link:hover .list-item {
+            transform: translateY(-5px) scale(1.01);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.5);
+        }
 
-    /* Ajuste para que el texto ocupe el espacio */
-    .podium-content { flex: 1; } 
+        /* --- PODIO (Top 3) --- */
+        .podium {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            /* Alinea las tarjetas desde abajo (efecto pedestal) */
+            gap: 1rem;
+            margin-bottom: 3rem;
+            padding-top: 1rem;
+        }
 
-    /* Asegurar que los avatares grandes se vean bien en modo horizontal */
-    .podium-card .avatar { margin: 0 1rem 0 0; width: 70px; height: 70px; }
+        .podium-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            position: relative;
+            width: 30%;
+            min-height: 200px;
+            /* Altura base mínima */
+            display: flex;
+            /* Asegura el centrado vertical en la card */
+            flex-direction: column;
+            justify-content: center;
+            /* Centro el contenido verticalmente */
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s;
+        }
 
-    /* Estilos específicos para la tarjeta 1 en móvil */
-    .rank-1 { transform: scale(1.0); } /* Eliminamos el escalado extra en móvil */
-}
+        /* --- ANIMACIÓN DE PULSO DE NEÓN (Sin cambios) --- */
+        @keyframes glowPulseGold {
+            0% {
+                box-shadow: 0 0 15px rgba(251, 191, 36, 0.3), inset 0 0 10px rgba(251, 191, 36, 0.1);
+                border-color: rgba(251, 191, 36, 0.5);
+            }
 
-        /* Coronas e Iconos, Avatares, Puntos... (Sin cambios) */
-        .crown { font-size: 1.5rem; margin-bottom: 0.5rem; display: block; }
-        .rank-1 .crown { color: var(--gold); text-shadow: 0 0 10px var(--gold); font-size: 2rem; }
-        .rank-2 .crown { color: var(--silver); text-shadow: 0 0 10px var(--silver); }
-        .rank-3 .crown { color: var(--bronze); text-shadow: 0 0 10px var(--bronze); }
+            100% {
+                box-shadow: 0 0 35px rgba(251, 191, 36, 0.6), inset 0 0 20px rgba(251, 191, 36, 0.2);
+                border-color: rgba(251, 191, 36, 1);
+            }
+        }
 
-        .avatar {
-            width: 80px; height: 80px; border-radius: 50%; object-fit: cover;
-            border: 3px solid rgba(255,255,255,0.2); margin: 0 auto 10px; background: #334155;
-        }
-        .rank-1 .avatar { width: 100px; height: 100px; border-color: var(--gold); }
-        .rank-2 .avatar { border-color: var(--silver); }
-        .rank-3 .avatar { border-color: var(--bronze); }
+        @keyframes glowPulseSilver {
+            0% {
+                box-shadow: 0 0 15px rgba(148, 163, 184, 0.3);
+                border-color: rgba(148, 163, 184, 0.5);
+            }
 
-        .p-name { font-weight: 800; font-size: 1.1rem; margin-bottom: 4px; }
-        .p-team { font-size: 0.8rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem; }
-        .p-points { font-family: 'Russo One', sans-serif; font-size: 1.8rem; background: rgba(0,0,0,0.3); padding: 5px 10px; border-radius: 8px; display: inline-block; }
+            100% {
+                box-shadow: 0 0 30px rgba(148, 163, 184, 0.5);
+                border-color: rgba(148, 163, 184, 1);
+            }
+        }
 
-        /* --- LISTA DEL RESTO (4º en adelante) --- */
-        .list { display: flex; flex-direction: column; gap: 1rem; }
+        @keyframes glowPulseBronze {
+            0% {
+                box-shadow: 0 0 15px rgba(217, 119, 6, 0.3);
+                border-color: rgba(217, 119, 6, 0.5);
+            }
 
-        .list-item {
-            display: flex;
-            align-items: center;
-            background: rgba(15, 23, 42, 0.8);
-            border: 1px solid rgba(255,255,255,0.05);
-            padding: 1rem;
-            border-radius: 12px;
-            transition: all 0.2s;
-        }
+            100% {
+                box-shadow: 0 0 30px rgba(217, 119, 6, 0.6);
+                border-color: rgba(217, 119, 6, 1);
+            }
+        }
 
-        .rank-num { font-family: 'Russo One'; font-size: 1.5rem; color: #64748b; width: 40px; text-align: center; }
-        .mini-avatar { width: 50px; height: 50px; border-radius: 50%; margin: 0 1rem; object-fit: cover; border: 2px solid #334155; }
-        .info { flex-grow: 1; }
-        .l-name { font-weight: 700; font-size: 1.1rem; }
-        .l-team { font-size: 0.85rem; color: #94a3b8; }
-        
-        .l-points { font-family: 'Russo One'; font-size: 1.4rem; color: var(--accent); }
-        .l-points span { font-size: 0.8rem; color: #64748b; font-family: 'Montserrat'; }
+        /* 🥇 ORO */
+        .rank-1 {
+            order: 2;
+            /* 1er puesto en el centro */
+            transform: scale(1.05);
+            /* Ligeramente más grande */
+            min-height: 280px;
+            /* Más alto que el resto */
+            z-index: 2;
+            animation: glowPulseGold 2s infinite alternate ease-in-out;
+        }
 
-        /* --- RESPONSIVE MOBILE (Sin cambios) --- */
-        @media (max-width: 600px) {
-            .podium-card-link:hover .podium-card, .list-item-link:hover .list-item {
-                transform: scale(1.01);
-                box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4); 
-            }
+        /* 🥈 PLATA */
+        .rank-2 {
+            order: 1;
+            /* 2do puesto a la izquierda */
+            min-height: 240px;
+            /* Altura intermedia */
+            margin-bottom: 0;
+            /* Eliminar el margen negativo anterior */
+            animation: glowPulseSilver 3s infinite alternate ease-in-out;
+        }
 
-            .podium {
-                flex-direction: column;
-                align-items: center;
-                gap: 1.5rem;
-            }
-            
-            .podium-card {
-                width: 100%;
-                height: auto !important; 
-                order: unset !important; 
-                margin-bottom: 0;
-                display: flex;
-                align-items: center;
-                text-align: left;
-                padding: 1rem;
-            }
+        /* 🥉 BRONCE */
+        .rank-3 {
+            order: 3;
+            /* 3er puesto a la derecha */
+            min-height: 220px;
+            /* El más bajo */
+            margin-bottom: 0;
+            /* Eliminar el margen negativo anterior */
+            animation: glowPulseBronze 3s infinite alternate ease-in-out;
+        }
 
-            .podium-card .avatar { margin: 0 1rem 0 0; width: 70px; height: 70px; }
-            .podium-content { flex: 1; }
-            
-            .rank-1 { transform: scale(1.02); }
-        }
-    </style>
+        /* --- RESPONSIVE MOBILE (Mejorado) --- */
+        @media (max-width: 600px) {
+            .podium {
+                flex-direction: column;
+                align-items: center;
+                gap: 1.5rem;
+            }
+
+            .podium-card {
+                width: 100%;
+                min-height: auto;
+                /* Dejamos la altura flexible en móvil */
+                order: unset !important;
+                /* Desactiva el orden para que salgan 1, 2, 3 en vertical */
+                margin-bottom: 0;
+                display: flex;
+                flex-direction: row;
+                /* Hacemos las tarjetas horizontales en móvil */
+                align-items: center;
+                text-align: left;
+                padding: 1rem;
+            }
+
+            /* Ajuste para que el texto ocupe el espacio */
+            .podium-content {
+                flex: 1;
+            }
+
+            /* Asegurar que los avatares grandes se vean bien en modo horizontal */
+            .podium-card .avatar {
+                margin: 0 1rem 0 0;
+                width: 70px;
+                height: 70px;
+            }
+
+            /* Estilos específicos para la tarjeta 1 en móvil */
+            .rank-1 {
+                transform: scale(1.0);
+            }
+
+            /* Eliminamos el escalado extra en móvil */
+        }
+
+        /* Coronas e Iconos, Avatares, Puntos... (Sin cambios) */
+        .crown {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .rank-1 .crown {
+            color: var(--gold);
+            text-shadow: 0 0 10px var(--gold);
+            font-size: 2rem;
+        }
+
+        .rank-2 .crown {
+            color: var(--silver);
+            text-shadow: 0 0 10px var(--silver);
+        }
+
+        .rank-3 .crown {
+            color: var(--bronze);
+            text-shadow: 0 0 10px var(--bronze);
+        }
+
+        .avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            margin: 0 auto 10px;
+            background: #334155;
+        }
+
+        .rank-1 .avatar {
+            width: 100px;
+            height: 100px;
+            border-color: var(--gold);
+        }
+
+        .rank-2 .avatar {
+            border-color: var(--silver);
+        }
+
+        .rank-3 .avatar {
+            border-color: var(--bronze);
+        }
+
+        .p-name {
+            font-weight: 800;
+            font-size: 1.1rem;
+            margin-bottom: 4px;
+        }
+
+        .p-team {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+        }
+
+        .p-points {
+            font-family: 'Russo One', sans-serif;
+            font-size: 1.8rem;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 5px 10px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+
+        /* --- LISTA DEL RESTO (4º en adelante) --- */
+        .list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .list-item {
+            display: flex;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            border-radius: 12px;
+            transition: all 0.2s;
+        }
+
+        .rank-num {
+            font-family: 'Russo One';
+            font-size: 1.5rem;
+            color: #64748b;
+            width: 40px;
+            text-align: center;
+        }
+
+        .mini-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin: 0 1rem;
+            object-fit: cover;
+            border: 2px solid #334155;
+        }
+
+        .info {
+            flex-grow: 1;
+        }
+
+        .l-name {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .l-team {
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+
+        .l-points {
+            font-family: 'Russo One';
+            font-size: 1.4rem;
+            color: var(--accent);
+        }
+
+        .l-points span {
+            font-size: 0.8rem;
+            color: #64748b;
+            font-family: 'Montserrat';
+        }
+
+        /* --- RESPONSIVE MOBILE (Sin cambios) --- */
+        @media (max-width: 600px) {
+
+            .podium-card-link:hover .podium-card,
+            .list-item-link:hover .list-item {
+                transform: scale(1.01);
+                box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+            }
+
+            .podium {
+                flex-direction: column;
+                align-items: center;
+                gap: 1.5rem;
+            }
+
+            .podium-card {
+                width: 100%;
+                height: auto !important;
+                order: unset !important;
+                margin-bottom: 0;
+                display: flex;
+                align-items: center;
+                text-align: left;
+                padding: 1rem;
+            }
+
+            .podium-card .avatar {
+                margin: 0 1rem 0 0;
+                width: 70px;
+                height: 70px;
+            }
+
+            .podium-content {
+                flex: 1;
+            }
+
+            .rank-1 {
+                transform: scale(1.02);
+            }
+        }
+    </style>
 </head>
+
 <body>
-    <nav class="navbar">
-        <a href="./" class="nav-link">🏆 Clasificación</a>
-        <a href="./inscripcion/" class="nav-link">📝 Preinscripción</a>
-        <a href="./sorteo/" class="nav-link">🏎️ Sorteo</a>
-    </nav>
-    <div class="container">
-        <h1><i class="fa-solid fa-trophy"></i> Clasificación</h1>
+    <nav class="navbar">
+        <a href="./" class="nav-link">🏆 Clasificación</a>
+        <a href="./inscripcion/" class="nav-link">📝 Preinscripción</a>
+        <a href="./sorteo/" class="nav-link">🏎️ Sorteo</a>
+    </nav>
+    <div class="container">
+        <h1><i class="fa-solid fa-trophy"></i> Clasificación</h1>
 
-        <div id="podium-container" class="podium"></div>
+        <div id="podium-container" class="podium"></div>
 
-        <div id="list-container" class="list"></div>
+        <div id="list-container" class="list"></div>
 
-    </div>
+    </div>
 
-    <script>
-    // ==========================================
-    // ⚙️ CONFIGURACIÓN
-    // ==========================================
 
-    // PEGA AQUÍ EL ENLACE "PUBLICAR EN LA WEB" (FORMATO CSV) DE TU GOOGLE SHEET
-    const GOOGLE_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTlPsGq-SypD4WPitvnR7JcluA8_6-5ePtuzyf5zFGJ31eppN55iUIHsKo0oduOZ9AVyVTf6VkPvTyu/pub?output=csv";
+    <script>
+        // ==========================================
+        // ⚙️ CONFIGURACIÓN
+        // ==========================================
 
-    // 2. USAMOS ESTE ENLACE (Con el proxy para que funcione en local)
-    // Se han usado comillas invertidas (\`) para evitar cualquier problema de caracteres.
-    const SHEET_URL = `https://api.allorigins.win/raw?url=${encodeURIComponent(GOOGLE_CSV_LINK)}`;
-    // ==========================================
-    // 🚀 LÓGICA DE CARGA DE DATOS
-    // ==========================================
+        // PEGA AQUÍ EL ENLACE "PUBLICAR EN LA WEB" (FORMATO CSV) DE TU GOOGLE SHEET
+        const GOOGLE_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTlPsGq-SypD4WPitvnR7JcluA8_6-5ePtuzyf5zFGJ31eppN55iUIHsKo0oduOZ9AVyVTf6VkPvTyu/pub?output=csv";
 
-    async function fetchLeaderboardData() {
-        const podiumContainer = document.getElementById('podium-container');
-        const listContainer = document.getElementById('list-container');
-        
-        listContainer.innerHTML = '<div style="text-align:center; color:#94a3b8;"><i class="fa-solid fa-spinner fa-spin"></i> Cargando datos del campeonato...</div>';
+        // 2. USAMOS ESTE ENLACE (Con el proxy para que funcione en local)
+        // Se han usado comillas invertidas (\`) para evitar cualquier problema de caracteres.
+        const SHEET_URL = `https://api.allorigins.win/raw?url=${encodeURIComponent(GOOGLE_CSV_LINK)}`;
+        // ==========================================
+        // 🚀 LÓGICA DE CARGA DE DATOS
+        // ==========================================
 
-        try {
-            const response = await fetch(SHEET_URL);
-            const data = await response.text();
-            
-            const drivers = parseCSV(data);
-            
-            renderLeaderboard(drivers);
-            
-        } catch (error) {
-            console.error("Error al cargar el Google Sheet:", error);
-            listContainer.innerHTML = '<div style="text-align:center; color:#ef4444;">Error al cargar los datos. Verifica el enlace CSV.</div>';
-        }
-    }
+        async function fetchLeaderboardData() {
+            const podiumContainer = document.getElementById('podium-container');
+            const listContainer = document.getElementById('list-container');
 
-    // Función auxiliar para leer el CSV crudo
-    function parseCSV(csvText) {
-        const lines = csvText.split('\n');
-        const drivers = [];
-        
-        for (let i = 1; i < lines.length; i++) {
-            const line = lines[i].trim();
-            if (!line) continue;
-            
-            const parts = line.split(',');
-            
-            if (parts.length >= 3) {
-                drivers.push({
-                    name: parts[0].trim(),
-                    team: parts[1].trim(),
-                    points: parseInt(parts[2].trim()) || 0,
-                    photo: parts[3] ? parts[3].trim() : "https://www.w3schools.com/howto/img_avatar.png" 
-                });
-            }
-        }
-        return drivers;
-    }
+            listContainer.innerHTML = '<div style="text-align:center; color:#94a3b8;"><i class="fa-solid fa-spinner fa-spin"></i> Cargando datos del campeonato...</div>';
 
-    // ==========================================
-    // 🎨 RENDERIZADO (CON ENLACES AL PERFIL)
-    // ==========================================
+            try {
+                const response = await fetch(SHEET_URL);
+                const data = await response.text();
 
-    function renderLeaderboard(driversData) {
-        const podiumContainer = document.getElementById('podium-container');
-        const listContainer = document.getElementById('list-container');
+                const drivers = parseCSV(data);
 
-        // Limpiar contenedores
-        podiumContainer.innerHTML = '';
-        listContainer.innerHTML = '';
+                renderLeaderboard(drivers);
 
-        // 1. Ordenar pilotos por puntos (Mayor a menor)
-        const sortedDrivers = driversData.sort((a, b) => b.points - a.points);
+            } catch (error) {
+                console.error("Error al cargar el Google Sheet:", error);
+                listContainer.innerHTML = '<div style="text-align:center; color:#ef4444;">Error al cargar los datos. Verifica el enlace CSV.</div>';
+            }
+        }
 
-        // 2. Separar Top 3 del resto
-        const top3 = sortedDrivers.slice(0, 3);
-        const rest = sortedDrivers.slice(3);
+        // Función auxiliar para leer el CSV crudo
+        function parseCSV(csvText) {
+            const lines = csvText.split('\n');
+            const drivers = [];
 
-        // 3. Renderizar Podio (Top 3)
-        let podiumHTML = '';
-        
-        top3.forEach((driver, index) => {
-            const rank = index + 1;
-            let crownIcon = '';
-            if(rank === 1) crownIcon = '<i class="fa-solid fa-crown crown"></i>';
-            if(rank === 2) crownIcon = '<i class="fa-solid fa-medal crown"></i>';
-            if(rank === 3) crownIcon = '<i class="fa-solid fa-award crown"></i>';
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
 
-            const driverNameUrl = encodeURIComponent(driver.name);
-            // Usando Template Literals para la inyección de HTML con ${}
-            podiumHTML += `
-                <div class="podium-card rank-${rank}">
-                    ${crownIcon}
-                    <a href="perfil.html?driver=${driverNameUrl}" class="podium-card-link">
-                        <img src="${driver.photo}" alt="${driver.name}" class="avatar">
-                        <div class="podium-content">
-                            <div class="p-name">${driver.name}</div>
-                            <div class="p-team">${driver.team}</div>
-                            <div class="p-points">${driver.points}</div>
-                        </div>
-                    </a>
-                </div>
-            `;
-        });
-        podiumContainer.innerHTML = podiumHTML;
+                const parts = line.split(',');
 
-        // 4. Renderizar Lista (Resto)
-        let listHTML = '';
-        
-        rest.forEach((driver, index) => {
-            const rank = index + 4;
-            
-            const driverNameUrl = encodeURIComponent(driver.name);
-            listHTML += `
-                <a href="perfil.html?driver=${driverNameUrl}" class="list-item-link">
-                <div class="list-item">
-                    <div class="rank-num">${rank}</div>
-                    <img src="${driver.photo}" alt="${driver.name}" class="mini-avatar">
-                    <div class="info">
-                        <div class="l-name">${driver.name}</div>
-                        <div class="l-team">${driver.team}</div>
-                    </div>
-                    <div class="l-points">${driver.points} <span>PTS</span></div>
-                </div>
-                </a>
-            `;
-        });
-        listContainer.innerHTML = listHTML;
-    }
+                if (parts.length >= 3) {
+                    drivers.push({
+                        name: parts[0].trim(),
+                        team: parts[1].trim(),
+                        points: parseInt(parts[2].trim()) || 0,
+                        photo: parts[3] ? parts[3].trim() : "https://www.w3schools.com/howto/img_avatar.png"
+                    });
+                }
+            }
+            return drivers;
+        }
 
-    // Iniciar carga al abrir la web
-    document.addEventListener('DOMContentLoaded', fetchLeaderboardData);
-    </script>
+        // ==========================================
+        // 🎨 RENDERIZADO (CON ENLACES AL PERFIL)
+        // ==========================================
+
+        function renderLeaderboard(driversData) {
+            const podiumContainer = document.getElementById('podium-container');
+            const listContainer = document.getElementById('list-container');
+
+            // Limpiar contenedores
+            podiumContainer.innerHTML = '';
+            listContainer.innerHTML = '';
+
+            // 1. Ordenar pilotos por puntos (Mayor a menor)
+            const sortedDrivers = driversData.sort((a, b) => b.points - a.points);
+
+            // 2. Separar Top 3 del resto
+            const top3 = sortedDrivers.slice(0, 3);
+            const rest = sortedDrivers.slice(3);
+
+            // 3. Renderizar Podio (Top 3)
+            let podiumHTML = '';
+
+            top3.forEach((driver, index) => {
+                const rank = index + 1;
+                let crownIcon = '';
+                if (rank === 1) crownIcon = '<i class="fa-solid fa-crown crown"></i>';
+                if (rank === 2) crownIcon = '<i class="fa-solid fa-medal crown"></i>';
+                if (rank === 3) crownIcon = '<i class="fa-solid fa-award crown"></i>';
+
+                const driverNameUrl = encodeURIComponent(driver.name);
+                // Usando Template Literals para la inyección de HTML con ${}
+                podiumHTML += `
+        <div class="podium-card rank-${rank}">
+          ${crownIcon}
+          <a href="perfil.html?driver=${driverNameUrl}" class="podium-card-link">
+            <img src="${driver.photo}" alt="${driver.name}" class="avatar">
+            <div class="podium-content">
+              <div class="p-name">${driver.name}</div>
+              <div class="p-team">${driver.team}</div>
+              <div class="p-points">${driver.points}</div>
+            </div>
+          </a>
+        </div>
+      `;
+            });
+            podiumContainer.innerHTML = podiumHTML;
+
+            // 4. Renderizar Lista (Resto)
+            let listHTML = '';
+
+            rest.forEach((driver, index) => {
+                const rank = index + 4;
+
+                const driverNameUrl = encodeURIComponent(driver.name);
+                listHTML += `
+                    <a href="perfil.html?driver=${driverNameUrl}" class="list-item-link">
+                    <div class="list-item">
+                    <div class="rank-num">${rank}</div>
+                    <img src="${driver.photo}" alt="${driver.name}" class="mini-avatar">
+                    <div class="info">
+                        <div class="l-name">${driver.name}</div>
+                        <div class="l-team">${driver.team}</div>
+                    </div>
+                    <div class="l-points">${driver.points} <span>PTS</span></div>
+                    </div>
+                    </a>
+                `;
+            });
+            listContainer.innerHTML = listHTML;
+        }
+
+        // Iniciar carga al abrir la web
+        document.addEventListener('DOMContentLoaded', fetchLeaderboardData);
+
+        // ==========================================
+        // 🌐 REGISTRO DEL SERVICE WORKER (PWA)
+        // ==========================================
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(registration => {
+                        console.log('SW registrado con éxito:', registration);
+                    })
+                    .catch(error => {
+                        console.log('Fallo en el registro del SW:', error);
+                    });
+            });
+        }
+        // ==========================================
+    </script>
 
 </body>
+
 </html>
