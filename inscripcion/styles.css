@@ -1,0 +1,205 @@
+:root {
+    --bg-color: #0f172a;
+    --card-bg: rgba(30, 41, 59, 0.6);
+    --text-main: #f1f5f9;
+    --accent: #3b82f6;
+    --neon-glow: 0 0 10px rgba(59, 130, 246, 0.7);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+/* Estilos de Navegación */
+.navbar {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    padding: 1rem 0;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+    /* AHORA OCUPA TODO EL ANCHO DISPONIBLE */
+    width: 100%;
+}
+
+.nav-link {
+    font-family: 'Montserrat', sans-serif;
+    text-decoration: none;
+    font-weight: 700;
+    color: #94a3b8;
+    transition: color 0.3s, text-shadow 0.3s;
+}
+
+.nav-link:hover {
+    color: var(--accent);
+    text-shadow: 0 0 5px rgba(59, 130, 246, 0.8);
+}
+
+/* --- ESTILOS BASE Y FONDO --- */
+body {
+    font-family: 'Montserrat', sans-serif;
+    background-color: var(--bg-color);
+    background-image:
+        radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.15) 0%, transparent 20%),
+        radial-gradient(circle at 90% 80%, rgba(239, 68, 68, 0.15) 0%, transparent 20%);
+    color: var(--text-main);
+    margin: 0;
+    padding: 1rem;
+    min-height: 100vh;
+
+    /* CONFIGURADO PARA APILAR NAV y MAIN-WRAPPER */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* --- NUEVO ENVOLTORIO PARA ALINEACIÓN --- */
+.main-wrapper {
+    /* Se mantiene para centrar el contenido y ocupar el ancho del body */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 110%;
+}
+
+/* --- ESTILOS DEL CONTENEDOR (CARD) --- */
+.container {
+    /* CAMBIO: Aumento el ancho máximo para que ocupe más espacio */
+    max-width: 800px;
+    width: 90%;
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 2.5rem;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
+    animation: fadeIn 0.8s ease-out;
+    margin-bottom: 2rem;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+h1 {
+    font-family: 'Russo One', sans-serif;
+    text-align: center;
+    font-size: 2rem;
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+    background: linear-gradient(180deg, #ffffff 20%, #bae6fd 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 0 5px rgba(59, 130, 246, 0.6));
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #94a3b8;
+}
+
+/* Estilos de Input/Select */
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+select {
+    width: 100%;
+    padding: 12px;
+    background: rgba(15, 23, 42, 0.7);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 8px;
+    color: var(--text-main);
+    font-size: 1rem;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    outline: none;
+    box-shadow: inset 0 0 5px rgba(59, 130, 246, 0.2);
+}
+
+input:focus,
+select:focus {
+    border-color: var(--accent);
+    box-shadow: var(--neon-glow);
+}
+
+/* Estilo para el Enlace del PDF */
+.neon-link {
+    display: block;
+    text-align: center;
+    padding: 10px;
+    margin-top: 10px;
+    text-decoration: none;
+    color: var(--accent);
+    border: 1px solid rgba(59, 130, 246, 0.5);
+    border-radius: 8px;
+    transition: all 0.3s;
+    box-shadow: 0 0 5px rgba(59, 130, 246, 0.4);
+    font-weight: 600;
+}
+
+.neon-link:hover {
+    color: var(--text-main);
+    background-color: rgba(59, 130, 246, 0.2);
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.8), inset 0 0 5px rgba(59, 130, 246, 0.5);
+}
+
+.neon-link i {
+    margin-right: 8px;
+}
+
+/* Estilos del Botón */
+button {
+    width: 100%;
+    padding: 15px;
+    background-color: var(--accent);
+    color: var(--text-main);
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.3s, opacity 0.3s;
+    box-shadow: var(--neon-glow);
+}
+
+button:hover:not(:disabled) {
+    background-color: #60a5fa;
+}
+
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Mensajes de feedback */
+#form-message {
+    text-align: center;
+    margin-top: 1.5rem;
+    font-weight: 600;
+}
+
+.success {
+    color: #10b981;
+}
+
+.error {
+    color: #ef4444;
+}
+
+.centered-text {
+    text-align: center;
+}

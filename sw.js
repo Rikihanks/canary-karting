@@ -25,10 +25,10 @@ self.addEventListener('install', event => {
 // 2. Servir recursos desde la caché si están disponibles (Estrategia Cache-First)
 self.addEventListener('fetch', event => {
   // Ignorar peticiones a APIs externas (como el proxy de Google Sheets) para que siempre vayan a la red
-  if (event.request.url.includes('api.allorigins.win')) {
+  if (event.request.url.includes('api.allorigins.win') || event.request.url.includes('docs.google.com')) {
     return; // Dejar que la red maneje la petición de datos
   }
-  
+
   event.respondWith(
     caches.match(event.request)
       .then(response => {

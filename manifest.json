@@ -1,14 +1,14 @@
 {
-  "name": "Clasificación Karting CK",
-  "short_name": "Clasificación CK",
-  "description": "Clasificación general en tiempo real del campeonato de Karting.",
+  "name": "Canary Karting",
+  "short_name": "Canary Karting",
+  "description": "Canary Karting Web App",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0f172a",
   "theme_color": "#3b82f6",
   "icons": [
     {
-      "src": "https://img.icons8.com/ios-filled/50/trophy.png", 
+      "src": "https://img.icons8.com/ios-filled/50/trophy.png",
       "sizes": "50x50",
       "type": "image/png"
     },
