@@ -1,11 +1,30 @@
+:root {
+    --bg-color: #0f172a;
+    --card-bg: rgba(30, 41, 59, 0.7);
+    --accent: #3b82f6;
+    --accent-hover: #2563eb;
+    --text-main: #f1f5f9;
+    --text-muted: #94a3b8;
+    --danger: #ef4444;
+    --success: #10b981;
+    --glow: 0 0 15px rgba(59, 130, 246, 0.5);
+}
+
 .navbar {
     display: flex;
-    justify-content: center;
-    gap: 2rem;
-    padding: 1rem 0;
-    margin-bottom: 2rem;
-    border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+    justify-content: space-around;
+    align-items: stretch;
+    gap: 0;
+    padding: 0;
+    margin-bottom: 0;
+    border-top: 1px solid rgba(59, 130, 246, 0.2);
     width: 100%;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    z-index: 1000;
+    background-color: rgba(15, 23, 42, 0.9);
+    backdrop-filter: blur(10px);
 }
 
 .nav-link {
@@ -13,27 +32,24 @@
     text-decoration: none;
     font-weight: 700;
     color: #94a3b8;
-    /* Gris claro */
-    transition: color 0.3s, text-shadow 0.3s;
+    transition: all 0.3s;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-right: 1px solid rgba(59, 130, 246, 0.2);
+    padding: 1rem 0;
+    flex: 1;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-link:last-child {
+    border-right: none;
 }
 
 .nav-link:hover {
     color: var(--accent);
-    /* Azul Neón */
-    text-shadow: 0 0 5px rgba(59, 130, 246, 0.8);
-}
-
-:root {
-    --bg-color: #0f172a;
-    --card-bg: rgba(30, 41, 59, 0.7);
-    --accent: #3b82f6;
-    /* Azul eléctrico */
-    --accent-hover: #2563eb;
-    --text-main: #f1f5f9;
-    --text-muted: #94a3b8;
-    --danger: #ef4444;
-    --success: #10b981;
-    --glow: 0 0 15px rgba(59, 130, 246, 0.5);
+    background-color: rgba(59, 130, 246, 0.15);
 }
 
 * {
@@ -45,6 +61,7 @@ body {
     font-family: 'Montserrat', sans-serif;
     margin: 0;
     padding: 1rem;
+    padding-bottom: 100px;
     background-color: var(--bg-color);
     background-image:
         radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.15) 0%, transparent 20%),
@@ -60,23 +77,14 @@ h2 {
     text-transform: uppercase;
     letter-spacing: 2px;
     margin-bottom: 2rem;
-
-    /* CAMBIO CLAVE: Degradado de Blanco Puro a Azul Hielo muy claro */
     background: linear-gradient(180deg, #ffffff 20%, #bae6fd 100%);
-
-    /* Esto recorta el fondo con la forma del texto */
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     color: transparent;
-    /* Fallback */
-
-    /* TRUCO PARA IPHONE: Usar filter drop-shadow en lugar de text-shadow */
-    /* Esto crea un resplandor detrás del texto transparente */
     filter: drop-shadow(0 0 5px rgba(59, 130, 246, 0.6)) drop-shadow(0 4px 4px rgba(0, 0, 0, 0.5));
 }
 
-/* Layout Containers */
 .container {
     max-width: 900px;
     margin: 0 auto;
@@ -150,7 +158,6 @@ small {
     font-size: 0.8rem;
 }
 
-/* Buttons */
 .btn-group {
     display: flex;
     gap: 1rem;
@@ -209,7 +216,6 @@ button:active {
     background: rgba(239, 68, 68, 0.3);
 }
 
-/* Results Grid */
 .grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -264,10 +270,8 @@ button:active {
     text-align: center;
 }
 
-/* Slot Machine Window */
 .kart-slot {
     height: 60px;
-    /* Altura visible */
     width: 100%;
     background: #000;
     border-radius: 6px;
@@ -279,7 +283,6 @@ button:active {
     box-shadow: inset 0 0 10px #000;
 }
 
-/* Gradiente de sombra interna para efecto 3D */
 .kart-slot::after {
     content: "";
     position: absolute;
@@ -298,7 +301,6 @@ button:active {
 
 .kart-list div {
     height: 60px;
-    /* Debe coincidir con .kart-slot */
     line-height: 60px;
     font-family: 'Russo One', sans-serif;
     font-size: 1.8rem;
@@ -323,7 +325,6 @@ button:active {
     animation: fadeUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
-/* Mobile Responsive */
 @media (max-width: 600px) {
     body {
         padding: 1rem;

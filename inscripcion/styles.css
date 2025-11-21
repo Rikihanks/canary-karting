@@ -6,20 +6,21 @@
     --neon-glow: 0 0 10px rgba(59, 130, 246, 0.7);
 }
 
-* {
-    box-sizing: border-box;
-}
-
-/* Estilos de Navegación */
 .navbar {
     display: flex;
-    justify-content: center;
-    gap: 2rem;
-    padding: 1rem 0;
-    margin-bottom: 2rem;
-    border-bottom: 1px solid rgba(59, 130, 246, 0.2);
-    /* AHORA OCUPA TODO EL ANCHO DISPONIBLE */
+    justify-content: space-around;
+    align-items: stretch;
+    gap: 0;
+    padding: 0;
+    margin-bottom: 0;
+    border-top: 1px solid rgba(59, 130, 246, 0.2);
     width: 100%;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    z-index: 1000;
+    background-color: rgba(15, 23, 42, 0.9);
+    backdrop-filter: blur(10px);
 }
 
 .nav-link {
@@ -27,15 +28,30 @@
     text-decoration: none;
     font-weight: 700;
     color: #94a3b8;
-    transition: color 0.3s, text-shadow 0.3s;
+    transition: all 0.3s;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-right: 1px solid rgba(59, 130, 246, 0.2);
+    padding: 1rem 0;
+    flex: 1;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-link:last-child {
+    border-right: none;
 }
 
 .nav-link:hover {
     color: var(--accent);
-    text-shadow: 0 0 5px rgba(59, 130, 246, 0.8);
+    background-color: rgba(59, 130, 246, 0.15);
 }
 
-/* --- ESTILOS BASE Y FONDO --- */
+* {
+    box-sizing: border-box;
+}
+
 body {
     font-family: 'Montserrat', sans-serif;
     background-color: var(--bg-color);
@@ -45,26 +61,21 @@ body {
     color: var(--text-main);
     margin: 0;
     padding: 1rem;
+    padding-bottom: 100px;
     min-height: 100vh;
-
-    /* CONFIGURADO PARA APILAR NAV y MAIN-WRAPPER */
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
-/* --- NUEVO ENVOLTORIO PARA ALINEACIÓN --- */
 .main-wrapper {
-    /* Se mantiene para centrar el contenido y ocupar el ancho del body */
     display: flex;
     flex-direction: column;
     align-items: center;
     width: 110%;
 }
 
-/* --- ESTILOS DEL CONTENEDOR (CARD) --- */
 .container {
-    /* CAMBIO: Aumento el ancho máximo para que ocupe más espacio */
     max-width: 800px;
     width: 90%;
     background: var(--card-bg);
@@ -113,7 +124,6 @@ label {
     color: #94a3b8;
 }
 
-/* Estilos de Input/Select */
 input[type="text"],
 input[type="email"],
 input[type="tel"],
@@ -136,7 +146,6 @@ select:focus {
     box-shadow: var(--neon-glow);
 }
 
-/* Estilo para el Enlace del PDF */
 .neon-link {
     display: block;
     text-align: center;
@@ -161,7 +170,6 @@ select:focus {
     margin-right: 8px;
 }
 
-/* Estilos del Botón */
 button {
     width: 100%;
     padding: 15px;
@@ -185,7 +193,6 @@ button:disabled {
     cursor: not-allowed;
 }
 
-/* Mensajes de feedback */
 #form-message {
     text-align: center;
     margin-top: 1.5rem;

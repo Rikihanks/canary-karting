@@ -19,10 +19,14 @@
 </head>
 
 <body>
+    <!-- Pull to Refresh Indicator -->
+    <div id="refresh-indicator">
+        <i class="fa-solid fa-arrow-down pull-icon"></i>
+    </div>
     <nav class="navbar">
-        <a href="./" class="nav-link">🏆 Clasificación</a>
-        <a href="./inscripcion/" class="nav-link">📝 Preinscripción</a>
-        <a href="./sorteo/" class="nav-link">🏎️ Sorteo</a>
+        <a href="./" class="nav-link">🏆 <br> Clasificación</a>
+        <a href="./inscripcion/" class="nav-link">📝 <br> Preinscripción</a>
+        <a href="./sorteo/" class="nav-link">🏎️ <br> Sorteo</a>
     </nav>
     <div class="container">
         <h1><i class="fa-solid fa-trophy"></i> Clasificación</h1>
@@ -76,11 +80,12 @@
             const podiumContainer = document.getElementById('podium-container');
             const listContainer = document.getElementById('list-container');
 
+            listContainer.innerHTML = '';
             listContainer.innerHTML = '<div style="text-align:center; color:#94a3b8;"><i class="fa-solid fa-spinner fa-spin"></i> Cargando datos del campeonato...</div>';
 
             try {
                 // Usamos la nueva función con reintentos
-                const response = await fetchWithRetry(GOOGLE_CSV_LINK);
+                const response = await fetchWithRetry(SHEET_URL);
 
                 // El resto sigue igual que tu versión anterior (manejo de CSV)
                 const data = await response.text();
@@ -205,6 +210,72 @@
             });
         }
         // ==========================================
+        // ==========================================
+        // 🔄 PULL TO REFRESH LOGIC
+        // ==========================================
+        let touchStartY = 0;
+        let currentY = 0;
+        let isPulling = false;
+        const threshold = 150; // Distancia para activar el refresh
+        const indicator = document.getElementById('refresh-indicator');
+        const pullIcon = indicator.querySelector('.pull-icon');
+
+        window.addEventListener('touchstart', (e) => {
+            if (window.scrollY === 0) {
+                touchStartY = e.touches[0].clientY;
+                isPulling = true;
+            }
+        }, { passive: true });
+
+        window.addEventListener('touchmove', (e) => {
+            if (!isPulling) return;
+
+            const touchY = e.touches[0].clientY;
+            const diff = touchY - touchStartY;
+
+            if (diff > 0 && window.scrollY === 0) {
+                // Evitar el comportamiento por defecto solo si estamos arrastrando
+                if (diff < threshold + 50) { // Límite visual
+                    indicator.style.top = `${diff / 2 - 60}px`; // Resistencia
+                    pullIcon.style.transform = `rotate(${diff}deg)`;
+                }
+
+                if (diff > threshold) {
+                    pullIcon.classList.replace('fa-arrow-down', 'fa-rotate-right');
+                } else {
+                    pullIcon.classList.replace('fa-rotate-right', 'fa-arrow-down');
+                }
+            } else {
+                isPulling = false;
+                indicator.style.top = '-60px';
+            }
+        }, { passive: true });
+
+        window.addEventListener('touchend', async () => {
+            if (!isPulling) return;
+            isPulling = false;
+
+            const topValue = parseInt(indicator.style.top || '-60');
+
+            if (topValue > 10) { // Si se ha bajado suficiente
+                indicator.style.top = '20px';
+                pullIcon.style.display = 'none';
+
+                // Recargar datos
+                await fetchLeaderboardData();
+
+                // Ocultar después de un momento
+                setTimeout(() => {
+                    indicator.style.top = '-60px';
+                    setTimeout(() => {
+                        pullIcon.style.display = 'block';
+                        pullIcon.classList.replace('fa-rotate-right', 'fa-arrow-down');
+                    }, 300);
+                }, 1000);
+            } else {
+                indicator.style.top = '-60px';
+            }
+        });
     </script>
 
 </body>
