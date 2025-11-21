@@ -38,11 +38,39 @@
         // ==========================================
         // ⚙️ CONFIGURACIÓN
         // ==========================================
+
+        const GOOGLE_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTlPsGq-SypD4WPitvnR7JcluA8_6-5ePtuzyf5zFGJ31eppN55iUIHsKo0oduOZ9AVyVTf6VkPvTyu/pub?output=csv";
+
         // Se han usado comillas invertidas (\`) para evitar cualquier problema de caracteres.
-        const SHEET_URL = `https://script.google.com/macros/s/AKfycbzncwITyoZ45XEf4bVf_2dctYAaMO6eaL-aaRt5EhiDpBeS0BjqSXaG0gimgItWF4spfw/exec`;
+        const SHEET_URL = `https://api.allorigins.win/raw?url=${encodeURIComponent(GOOGLE_CSV_LINK)}`;
         // ==========================================
         // 🚀 LÓGICA DE CARGA DE DATOS
         // ==========================================
+
+
+        async function fetchWithRetry(url, maxRetries = 3) {
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    console.log(`Intentando cargar datos (Intento ${i + 1}/${maxRetries})...`);
+                    const response = await fetch(url);
+
+                    // Si la respuesta es OK (código 200), la devolvemos inmediatamente
+                    if (response.ok) {
+                        console.log('Carga de datos exitosa.');
+                        return response;
+                    }
+                } catch (error) {
+                    console.warn(`Fallo en el intento ${i + 1}. Error: ${error.message}`);
+                    // Si no es el último intento, esperamos y reintentamos
+                    if (i < maxRetries - 1) {
+                        const waitTime = 1000 * (i + 1); // Espera 1s, luego 2s...
+                        await new Promise(resolve => setTimeout(resolve, waitTime));
+                    }
+                }
+            }
+            // Si el bucle termina, significa que todos los intentos fallaron
+            throw new Error("Fallo al obtener los datos después de todos los reintentos.");
+        }
 
         async function fetchLeaderboardData() {
             const podiumContainer = document.getElementById('podium-container');
@@ -51,13 +79,19 @@
             listContainer.innerHTML = '<div style="text-align:center; color:#94a3b8;"><i class="fa-solid fa-spinner fa-spin"></i> Cargando datos del campeonato...</div>';
 
             try {
-                const response = await fetch(SHEET_URL);
-                const drivers = await response.json();
+                // Usamos la nueva función con reintentos
+                const response = await fetchWithRetry(GOOGLE_CSV_LINK);
+
+                // El resto sigue igual que tu versión anterior (manejo de CSV)
+                const data = await response.text();
+
+                const drivers = parseCSV(data);
+
                 renderLeaderboard(drivers);
 
             } catch (error) {
                 console.error("Error al cargar el Google Sheet:", error);
-                listContainer.innerHTML = '<div style="text-align:center; color:#ef4444;">Error al cargar los datos. Recarga la app.</div>';
+                listContainer.innerHTML = `<div style="text-align:center; color:#ef4444;">Error al obtener los datos de la clasificación, recarga la web.</div>`;
             }
         }
 
