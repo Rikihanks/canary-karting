@@ -6,6 +6,17 @@
     --gold: #fbbf24;
     --silver: #94a3b8;
     --bronze: #d97706;
+    /* Estas variables CSS se definen automáticamente en iOS para contener los valores de los insets */
+    --sab: constant(safe-area-inset-bottom);
+    --sal: constant(safe-area-inset-left);
+    --sar: constant(safe-area-inset-right);
+    --sat: constant(safe-area-inset-top);
+
+    /* Fallback para la notación moderna (usada por la mayoría de los navegadores actuales) */
+    --sab: env(safe-area-inset-bottom);
+    --sal: env(safe-area-inset-left);
+    --sar: env(safe-area-inset-right);
+    --sat: env(safe-area-inset-top);
 }
 
 .navbar {
@@ -14,7 +25,16 @@
     justify-content: space-around;
     align-items: stretch;
     gap: 0;
-    padding: 0;
+    padding-top: calc(10px + var(--sat));
+    /* 10px es tu padding original, sumado al insets */
+
+    /* 2. Añade padding a los lados para respetar los bordes curvos (necesario si la barra va al fondo, 
+          pero buena práctica en general) */
+    padding-left: var(--sal);
+    padding-right: var(--sar);
+
+    /* 3. Ajusta el padding-bottom (si aplica), para que tu padding original de 10px sea el inferior */
+    padding-bottom: 10px;
     margin-bottom: 0;
     border-top: 1px solid rgba(59, 130, 246, 0.2);
     width: 100%;
