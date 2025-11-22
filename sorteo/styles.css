@@ -11,6 +11,7 @@
 }
 
 .navbar {
+    height: 60px;
     display: flex;
     justify-content: space-around;
     align-items: stretch;
@@ -88,6 +89,7 @@ h2 {
 .container {
     max-width: 900px;
     margin: 0 auto;
+    padding-bottom: 4rem;
 }
 
 .panel {

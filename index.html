@@ -29,7 +29,7 @@
         <a href="./sorteo/" class="nav-link">🏎️ <br> Sorteo</a>
     </nav>
     <div class="container">
-        <h1><i class="fa-solid fa-trophy"></i> Clasificación</h1>
+        <h2 style="text-align: center;"><i class="fa-solid fa-trophy"></i> Clasificación</h2>
 
         <div id="podium-container" class="podium"></div>
 
@@ -46,7 +46,7 @@
         const GOOGLE_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTlPsGq-SypD4WPitvnR7JcluA8_6-5ePtuzyf5zFGJ31eppN55iUIHsKo0oduOZ9AVyVTf6VkPvTyu/pub?output=csv";
 
         // Se han usado comillas invertidas (\`) para evitar cualquier problema de caracteres.
-        const SHEET_URL = `https://api.allorigins.win/raw?url=${encodeURIComponent(GOOGLE_CSV_LINK)}`;
+        const SHEET_URL = `https://corsproxy.io/?url=${encodeURIComponent(GOOGLE_CSV_LINK)}`;
         // ==========================================
         // 🚀 LÓGICA DE CARGA DE DATOS
         // ==========================================
@@ -116,7 +116,11 @@
                         name: parts[0].trim(),
                         team: parts[1].trim(),
                         points: parseInt(parts[2].trim()) || 0,
-                        photo: parts[3] ? parts[3].trim() : "https://www.w3schools.com/howto/img_avatar.png"
+                        photo: parts[3] ? parts[3].trim() : "https://www.w3schools.com/howto/img_avatar.png",
+                        podiums: parseInt(parts[4].trim()) || 0,
+                        poles: parseInt(parts[5].trim()) || 0,
+                        best_lap: parts[6].trim(),
+                        wins: parseInt(parts[7].trim()) || 0,
                     });
                 }
             }
@@ -148,22 +152,24 @@
             top3.forEach((driver, index) => {
                 const rank = index + 1;
                 let crownIcon = '';
-                if (rank === 1) crownIcon = '<i class="fa-solid fa-medal crown" style="color: gold;"></i>';
-                if (rank === 2) crownIcon = '<i class="fa-solid fa-medal crown" style="color: silver;"></i>';
-                if (rank === 3) crownIcon = '<i class="fa-solid fa-medal crown" style="color: bronze;"></i>';
+                if (rank === 1) crownIcon = '<i class="fa-solid fa-medal crown"></i>';
+                if (rank === 2) crownIcon = '<i class="fa-solid fa-medal crown"></i>';
+                if (rank === 3) crownIcon = '<i class="fa-solid fa-medal crown"></i>';
 
                 const driverNameUrl = encodeURIComponent(driver.name);
                 // Usando Template Literals para la inyección de HTML con ${}
                 podiumHTML += `
-                    <div class="podium-card rank-${rank}">
-                    ${crownIcon}
-                        <img src="${driver.photo}" alt="${driver.name}" class="avatar">
-                        <div class="podium-content">
-                        <div class="p-name">${driver.name}</div>
-                        <div class="p-team">${driver.team}</div>
-                        <div class="p-points">${driver.points} PTS</div>
+                    <a href="./profile/index.html?driver=${driverNameUrl}" class="podium-card-link">
+                    <div class="list-item rank-${rank}">
+                        ${crownIcon}
+                        <img src="${driver.photo}" alt="${driver.name}" class="mini-avatar">
+                        <div class="info">
+                        <div class="l-name">${driver.name}</div>
+                        <div class="l-team">${driver.team}</div>
                         </div>
+                        <div class="l-points">${driver.points} <span>PTS</span></div>
                     </div>
+                    </a>
                 `;
             });
             podiumContainer.innerHTML = podiumHTML;
@@ -192,8 +198,21 @@
             listContainer.innerHTML = listHTML;
         }
 
+        function askforPwaInstall() {
+            const isStandalone =
+                window.matchMedia("(display-mode: standalone)").matches ||
+                window.navigator.standalone;
+
+            const shown = localStorage.getItem("installHintShown");
+
+            if (!isStandalone && !shown) {
+                alert("Para instalar la app:\n1. Pulsa Compartir.\n2. 'Añadir a pantalla de inicio'.");
+                localStorage.setItem("installHintShown", "1");
+            }
+        }
         // Iniciar carga al abrir la web
         document.addEventListener('DOMContentLoaded', fetchLeaderboardData);
+        document.addEventListener('DOMContentLoaded', askforPwaInstall);
 
         // ==========================================
         // 🌐 REGISTRO DEL SERVICE WORKER (PWA)
