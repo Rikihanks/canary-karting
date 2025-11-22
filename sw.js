@@ -1,16 +1,13 @@
+const CACHE_VERSION = 'v1.0';
 const CACHE_NAME = 'clasificacion-ck-cache-v1';
 const urlsToCache = [
   './manifest.json',
-  'https://img.icons8.com/ios-filled/50/trophy.png',
-  'https://img.icons8.com/ios-filled/512/trophy.png',
-  // Fuentes y CSS externos usados en el index.html
   'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Russo+One&display=swap',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css'
-  // IMPORTANTE: NO cacheamos la URL de los datos CSV ya que deben estar siempre frescos.
 ];
 
-// 1. Instalar el Service Worker y cachear recursos estáticos
 self.addEventListener('install', event => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
