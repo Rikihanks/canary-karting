@@ -1,39 +1,45 @@
+/* ==========================================
+   ESTILOS GENERALES Y FUENTES
+   ========================================== */
 :root {
-    --bg-color: #0f172a;
-    --card-bg: rgba(30, 41, 59, 0.6);
-    --text-main: #f1f5f9;
-    --accent: #3b82f6;
-    --gold: #fbbf24;
-    --silver: #94a3b8;
-    --bronze: #d97706;
+    --color-dark: #0f172a;
+    /* Fondo muy oscuro (Slate 900) */
+    --color-medium: #1e293b;
+    /* Fondo medio de tarjetas (Slate 800) */
+    --color-text: #e2e8f0;
+    /* Texto principal claro */
+    --color-accent: #3b82f6;
+    /* Azul de acento (para enlaces/iconos) */
+    --color-secondary-accent: #fcd34d;
+    /* Amarillo/Oro para destacar */
+    --color-success: #10b981;
+    /* Verde */
+    --color-error: #ef4444;
+    /* Rojo */
 }
 
 * {
     box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
-/* --- Estilos Globales y Fondo --- */
 body {
     font-family: 'Montserrat', sans-serif;
-    margin: 0;
-    padding: 1rem;
-    padding-bottom: 100px;
-    background-color: var(--bg-color);
-    background-image:
-        radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.15) 0%, transparent 20%),
-        radial-gradient(circle at 90% 80%, rgba(239, 68, 68, 0.15) 0%, transparent 20%);
-    color: var(--text-main);
+    background-color: var(--color-dark);
+    color: var(--color-text);
     min-height: 100vh;
 }
 
-/* --- Estilos del Contenedor --- */
 .container {
-    max-width: 600px;
+    max-width: 90%;
     margin: 0 auto;
-    text-align: center;
+    padding: 20px 0;
 }
 
-/* --- Navbar --- */
+/* ==========================================
+   NAVBAR
+   ========================================== */
 .navbar {
     height: 65px;
     display: flex;
@@ -77,120 +83,258 @@ body {
     background-color: rgba(59, 130, 246, 0.15);
 }
 
-/* --- Card del Perfil --- */
+/* ==========================================
+   PERFIL DEL PILOTO
+   ========================================== */
 .profile-card {
-    background: var(--card-bg);
-    backdrop-filter: blur(10px);
-    border-radius: 20px;
-    padding: 2rem;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: var(--color-medium);
+    border-radius: 12px;
+    padding: 25px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
 }
 
 .avatar-lg {
-    width: 150px;
-    height: 150px;
+    width: 120px;
+    height: 120px;
     border-radius: 50%;
+    background-color: #334155;
+    /* Gris para el icono de placeholder */
+    border: 5px solid var(--color-accent);
     object-fit: cover;
-    margin-bottom: 1.5rem;
-    border: 5px solid var(--accent);
-    box-shadow: 0 0 15px rgba(59, 130, 246, 0.8);
+    margin-bottom: 15px;
 }
 
 .name-lg {
     font-family: 'Russo One', sans-serif;
-    font-size: 2.5rem;
-    margin-bottom: 0.5rem;
-    color: var(--text-main);
+    font-size: 1.8em;
+    color: var(--color-text);
+    margin-bottom: 5px;
 }
 
 .team-lg {
-    font-size: 1rem;
+    font-size: 1em;
+    font-weight: 600;
     color: #94a3b8;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+    /* Gris claro para el equipo */
+    margin-bottom: 5px;
 }
 
-.points-box {
-    background: #1e293b;
-    padding: 1rem;
-    border-radius: 12px;
-    margin-top: 2rem;
-    border: 1px solid rgba(59, 130, 246, 0.3);
-    box-shadow: inset 0 0 10px rgba(59, 130, 246, 0.2);
+.division-lg {
+    font-size: 0.9em;
+    font-weight: 400;
+    color: var(--color-accent);
+    margin-bottom: 20px;
 }
 
-.points-box h2 {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 1rem;
-    color: var(--accent);
-    margin: 0;
-    text-transform: uppercase;
+.division-icon {
+    margin-right: 5px;
 }
 
-.points-lg {
-    font-family: 'Russo One', sans-serif;
-    font-size: 3.5rem;
-    margin: 0.5rem 0 0;
-    color: var(--gold);
-    text-shadow: 0 0 10px var(--gold);
-}
-
-/* --- Stats Grid --- */
+/* --- GRID DE ESTADÍSTICAS (VICTORIAS, PODIOS, etc.) --- */
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
-    margin-top: 2rem;
+    gap: 15px;
+    width: 100%;
+    margin: 20px 0;
 }
 
 .stat-item {
-    background: rgba(15, 23, 42, 0.5);
-    padding: 1rem;
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background-color: var(--color-dark);
+    border-radius: 8px;
+    padding: 15px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    border: 2px solid var(--color-dark);
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.stat-item.active {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
 }
 
 .stat-icon {
-    font-size: 1.5rem;
-    margin-bottom: 0.5rem;
-    color: var(--silver);
+    font-size: 1.5em;
+    color: var(--color-accent);
+    margin-bottom: 5px;
 }
 
 .stat-value {
     font-family: 'Russo One', sans-serif;
-    font-size: 1.5rem;
-    color: var(--text-main);
+    font-size: 1.8em;
+    line-height: 1;
+    color: var(--color-secondary-accent);
 }
 
 .stat-label {
-    font-size: 0.8rem;
+    font-size: 0.7em;
+    font-weight: 600;
     color: #94a3b8;
     text-transform: uppercase;
-    margin-top: 0.2rem;
 }
 
-.stat-item.wins .stat-icon {
-    color: var(--gold);
+/* --- PUNTOS TOTALES --- */
+.points-box {
+    width: 100%;
+    background-color: var(--color-dark);
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 20px;
+    border: 1px solid #334155;
 }
 
-.stat-item.podiums .stat-icon {
-    color: var(--silver);
+.points-box h2 {
+    font-size: 0.8em;
+    font-weight: 800;
+    color: var(--color-accent);
+    margin-bottom: 5px;
 }
 
-.stat-item.poles .stat-icon {
-    color: #a855f7;
-    /* Purple for poles */
+.points-lg {
+    font-family: 'Russo One', sans-serif;
+    font-size: 3.5em;
+    line-height: 1;
+    color: var(--color-secondary-accent);
+    text-shadow: 0 0 15px rgba(252, 211, 77, 0.5);
 }
 
-.stat-item.best-lap .stat-icon {
-    color: #ef4444;
-    /* Red for fast lap */
+.event-list {
+    list-style: none;
+    padding: 0;
+}
+
+.event-item {
+    border-bottom: 1px solid #334155;
+    padding: 10px 0;
+}
+
+.event-header {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 600;
+    color: #93c5fd;
+    margin-bottom: 5px;
+    font-size: 1em;
+}
+
+.event-points {
+    font-size: small;
+    color: #9728c5;
+}
+
+.event-body p {
+    margin: 3px 0;
+    font-size: 0.9em;
+    color: #e2e8f0;
+}
+
+.event-detail-empty {
+    color: #94a3b8;
+    text-align: center;
+    padding: 10px 0;
+}
+
+.best-lap-overall {
+    border-left: 5px solid #9728c5;
+    /* Naranja/Ámbar para destacar */
+    background-color: #2c3a50;
+    /* Un poco más oscuro para mayor contraste */
+    padding: 5px;
+}
+
+
+/* ==========================================
+   ESTILOS DE LA MODAL
+   ========================================== */
+.modal {
+    /* Oculto por defecto */
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    /* Asegura que esté por encima de todo */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.8);
+    /* Fondo oscuro semitransparente */
+    backdrop-filter: blur(5px);
+    /* Efecto moderno de desenfoque */
+}
+
+.modal-content {
+    background-color: var(--color-medium);
+    /* Fondo de la tarjeta interna */
+    margin: 10% auto;
+    /* 10% desde arriba y centrado */
+    padding: 20px;
+    border: 1px solid var(--color-accent);
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    /* Ancho máximo en escritorio */
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.7);
+    animation-name: animatetop;
+    animation-duration: 0.4s
+}
+
+/* Animación de entrada simple */
+@keyframes animatetop {
+    from {
+        top: -300px;
+        opacity: 0
+    }
+
+    to {
+        top: 0;
+        opacity: 1
+    }
+}
+
+.close-button {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: var(--color-error);
+    text-decoration: none;
+}
+
+.modal-content h3 {
+    font-family: 'Russo One', sans-serif;
+    color: var(--color-accent);
+    margin-bottom: 15px;
+    border-bottom: 2px solid #334155;
+    padding-bottom: 5px;
+}
+
+/* Asegurar que los botones interactivos usen la clase correcta */
+.stat-item.toggle-modal {
+    cursor: pointer;
+}
+
+/* Responsive (Tablet/Desktop) */
+@media (min-width: 768px) {
+    .container {
+        max-width: 600px;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+    }
 }
