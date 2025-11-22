@@ -1,5 +1,5 @@
-const CACHE_VERSION = 'v1.3';
-const CACHE_NAME = 'clasificacion-ck-cache-v1.3';
+const CACHE_VERSION = 'v1.4';
+const CACHE_NAME = 'clasificacion-ck-cache-v1.4';
 const urlsToCache = [
   './manifest.json',
   'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Russo+One&display=swap',
