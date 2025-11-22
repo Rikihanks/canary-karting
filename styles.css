@@ -166,15 +166,15 @@ h1 {
 }
 
 .rank-1 {
-    animation: glowPulseGold 2s infinite alternate ease-in-out;
+    animation: glowPulseGold 1.3s infinite alternate ease-in-out;
 }
 
 .rank-2 {
-    animation: glowPulseSilver 2s infinite alternate ease-in-out;
+    animation: glowPulseSilver 1.3s infinite alternate ease-in-out;
 }
 
 .rank-3 {
-    animation: glowPulseBronze 2s infinite alternate ease-in-out;
+    animation: glowPulseBronze 1.3s infinite alternate ease-in-out;
 }
 
 .crown {
