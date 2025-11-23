@@ -41,12 +41,21 @@ body {
    NAVBAR
    ========================================== */
 .navbar {
-    height: 65px;
+    height: 75px;
     display: flex;
     justify-content: space-around;
     align-items: stretch;
     gap: 0;
-    padding: 0;
+    padding-top: calc(10px + var(--sat));
+    /* 10px es tu padding original, sumado al insets */
+
+    /* 2. Añade padding a los lados para respetar los bordes curvos (necesario si la barra va al fondo, 
+          pero buena práctica en general) */
+    padding-left: var(--sal);
+    padding-right: var(--sar);
+
+    /* 3. Ajusta el padding-bottom (si aplica), para que tu padding original de 10px sea el inferior */
+    padding-bottom: 10px;
     margin-bottom: 0;
     border-top: 1px solid rgba(59, 130, 246, 0.2);
     width: 100%;
@@ -59,14 +68,14 @@ body {
 }
 
 .nav-link {
+    font-size: 0.8rem;
     font-family: 'Montserrat', sans-serif;
     text-decoration: none;
     font-weight: 700;
     color: #94a3b8;
     transition: all 0.3s;
-    background-color: rgba(255, 255, 255, 0.05);
     border-right: 1px solid rgba(59, 130, 246, 0.2);
-    padding-bottom: 0.3rem;
+    padding-bottom: 0.4rem;
     flex: 1;
     text-align: center;
     display: flex;

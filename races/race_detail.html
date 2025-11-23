@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Detalle de Carrera | CK</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Russo+One&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="./styles_carreras.css">
+</head>
+
+<body>
+    <nav class="navbar">
+        <a href="../" class="nav-link">🏆 <br> Clasificación</a>
+        <a href="../sorteo/" class="nav-link">🏎️ <br> Sorteo</a>
+        <a href="../races/" class="nav-link">🏎️ <br> Carreras</a>
+        <a href="../inscripcion/" class="nav-link">📝 <br> Preinscripción</a>
+    </nav>
+
+    <div class="container">
+        <h1 id="race-title" style="text-align: center;">Detalles del Evento</h1>
+        <div id="race-info"></div>
+
+        <div id="loading-spinner" class="loading-message">
+            <i class="fa-solid fa-spinner fa-spin"></i> Cargando resultados...
+        </div>
+
+        <section id="clasificacion-section" style="display:none;">
+            <h2>⏱️ Qualy</h2>
+            <div id="clasificacion-table" class="results-table-container"></div>
+        </section>
+
+        <section id="resultado-section" style="display:none;">
+            <h2>🏁 Resultado Final</h2>
+            <div id="resultado-table" class="results-table-container"></div>
+        </section>
+
+        <div id="error-message" class="error-message" style="display:none;"></div>
+    </div>
+
+    <script>
+        // ==========================================
+        // ⚙️ CONFIGURACIÓN DE URLS (🚨 REEMPLAZAR ESTAS 2 URLS)
+        // ==========================================
+
+        const CLASI_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTq8sBXfzKkBmGEUxaqB57exxTbF_0yYsHVaRsQ2F7HzCXoMVK8zW8630R4vtSvRn590pj-N65vFQek/pub?gid=25895170&single=true&output=csv";
+        const RESULT_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTq8sBXfzKkBmGEUxaqB57exxTbF_0yYsHVaRsQ2F7HzCXoMVK8zW8630R4vtSvRn590pj-N65vFQek/pub?gid=1225782575&single=true&output=csv";
+
+        const CLASI_URL = `https://corsproxy.io/?url=${encodeURIComponent(CLASI_CSV_LINK)}`;
+        const RESULT_URL = `https://corsproxy.io/?url=${encodeURIComponent(RESULT_CSV_LINK)}`;
+
+        // ==========================================
+        // 🚀 FUNCIONES DE UTILIDAD Y PARSEO
+        // ==========================================
+
+        async function fetchCSV(url) {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.text();
+        }
+
+        /**
+         * Parsea los CSVs de Clasificación/Resultado.
+         * Estructura esperada: PILOTO, POSICION, ID_CIRCUITO, FECHA
+         */
+        function parseResultsCSV(csvText) {
+            const lines = csvText.split('\n').filter(line => line.trim() !== '');
+            const results = [];
+
+            for (let i = 1; i < lines.length; i++) {
+                // Usamos la coma (,) como separador estándar.
+                const parts = lines[i].split(',');
+
+                if (parts.length >= 4) {
+                    results.push({
+                        piloto: parts[0] ? parts[0].trim() : 'Desconocido',
+                        posicion: parseInt(parts[1].trim()) || 99,
+                        id_circuito: parts[2] ? parts[2].trim() : '',
+                        fecha: parts[3] ? parts[3].trim() : '',
+                    });
+                }
+            }
+            return results;
+        }
+
+        // ==========================================
+        // 🏁 FILTRADO Y GENERACIÓN DE CONTENIDO
+        // ==========================================
+
+        function generateContentHTML(data, type) {
+            if (data.length === 0) {
+                return `<p class="empty-message">No hay datos de ${type} para esta carrera.</p>`;
+            }
+
+            // Ordenar por Posición (ascendente)
+            data.sort((a, b) => a.posicion - b.posicion);
+
+            let html = '<div class="grid-container">';
+            data.forEach(item => {
+                let posClass = item.posicion === 1 ? 'pos-1' : '';
+                // Aplica el estilo de podio para 2 y 3 solo en los resultados de carrera
+                if (type === 'resultados' && item.posicion > 1 && item.posicion <= 3) {
+                    posClass += ' pos-podium';
+                }
+
+                const encodedPilotName = encodeURIComponent(item.piloto);
+                const profileLink = `../profile/index.html?driver=${encodedPilotName}`;
+
+                html += `
+                <div class="grid-item ${posClass}" data-pos="${item.posicion}">
+                    <div class="grid-piloto-container">
+                        <span class="grid-pos">${item.posicion}.</span>
+                        <a href="${profileLink}" class="grid-piloto-link"> 
+                            <span class="grid-piloto">${item.piloto}</span>
+                        </a>
+                    </div>
+                </div>
+            `;
+            });
+            html += '</div>';
+            return html;
+        }
+
+        async function loadRaceDetails() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const id = urlParams.get('id');
+            const circuitName = urlParams.get('circuitName');
+            const date = urlParams.get('date');
+
+            const spinner = document.getElementById('loading-spinner');
+            const errorDiv = document.getElementById('error-message');
+
+            if (!id || !date) {
+                errorDiv.textContent = 'Error: Faltan parámetros de circuito o fecha.';
+                errorDiv.style.display = 'block';
+                spinner.style.display = 'none';
+                return;
+            }
+
+            try {
+                // 1. Cargar ambos CSVs simultáneamente
+                const [clasiData, resultData] = await Promise.all([
+                    fetchCSV(CLASI_URL),
+                    fetchCSV(RESULT_URL)
+                ]);
+
+                const allClasi = parseResultsCSV(clasiData);
+                const allResults = parseResultsCSV(resultData);
+                console.log(allClasi);
+                console.log(allResults);
+
+
+                // 2. Filtrar por ID y FECHA
+                const filteredClasi = allClasi.filter(
+                    r => r.id_circuito === id && r.fecha === date
+                );
+                const filteredResults = allResults.filter(
+                    r => r.id_circuito === id && r.fecha === date
+                );
+
+                // 3. Renderizar Título e Info (usando el nombre del circuito si estuviera disponible, o solo la fecha)
+                document.getElementById('race-title').textContent = `Resultados de la Carrera`;
+                document.getElementById('race-info').innerHTML = `<p class="race-info-date">Fecha: <strong>${date}</strong> <br> Circuito: ${circuitName}</p>`;
+
+
+                // 4. Renderizar Contenido (Usando la nueva función)
+                document.getElementById('clasificacion-table').innerHTML = generateContentHTML(filteredClasi, 'clasificacion');
+                document.getElementById('resultado-table').innerHTML = generateContentHTML(filteredResults, 'resultados');
+
+                document.getElementById('clasificacion-section').style.display = 'block';
+                document.getElementById('resultado-section').style.display = 'block';
+
+            } catch (error) {
+                console.error("Error al cargar o filtrar datos:", error);
+                errorDiv.textContent = 'Error al cargar los datos de la carrera. Verifica las URLs y el formato CSV.';
+                errorDiv.style.display = 'block';
+            } finally {
+                spinner.style.display = 'none';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadRaceDetails);
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Calendario de Carreras | CK</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Russo+One&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="./styles_carreras.css">
+</head>
+
+<body>
+    <nav class="navbar">
+        <a href="../" class="nav-link">🏆 <br> Clasificación</a>
+        <a href="../sorteo/" class="nav-link">🏎️ <br> Sorteo</a>
+        <a href="../races/" class="nav-link">🏎️ <br> Carreras</a>
+        <a href="../inscripcion/" class="nav-link">📝 <br> Preinscripción</a>
+    </nav>
+
+    <div class="container">
+        <h1>🏁 Calendario de Eventos</h1>
+        <div id="calendar-list">
+            <div class="loading-message"><i class="fa-solid fa-spinner fa-spin"></i> Cargando calendario...</div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // ⚙️ CONFIGURACIÓN DE URLS Y DATOS
+        // ==========================================
+
+        // **IMPORTANTE: REEMPLAZA ESTA URL CON TU ENLACE REAL DEL CALENDARIO**
+        const CALENDAR_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTq8sBXfzKkBmGEUxaqB57exxTbF_0yYsHVaRsQ2F7HzCXoMVK8zW8630R4vtSvRn590pj-N65vFQek/pub?output=csv";
+        const CALENDAR_URL = `https://corsproxy.io/?url=${encodeURIComponent(CALENDAR_CSV_LINK)}`;
+
+        // ==========================================
+        // 🚀 FUNCIONES DE UTILIDAD Y PARSEO
+        // ==========================================
+
+        async function fetchCSV(url) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.text();
+            } catch (error) {
+                console.error("Error al cargar el CSV:", error);
+                document.getElementById('calendar-list').innerHTML = '<div class="error-message">Error al cargar los datos.</div>';
+                return null;
+            }
+        }
+
+        /**
+         * Parsea el CSV del Calendario (ID_CIRCUITO, NOMBRE, FECHA).
+         * Utiliza '\t' como separador si los datos vienen con ese formato.
+         */
+        function parseCalendarCSV(csvText) {
+            const lines = csvText.split('\n').filter(line => line.trim() !== '');
+            const events = [];
+
+            for (let i = 1; i < lines.length; i++) {
+                // Usamos la coma (,) como separador estándar. Si usa tabulador, cámbialo a split('\t')
+                const parts = lines[i].split(',');
+
+                if (parts.length >= 3) {
+                    events.push({
+                        id_circuito: parts[0] ? parts[0].trim() : '',
+                        nombre: parts[1] ? parts[1].trim() : 'Carrera sin nombre',
+                        fecha: parts[2] ? parts[2].trim() : '',
+                    });
+                }
+            }
+            return events;
+        }
+
+        // ==========================================
+        // 🏁 RENDERIZADO Y LÓGICA DE CLIC
+        // ==========================================
+
+        function goToEventDetail(id_circuito, fecha, circuitName) {
+            // Codificamos los valores para pasarlos de forma segura por la URL
+            const encodedDate = encodeURIComponent(fecha);
+            const encodedCircuitName = encodeURIComponent(circuitName);
+            window.location.href = `race_detail.html?id=${id_circuito}&date=${encodedDate}&circuitName=${encodedCircuitName}`;
+        }
+
+        function renderCalendar(events) {
+            const listDiv = document.getElementById('calendar-list');
+
+            // Ordenar por fecha (esto requiere un parser de fechas más complejo, 
+            // por simplicidad se deja sin ordenar si la fecha es solo string)
+
+            if (events.length === 0) {
+                listDiv.innerHTML = '<p class="empty-message">No hay eventos programados.</p>';
+                return;
+            }
+
+            let html = `<ul class="event-list">`;
+            events.forEach(event => {
+                html += `
+                    <li class="event-item" 
+                        onclick="goToEventDetail('${event.id_circuito}', '${event.fecha}', '${event.nombre}')">
+                        
+                        <div class="event-info">
+                            <span class="event-date">${event.fecha}</span>
+                            <span class="event-name">${event.nombre}</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right event-icon"></i>
+                    </li>
+                `;
+            });
+            html += `</ul>`;
+            listDiv.innerHTML = html;
+        }
+
+        async function loadCalendar() {
+            const csvText = await fetchCSV(CALENDAR_URL);
+            if (csvText) {
+                const events = parseCalendarCSV(csvText);
+                renderCalendar(events);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadCalendar);
+    </script>
+
+</body>
+
+</html>
