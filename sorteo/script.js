@@ -104,7 +104,7 @@ function findPerfectMatching(nombres, karts, history) {
 function crearListaAnimada(karts, realKart) {
   const totalItems = 50; // Más items para que la animación dure más suavemente
   const list = [];
-  list.push(""); 
+  list.push("");
   for (let i = 0; i < totalItems - 2; i++) {
     // Añadir karts aleatorios decorativos
     const randomK = karts[Math.floor(Math.random() * karts.length)];
@@ -129,7 +129,7 @@ function sortear() {
     .filter(k => k);
   const { map: history, originals } = parseHistory();
   const grid = document.getElementById("grid");
-  
+
   // Limpiar grid
   grid.innerHTML = "";
   lastAssignments = [];
@@ -155,21 +155,21 @@ function sortear() {
         cannotAvoidFor.push(displayName);
       }
     });
-    
+
     let confirmMsg = "No ha sido posible encontrar una asignación perfecta sin repeticiones.";
     if (cannotAvoidFor.length > 0) {
       confirmMsg = `No hay suficientes karts distintos para evitar repetir con: ${cannotAvoidFor.join(", ")}. ¿Deseas continuar permitiendo repeticiones?`;
     } else {
       confirmMsg += " ¿Continuar?";
     }
-    
+
     if (!confirm(confirmMsg)) return;
   }
 
   let availableKarts = shuffle(karts.slice());
 
   // Tiempos de animación
-  const fadeUpDelayPerItem = 100; 
+  const fadeUpDelayPerItem = 100;
   const kartLists = [];
 
   nombres.forEach((nombre, i) => {
@@ -219,7 +219,7 @@ function sortear() {
 
     listaAnimada.forEach((kart) => {
       const item = document.createElement("div");
-      item.textContent = kart; 
+      item.textContent = kart;
       kartList.appendChild(item);
     });
 
@@ -233,8 +233,8 @@ function sortear() {
 
   // Scroll suave hacia resultados
   setTimeout(() => {
-      const gridTop = document.getElementById("grid").offsetTop;
-      window.scrollTo({ top: gridTop - 20, behavior: "smooth" });
+    const gridTop = document.getElementById("grid").offsetTop;
+    window.scrollTo({ top: gridTop - 20, behavior: "smooth" });
   }, 100);
 
   // Disparar animación de "Tragaperras"
@@ -242,14 +242,14 @@ function sortear() {
 
   setTimeout(() => {
     kartLists.forEach(({ card, kartList }, idx) => {
-      
+
       // Calcular la altura real del item basándonos en CSS
       const itemHeight = kartList.children[0]?.offsetHeight || 60;
       const itemsCount = kartList.children.length;
       const finalTop = -itemHeight * (itemsCount - 1);
 
       // Duración variable
-      const duration = 2500 + (Math.random() * 1000); 
+      const duration = 2500 + (Math.random() * 1000);
 
       kartList.animate(
         [
@@ -263,7 +263,7 @@ function sortear() {
           fill: "forwards"
         }
       ).onfinish = () => {
-          card.classList.add("name-up");
+        card.classList.add("name-up");
       };
     });
   }, delayAfterFade);
@@ -279,7 +279,7 @@ copyHistBtn.addEventListener('click', () => {
   // Añadir al final si ya existe texto
   const separator = currentHist.trim() ? '\n' : '';
   document.getElementById('historial').value = currentHist.trim() + separator + lines.join('\n');
-  
+
   const originalText = copyHistBtn.innerHTML;
   copyHistBtn.innerHTML = '<i class="fa-solid fa-check"></i> Copiado';
   setTimeout(() => copyHistBtn.innerHTML = originalText, 2000);
@@ -296,7 +296,7 @@ boton.addEventListener("click", () => {
   boton.disabled = true;
   boton.style.opacity = "0.7";
   boton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sorteando...';
-  
+
   try {
     sortear();
   } finally {
@@ -307,3 +307,54 @@ boton.addEventListener("click", () => {
     }, 3000);
   }
 });
+
+function toggleMenu() {
+  const toggleButton = document.querySelector('.menu-toggle');
+  const navMenu = document.getElementById('mobile-menu');
+
+  // Función para cerrar el menú
+  const closeMenu = () => {
+    navMenu.setAttribute('data-visible', 'false');
+    toggleButton.setAttribute('aria-expanded', 'false');
+    toggleButton.querySelector('i').className = 'fa-solid fa-bars';
+  };
+
+  // Función para abrir/cerrar al hacer clic en el botón de hamburguesa
+  const toggleMenu = () => {
+    const isVisible = navMenu.getAttribute('data-visible') === 'true';
+
+    navMenu.setAttribute('data-visible', String(!isVisible));
+    toggleButton.setAttribute('aria-expanded', String(!isVisible));
+
+    // Cambia el icono (de hamburguesa a X y viceversa)
+    toggleButton.querySelector('i').className = isVisible ? 'fa-solid fa-bars' : '';
+  };
+
+  if (toggleButton && navMenu) {
+    toggleButton.addEventListener('click', toggleMenu);
+
+    // 🆕 NUEVA LÓGICA: Cerrar al hacer clic fuera del menú o del botón
+    document.addEventListener('click', (event) => {
+      const isMenuVisible = navMenu.getAttribute('data-visible') === 'true';
+
+      // Si el menú NO está abierto, no hacemos nada.
+      if (!isMenuVisible) {
+        return;
+      }
+
+      // Si el clic NO fue dentro del botón de hamburguesa Y NO fue dentro del menú mismo:
+      if (!navMenu.contains(event.target) && !toggleButton.contains(event.target)) {
+        closeMenu();
+      }
+    });
+
+    // Opcional: Cerrar el menú si se hace clic en uno de los enlaces
+    // Esto asegura que el menú se oculte después de la navegación.
+    const navLinks = navMenu.querySelectorAll('.nav-link');
+    navLinks.forEach(link => {
+      link.addEventListener('click', closeMenu);
+    });
+  }
+}
+
+document.addEventListener('DOMContentLoaded', toggleMenu);
