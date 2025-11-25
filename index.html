@@ -369,10 +369,7 @@
                 });
                     if (currentToken) {
                         console.log('Token de FCM:', currentToken);
-                        // 🆕 OCULTAR EL BOTÓN TRAS EL ÉXITO
-                        if (button) {
-                            button.style.display = 'none';
-                        }
+                        localStorage.setItem('notifications_granted', 'true');
                         
                     } else {
                         console.log('No se pudo obtener el token. Asegúrate de que el Service Worker está registrado.');
@@ -390,12 +387,27 @@
         
         function setupNotificationButton(registration) {
             const button = document.getElementById('subscribe-button');
-            if (button) {
-                button.addEventListener('click', () => {
-                    // Solo llamar a requestPermission dentro del clic del usuario
-                    requestPermission(registration);
-                });
+            if (!button) return;
+
+            // 1. Comprobar si ya tenemos permiso de Notificación (API nativa)
+            const isAPIGranted = ('Notification' in window && Notification.permission === 'granted');
+            
+            // 🆕 PASO 2: COMPROBAR EN LOCALSTORAGE
+            const isLocalStorageGranted = localStorage.getItem('notifications_granted') === 'true';
+
+            const isGranted = isAPIGranted || isLocalStorageGranted;
+
+            if (isGranted) {
+                button.style.display = 'none'; // Ocultar si ya está concedido o marcado en LocalStorage
+                return; 
             }
+
+            // 2. Si no tenemos permiso, lo mostramos y añadimos el Listener
+            button.style.display = 'block';
+            
+            button.addEventListener('click', () => {
+                requestPermission(registration);
+            });
         }
         // ==========================================
         // 🚀 INICIALIZACIÓN FINAL
