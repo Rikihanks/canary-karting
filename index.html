@@ -81,6 +81,7 @@
         // Initialize Firebase
         const app = firebase.initializeApp(firebaseConfig);
         const messaging = firebase.messaging();
+        messaging.useServiceWorker(navigator.serviceWorker.getRegistration('./sw.js'));
         const GOOGLE_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTlPsGq-SypD4WPitvnR7JcluA8_6-5ePtuzyf5zFGJ31eppN55iUIHsKo0oduOZ9AVyVTf6VkPvTyu/pub?output=csv";
         // Se han usado comillas invertidas (\`) para evitar cualquier problema de caracteres.
         const SHEET_URL = `https://corsproxy.io/?url=${encodeURIComponent(GOOGLE_CSV_LINK)}`;
