@@ -3,13 +3,12 @@ importScripts('https://www.gstatic.com/firebasejs/9.6.1/firebase-messaging-compa
 
 const CACHE_VERSION = 'v1.5';
 const CACHE_NAME = 'clasificacion-ck-cache-v1.5';
-
 const firebaseConfig = {
   // Re-copia tu configuración de Firebase aquí (al menos los campos necesarios)
-  apiKey: "TU_API_KEY",
-  projectId: "TU-PROJECT-ID",
-  messagingSenderId: "TU_SENDER_ID",
-  appId: "TU_APP_ID"
+  apiKey: "AIzaSyAaz08Re-HOLnPYllQBSVq9hfIbfRKeV2Y",
+  projectId: "TU-canary-karting-ID",
+  messagingSenderId: "16614182534",
+  appId: "1:16614182534:web:b2221350da181d88a50b07"
 };
 
 const app = firebase.initializeApp(firebaseConfig);
