@@ -360,9 +360,10 @@
                 if (permission === 'granted') {
                     console.log('Permiso de notificación concedido.');
                     
-                    // Obtener el token de FCM para este dispositivo
-                    const currentToken = await messaging.getToken({ vapidKey: 'BFzGUPlVDGVhVbaSx1oGYIbLd-Et9ssAEFnHt6YtIKG5I4z-iiDUuYnN-cb1trF78RkgTU1IwKYdQ1rLU6pBu0s' }); 
-                    
+                 const currentToken = await messaging.getToken({ 
+                    vapidKey: 'BFzGUPlVDGVhVbaSx1oGYIbLd-Et9ssAEFnHt6YtIKG5I4z-iiDUuYnN-cb1trF78RkgTU1IwKYdQ1rLU6pBu0s', // He añadido el final de tu clave (Nov)
+                    serviceWorkerRegistration: registration // ⬅️ ¡Aquí está la referencia a sw.js!
+                });
                     if (currentToken) {
                         console.log('Token de FCM:', currentToken);
                         // ⚠️ PASO CRÍTICO: Guarda este token en tu base de datos (Firestore o donde lo necesites)
