@@ -18,8 +18,6 @@
     
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-messaging-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/12.6.0/firebase-analytics.js"></script>
 </head>
 
 <body>
@@ -81,7 +79,7 @@
         };
 
         // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
+        const app = firebase.initializeApp(firebaseConfig);
         const messaging = firebase.messaging();
         const GOOGLE_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTlPsGq-SypD4WPitvnR7JcluA8_6-5ePtuzyf5zFGJ31eppN55iUIHsKo0oduOZ9AVyVTf6VkPvTyu/pub?output=csv";
         // Se han usado comillas invertidas (\`) para evitar cualquier problema de caracteres.
@@ -354,7 +352,7 @@
         }
 
         // Solicitar permisos y obtener el token
-        async function requestPermission() {
+        async function requestPermission(messaging) {
             console.log('Solicitando permiso de notificación...');
             try {
                 const permission = await Notification.requestPermission();
@@ -363,7 +361,7 @@
                     console.log('Permiso de notificación concedido.');
                     
                     // Obtener el token de FCM para este dispositivo
-                    const currentToken = await messaging.getToken({ vapidKey: 'TU_CLAVE_VAPID_PUBLICA' }); 
+                    const currentToken = await messaging.getToken({ vapidKey: 'BFzGUPlVDGVhVbaSx1oGYIbLd-Et9ssAEFnHt6YtIKG5I4z-iiDUuYnN-cb1trF78RkgTU1IwKYdQ1rLU6pBu0s' }); 
                     
                     if (currentToken) {
                         console.log('Token de FCM:', currentToken);
@@ -390,7 +388,7 @@
         document.addEventListener('DOMContentLoaded', askforPwaInstall);
         document.addEventListener('DOMContentLoaded', toggleMenu);
         document.addEventListener('DOMContentLoaded', setupDropdownListener);
-        document.addEventListener('DOMContentLoaded', requestPermission);
+        document.addEventListener('DOMContentLoaded', requestPermission(messaging));
 
         // ==========================================
         // 🌐 REGISTRO DEL SERVICE WORKER (PWA)
