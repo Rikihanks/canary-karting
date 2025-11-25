@@ -359,7 +359,7 @@
             console.log('Solicitando permiso de notificación...');
             try {
                 const permission = await Notification.requestPermission();
-
+                const button = document.getElementById('subscribe-button');
                 if (permission === 'granted') {
                     console.log('Permiso de notificación concedido.');
                     
