@@ -81,7 +81,6 @@
         // Initialize Firebase
         const app = firebase.initializeApp(firebaseConfig);
         const messaging = firebase.messaging();
-        messaging.useServiceWorker(navigator.serviceWorker.getRegistration('./sw.js'));
         const GOOGLE_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTlPsGq-SypD4WPitvnR7JcluA8_6-5ePtuzyf5zFGJ31eppN55iUIHsKo0oduOZ9AVyVTf6VkPvTyu/pub?output=csv";
         // Se han usado comillas invertidas (\`) para evitar cualquier problema de caracteres.
         const SHEET_URL = `https://corsproxy.io/?url=${encodeURIComponent(GOOGLE_CSV_LINK)}`;
@@ -353,7 +352,7 @@
         }
 
         // Solicitar permisos y obtener el token
-        async function requestPermission(messaging) {
+        async function requestPermission(registration) {
             console.log('Solicitando permiso de notificación...');
             try {
                 const permission = await Notification.requestPermission();
@@ -389,7 +388,6 @@
         document.addEventListener('DOMContentLoaded', askforPwaInstall);
         document.addEventListener('DOMContentLoaded', toggleMenu);
         document.addEventListener('DOMContentLoaded', setupDropdownListener);
-        document.addEventListener('DOMContentLoaded', requestPermission(messaging));
 
         // ==========================================
         // 🌐 REGISTRO DEL SERVICE WORKER (PWA)
@@ -399,6 +397,7 @@
                 navigator.serviceWorker.register('./sw.js')
                     .then(registration => {
                         console.log('SW registrado con éxito:', registration);
+                        requestPermission(registration);
                     })
                     .catch(error => {
                         console.log('Fallo en el registro del SW:', error);
