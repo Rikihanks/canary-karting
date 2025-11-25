@@ -47,6 +47,9 @@
 
     <div class="container">
         <div class="division-select-container">
+            <button id="subscribe-button" class="btn-subscribe" style="background-color: #ef4444; color: white; padding: 10px 20px; border: none; border-radius: 6px; margin-top: 20px; cursor: pointer; font-weight: bold; display: block; margin: 20px auto;">
+                Activar Notificaciones
+            </button>
             <label for="division-select" class="visually-hidden">Seleccionar División:</label>
             <select id="division-select" class="division-dropdown">
                 <option value="1" selected>1ª Division</option>
@@ -366,8 +369,10 @@
                 });
                     if (currentToken) {
                         console.log('Token de FCM:', currentToken);
-                        // ⚠️ PASO CRÍTICO: Guarda este token en tu base de datos (Firestore o donde lo necesites)
-                        // Es el ID que usarás para enviar la notificación a este usuario.
+                        // 🆕 OCULTAR EL BOTÓN TRAS EL ÉXITO
+                        if (button) {
+                            button.style.display = 'none';
+                        }
                         
                     } else {
                         console.log('No se pudo obtener el token. Asegúrate de que el Service Worker está registrado.');
@@ -379,6 +384,17 @@
 
             } catch (error) {
                 console.error('Error al solicitar el permiso:', error);
+            }
+        }
+        
+        
+        function setupNotificationButton(registration) {
+            const button = document.getElementById('subscribe-button');
+            if (button) {
+                button.addEventListener('click', () => {
+                    // Solo llamar a requestPermission dentro del clic del usuario
+                    requestPermission(registration);
+                });
             }
         }
         // ==========================================
@@ -405,7 +421,7 @@
                 console.log('SW activo y listo para la suscripción:', readyRegistration);
 
                 // 3. Llamar a la función de permiso, pasando el registro listo
-                requestPermission(readyRegistration);
+                setupNotificationButton(readyRegistration);
 
             } catch (error) {
                 console.log('Fallo en el registro del SW:', error);
