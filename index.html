@@ -370,6 +370,7 @@
                     if (currentToken) {
                         console.log('Token de FCM:', currentToken);
                         localStorage.setItem('notifications_granted', 'true');
+                        button.style.display = 'none'
                         
                     } else {
                         console.log('No se pudo obtener el token. Asegúrate de que el Service Worker está registrado.');
