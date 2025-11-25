@@ -1,5 +1,37 @@
+importScripts('https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/9.6.1/firebase-messaging-compat.js');
+
 const CACHE_VERSION = 'v1.5';
 const CACHE_NAME = 'clasificacion-ck-cache-v1.5';
+
+const firebaseConfig = {
+  // Re-copia tu configuración de Firebase aquí (al menos los campos necesarios)
+  apiKey: "TU_API_KEY",
+  projectId: "TU-PROJECT-ID",
+  messagingSenderId: "TU_SENDER_ID",
+  appId: "TU_APP_ID"
+};
+
+const app = firebase.initializeApp(firebaseConfig);
+const messaging = firebase.messaging();
+// [END initialize_firebase_in_sw]
+
+
+// [START background_handler]
+// El código aquí se ejecuta cuando el navegador recibe un mensaje en segundo plano.
+messaging.onBackgroundMessage((payload) => {
+    console.log('[firebase-messaging-sw.js] Mensaje recibido en segundo plano ', payload);
+
+    const notificationTitle = payload.notification.title;
+    const notificationOptions = {
+        body: payload.notification.body,
+        icon: '/icons/50.png' // Usa un icono de tu app
+    };
+
+    // Muestra la notificación
+    self.registration.showNotification(notificationTitle, notificationOptions);
+});
+
 const urlsToCache = [
   './manifest.json',
   'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Russo+One&display=swap',
