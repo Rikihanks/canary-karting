@@ -51,7 +51,7 @@ const Navbar = () => {
 
             <div id="mobile-menu" className="navbar-menu" data-visible={isMenuVisible}>
                 <div className="menu-header">
-                    <img src="/icons/50.png" alt="icon" className="app-icon" /> <span className="app-name">Canary Karting</span>
+                    <img src={`${import.meta.env.BASE_URL}icons/50.png`} alt="icon" className="app-icon" /> <span className="app-name">Canary Karting</span>
                 </div>
                 <Link to="/" className="nav-link">🏆 Clasificación Pilotos</Link>
                 <a href="#" className="nav-link" onClick={(e) => e.preventDefault()}>🏆 Clasificación Equipos</a>

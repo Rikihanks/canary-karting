@@ -15,7 +15,7 @@
     <link rel="manifest" href="./manifest.json">
 
     <link rel="stylesheet" href="./styles.css">
-    
+
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-messaging-compat.js"></script>
 </head>
@@ -47,7 +47,8 @@
 
     <div class="container">
         <div class="division-select-container">
-            <button id="subscribe-button" class="btn-subscribe" style="background-color: #ef4444; color: white; padding: 10px 20px; border: none; border-radius: 6px; margin-top: 20px; cursor: pointer; font-weight: bold; display: block; margin: 20px auto;">
+            <button id="subscribe-button" class="btn-subscribe"
+                style="background-color: #ef4444; color: white; padding: 10px 20px; border: none; border-radius: 6px; margin-top: 20px; cursor: pointer; font-weight: bold; display: block; margin: 20px auto;">
                 Activar Notificaciones
             </button>
             <label for="division-select" class="visually-hidden">Seleccionar División:</label>
@@ -362,20 +363,20 @@
                 const button = document.getElementById('subscribe-button');
                 if (permission === 'granted') {
                     console.log('Permiso de notificación concedido.');
-                    
-                 const currentToken = await messaging.getToken({ 
-                    vapidKey: 'BFzGUPlVDGVhVbaSx1oGYIbLd-Et9ssAEFnHt6YtIKG5I4z-iiDUuYnN-cb1trF78RkgTU1IwKYdQ1rLU6pBu0s', // He añadido el final de tu clave (Nov)
-                    serviceWorkerRegistration: registration // ⬅️ ¡Aquí está la referencia a sw.js!
-                });
+
+                    const currentToken = await messaging.getToken({
+                        vapidKey: 'BFzGUPlVDGVhVbaSx1oGYIbLd-Et9ssAEFnHt6YtIKG5I4z-iiDUuYnN-cb1trF78RkgTU1IwKYdQ1rLU6pBu0s', // He añadido el final de tu clave (Nov)
+                        serviceWorkerRegistration: registration // ⬅️ ¡Aquí está la referencia a sw.js!
+                    });
                     if (currentToken) {
                         console.log('Token de FCM:', currentToken);
                         localStorage.setItem('notifications_granted', 'true');
                         button.style.display = 'none'
-                        
+
                     } else {
                         console.log('No se pudo obtener el token. Asegúrate de que el Service Worker está registrado.');
                     }
-                    
+
                 } else {
                     console.log('Permiso de notificación denegado.');
                 }
@@ -384,15 +385,15 @@
                 console.error('Error al solicitar el permiso:', error);
             }
         }
-        
-        
+
+
         function setupNotificationButton(registration) {
             const button = document.getElementById('subscribe-button');
             if (!button) return;
 
             // 1. Comprobar si ya tenemos permiso de Notificación (API nativa)
             const isAPIGranted = ('Notification' in window && Notification.permission === 'granted');
-            
+
             // 🆕 PASO 2: COMPROBAR EN LOCALSTORAGE
             const isLocalStorageGranted = localStorage.getItem('notifications_granted') === 'true';
 
@@ -400,12 +401,12 @@
 
             if (isGranted) {
                 button.style.display = 'none'; // Ocultar si ya está concedido o marcado en LocalStorage
-                return; 
+                return;
             }
 
             // 2. Si no tenemos permiso, lo mostramos y añadimos el Listener
             button.style.display = 'block';
-            
+
             button.addEventListener('click', () => {
                 requestPermission(registration);
             });
@@ -423,23 +424,23 @@
         // 🌐 REGISTRO DEL SERVICE WORKER (PWA)
         // ==========================================
         if ('serviceWorker' in navigator) {
-           window.addEventListener('load', async () => { // 🆕 Hacemos 'load' asíncrono
-            try {
-                // 1. Registramos el Service Worker
-                const registration = await navigator.serviceWorker.register('./sw.js');
-                console.log('SW registrado con éxito:', registration);
+            window.addEventListener('load', async () => { // 🆕 Hacemos 'load' asíncrono
+                try {
+                    // 1. Registramos el Service Worker
+                    const registration = await navigator.serviceWorker.register('./sw.js');
+                    console.log('SW registrado con éxito:', registration);
 
-                // 2. 🚨 ESPERAR A QUE ESTÉ LISTO (El punto de control crucial)
-                const readyRegistration = await navigator.serviceWorker.ready;
-                console.log('SW activo y listo para la suscripción:', readyRegistration);
+                    // 2. 🚨 ESPERAR A QUE ESTÉ LISTO (El punto de control crucial)
+                    const readyRegistration = await navigator.serviceWorker.ready;
+                    console.log('SW activo y listo para la suscripción:', readyRegistration);
 
-                // 3. Llamar a la función de permiso, pasando el registro listo
-                setupNotificationButton(readyRegistration);
+                    // 3. Llamar a la función de permiso, pasando el registro listo
+                    setupNotificationButton(readyRegistration);
 
-            } catch (error) {
-                console.log('Fallo en el registro del SW:', error);
-            }
-        });
+                } catch (error) {
+                    console.log('Fallo en el registro del SW:', error);
+                }
+            });
         }
         // ==========================================
         // 🔄 PULL TO REFRESH LOGIC
