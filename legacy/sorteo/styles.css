@@ -95,7 +95,7 @@
 /* Título o logo */
 .navbar-title {
     font-family: 'Russo One', sans-serif;
-    color: var(--color-secondary-accent);
+    color: var(--color-text);
     font-size: 1.3em;
 }
 

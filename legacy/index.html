@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Clasificación General CK</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Russo+One&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <link rel="manifest" href="./manifest.json">
+
+    <link rel="stylesheet" href="./styles.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-messaging-compat.js"></script>
+</head>
+
+<body>
+    <div id="refresh-indicator">
+        <i class="fa-solid fa-arrow-down pull-icon"></i>
+    </div>
+
+    <nav class="navbar-wrapper">
+        <div class="navbar-top">
+            <button class="menu-toggle" aria-controls="mobile-menu" aria-expanded="false">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <span class="navbar-title"><i class="fa-solid fa-trophy"></i> Clasificación Pilotos</span>
+        </div>
+
+        <div id="mobile-menu" class="navbar-menu" data-visible="false">
+            <div class="menu-header">
+                <img src="./icons/50.png" alt="icon" class="app-icon"> <span class="app-name">Canary Karting</span>
+            </div>
+            <a href="./" class="nav-link">🏆 Clasificación Pilotos</a>
+            <a href="javascript: void(0)" class="nav-link">🏆 Clasificación Equipos</a>
+            <a href="./inscripcion/" class="nav-link">📝 Preinscripción</a>
+            <a href="./sorteo/" class="nav-link"><i class="fa-solid fa-dice"></i> Sorteo</a>
+            <a href="./races/" class="nav-link"> 🏎️ Carreras</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="division-select-container">
+            <button id="subscribe-button" class="btn-subscribe" style="background-color: #ef4444; color: white; padding: 10px 20px; border: none; border-radius: 6px; margin-top: 20px; cursor: pointer; font-weight: bold; display: block; margin: 20px auto;">
+                Activar Notificaciones
+            </button>
+            <label for="division-select" class="visually-hidden">Seleccionar División:</label>
+            <select id="division-select" class="division-dropdown">
+                <option value="1" selected>1ª Division</option>
+                <option value="2">2ª Division</option>
+            </select>
+        </div>
+
+        <div id="podium-container" class="podium"></div>
+        <div id="list-container" class="list"></div>
+    </div>
+
+
+    <script>
+        // ==========================================
+        // ⚙️ CONFIGURACIÓN Y ESTADO GLOBAL
+        // ==========================================
+        // TODO: Add SDKs for Firebase products that you want to use
+        // https://firebase.google.com/docs/web/setup#available-libraries
+
+        // Your web app's Firebase configuration
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+        const firebaseConfig = {
+            apiKey: "AIzaSyAaz08Re-HOLnPYllQBSVq9hfIbfRKeV2Y",
+            authDomain: "canary-karting.firebaseapp.com",
+            projectId: "canary-karting",
+            storageBucket: "canary-karting.firebasestorage.app",
+            messagingSenderId: "16614182534",
+            appId: "1:16614182534:web:b2221350da181d88a50b07",
+            measurementId: "G-7SQXW9KHH7"
+        };
+
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const messaging = firebase.messaging();
+        const GOOGLE_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTlPsGq-SypD4WPitvnR7JcluA8_6-5ePtuzyf5zFGJ31eppN55iUIHsKo0oduOZ9AVyVTf6VkPvTyu/pub?output=csv";
+        // Se han usado comillas invertidas (\`) para evitar cualquier problema de caracteres.
+        const SHEET_URL = `https://corsproxy.io/?url=${encodeURIComponent(GOOGLE_CSV_LINK)}`;
+
+        // Nuevo estado global para almacenar todos los datos cargados
+        let ALL_DRIVERS_DATA = [];
+        let ACTIVE_DIVISION = 1; // Por defecto, Primera División
+
+
+        // ==========================================
+        // 🚀 LÓGICA DE CARGA DE DATOS
+        // ==========================================
+
+        async function fetchWithRetry(url, maxRetries = 3) {
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(url);
+                    if (response.ok) {
+                        return response;
+                    }
+                } catch (error) {
+                    if (i < maxRetries - 1) {
+                        const waitTime = 1000 * (i + 1);
+                        await new Promise(resolve => setTimeout(resolve, waitTime));
+                    }
+                }
+            }
+            throw new Error("Fallo al obtener los datos después de todos los reintentos.");
+        }
+
+        async function fetchLeaderboardData() {
+            const listContainer = document.getElementById('list-container');
+
+            listContainer.innerHTML = '<div style="text-align:center; color:#94a3b8;"><i class="fa-solid fa-spinner fa-spin"></i> Cargando datos del campeonato...</div>';
+            document.getElementById('podium-container').innerHTML = '';
+
+            try {
+                const response = await fetchWithRetry(SHEET_URL);
+                const data = await response.text();
+
+                // 1. Almacena todos los pilotos en el estado global
+                ALL_DRIVERS_DATA = parseCSV(data);
+
+                // 2. Renderiza la división activa inicial (o la que esté marcada)
+                filterAndRenderLeaderboard(ACTIVE_DIVISION);
+
+            } catch (error) {
+                console.error("Error al cargar el Google Sheet:", error);
+                listContainer.innerHTML = `<div style="text-align:center; color:#ef4444;">Error al obtener los datos de la clasificación, recarga la web.</div>`;
+            }
+        }
+
+        function parseCSV(csvText) {
+            const lines = csvText.split('\n');
+            const drivers = [];
+
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+
+                const parts = line.split(',');
+
+                if (parts.length >= 8) { // Asegúrate de tener al menos 8 columnas
+                    drivers.push({
+                        name: parts[0].trim(),
+                        team: parts[1].trim(),
+                        points: parseInt(parts[2].trim()) || 0,
+                        photo: parts[3] ? parts[3].trim() : "https://www.w3schools.com/howto/img_avatar.png",
+                        podiums: parseInt(parts[4].trim()) || 0,
+                        poles: parseInt(parts[5].trim()) || 0,
+                        wins: parseInt(parts[6].trim()) || 0,
+                        division: parseInt(parts[7].trim()) || 0, // Aquí está la división
+                    });
+                }
+            }
+            return drivers;
+        }
+
+        // ==========================================
+        // 🎨 RENDERIZADO POR DIVISIÓN (Motor principal)
+        // ==========================================
+
+        function filterAndRenderLeaderboard(division) {
+            const podiumContainer = document.getElementById('podium-container');
+            const listContainer = document.getElementById('list-container');
+
+            // 1. Filtrar Pilotos
+            const filteredDrivers = ALL_DRIVERS_DATA.filter(driver => driver.division === division);
+
+            // 2. Ordenar pilotos por puntos
+            const sortedDrivers = filteredDrivers.sort((a, b) => b.points - a.points);
+
+            // Limpiar y actualizar título
+            podiumContainer.innerHTML = '';
+            listContainer.innerHTML = '';
+            const divisionName = division === 1 ? 'PRIMERA' : 'SEGUNDA';
+
+
+            if (sortedDrivers.length === 0) {
+                listContainer.innerHTML = `<div style="text-align:center; color:#94a3b8; padding-top: 30px;">No hay pilotos registrados o datos disponibles en la ${divisionName} División.</div>`;
+                return;
+            }
+
+            // 3. Separar Top 3 del resto
+            const top3 = sortedDrivers.slice(0, 3);
+            const rest = sortedDrivers.slice(3);
+
+            // 4. Renderizar Podio (Top 3)
+            let podiumHTML = '';
+            top3.forEach((driver, index) => {
+                const rank = index + 1;
+                let crownIcon = '';
+                if (rank === 1) crownIcon = '<i class="fa-solid fa-medal crown"></i>';
+                if (rank === 2) crownIcon = '<i class="fa-solid fa-medal crown"></i>';
+                if (rank === 3) crownIcon = '<i class="fa-solid fa-medal crown"></i>';
+
+                const driverNameUrl = encodeURIComponent(driver.name);
+                podiumHTML += `
+                    <a href="./profile/index.html?driver=${driverNameUrl}" class="podium-card-link">
+                    <div class="list-item rank-${rank}">
+                        ${crownIcon}
+                        <img src="${driver.photo}" alt="${driver.name}" class="mini-avatar">
+                        <div class="info">
+                        <div class="l-name">${driver.name}</div>
+                        <div class="l-team">${driver.team}</div>
+                        </div>
+                        <div class="l-points">${driver.points} <span>PTS</span></div>
+                    </div>
+                    </a>
+                `;
+            });
+            podiumContainer.innerHTML = podiumHTML;
+
+            // 5. Renderizar Lista (Resto)
+            let listHTML = '';
+
+            rest.forEach((driver, index) => {
+                const rank = index + 4;
+                const driverNameUrl = encodeURIComponent(driver.name);
+                listHTML += `
+                    <a href="./profile/index.html?driver=${driverNameUrl}" class="list-item-link">
+                    <div class="list-item">
+                    <div class="rank-num">${rank}</div>
+                    <img src="${driver.photo}" alt="${driver.name}" class="mini-avatar">
+                    <div class="info">
+                        <div class="l-name">${driver.name}</div>
+                        <div class="l-team">${driver.team}</div>
+                    </div>
+                    <div class="l-points">${driver.points} <span>PTS</span></div>
+                    </div>
+                    </a>
+                `;
+            });
+            listContainer.innerHTML = listHTML;
+        }
+
+        // ==========================================
+        // 🖱️ LÓGICA DE INTERACCIÓN DE TABS
+        // ==========================================
+
+        function setupTabListeners() {
+            const tabButtons = document.querySelectorAll('.tab-button');
+            tabButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const newDivision = parseInt(e.target.dataset.division);
+
+                    // Si la división es diferente a la actual
+                    if (newDivision !== ACTIVE_DIVISION) {
+
+                        // 1. Actualizar la división activa
+                        ACTIVE_DIVISION = newDivision;
+
+                        // 2. Quitar/Añadir la clase 'active' de los botones
+                        tabButtons.forEach(btn => btn.classList.remove('active'));
+                        e.target.classList.add('active');
+
+                        // 3. Filtrar y renderizar la clasificación
+                        filterAndRenderLeaderboard(ACTIVE_DIVISION);
+                    }
+                });
+            });
+        }
+
+        // ==========================================
+        // ⚙️ LÓGICA DE MENÚ HAMBURGUESA Y PWA
+        // ==========================================
+
+        function askforPwaInstall() {
+            const isStandalone =
+                window.matchMedia("(display-mode: standalone)").matches ||
+                window.navigator.standalone;
+
+            const shown = localStorage.getItem("installHintShown");
+
+            if (!isStandalone && !shown) {
+                // Comentado para no mostrar el alert cada vez, descomentar si es necesario
+                /* alert("Para instalar la app:\n1. Pulsa Compartir.\n2. 'Añadir a pantalla de inicio'.");
+                localStorage.setItem("installHintShown", "1"); */
+            }
+        }
+
+        function toggleMenu() {
+            const toggleButton = document.querySelector('.menu-toggle');
+            const navMenu = document.getElementById('mobile-menu');
+
+            // Función para cerrar el menú
+            const closeMenu = () => {
+                navMenu.setAttribute('data-visible', 'false');
+                toggleButton.setAttribute('aria-expanded', 'false');
+                toggleButton.querySelector('i').className = 'fa-solid fa-bars';
+            };
+
+            // Función para abrir/cerrar al hacer clic en el botón de hamburguesa
+            const toggleMenuAction = () => {
+                const isVisible = navMenu.getAttribute('data-visible') === 'true';
+
+                navMenu.setAttribute('data-visible', String(!isVisible));
+                toggleButton.setAttribute('aria-expanded', String(!isVisible));
+
+                // Cambia el icono (de hamburguesa a X y viceversa)
+                toggleButton.querySelector('i').className = isVisible ? 'fa-solid fa-bars' : '';
+            };
+
+
+            if (toggleButton && navMenu) {
+                toggleButton.addEventListener('click', toggleMenuAction);
+
+                // Cerrar al hacer clic fuera del menú o del botón
+                document.addEventListener('click', (event) => {
+                    const isMenuVisible = navMenu.getAttribute('data-visible') === 'true';
+
+                    if (!isMenuVisible) {
+                        return;
+                    }
+
+                    if (!navMenu.contains(event.target) && !toggleButton.contains(event.target)) {
+                        closeMenu();
+                    }
+                });
+
+                // Cerrar el menú si se hace clic en uno de los enlaces
+                const navLinks = navMenu.querySelectorAll('.nav-link');
+                navLinks.forEach(link => {
+                    link.addEventListener('click', closeMenu);
+                });
+            }
+        }
+
+
+        function setupDropdownListener() {
+            const dropdown = document.getElementById('division-select');
+
+            if (dropdown) {
+                dropdown.addEventListener('change', (e) => {
+                    // El valor del select es la división
+                    const newDivision = parseInt(e.target.value);
+
+                    // Si la división es diferente a la actual
+                    if (newDivision !== ACTIVE_DIVISION) {
+
+                        // 1. Actualizar la división activa
+                        ACTIVE_DIVISION = newDivision;
+
+                        // 2. Filtrar y renderizar la clasificación
+                        filterAndRenderLeaderboard(ACTIVE_DIVISION);
+                    }
+                });
+            }
+        }
+
+        // Solicitar permisos y obtener el token
+        async function requestPermission(registration) {
+            console.log('Solicitando permiso de notificación...');
+            try {
+                const permission = await Notification.requestPermission();
+                const button = document.getElementById('subscribe-button');
+                if (permission === 'granted') {
+                    console.log('Permiso de notificación concedido.');
+                    
+                 const currentToken = await messaging.getToken({ 
+                    vapidKey: 'BFzGUPlVDGVhVbaSx1oGYIbLd-Et9ssAEFnHt6YtIKG5I4z-iiDUuYnN-cb1trF78RkgTU1IwKYdQ1rLU6pBu0s', // He añadido el final de tu clave (Nov)
+                    serviceWorkerRegistration: registration // ⬅️ ¡Aquí está la referencia a sw.js!
+                });
+                    if (currentToken) {
+                        console.log('Token de FCM:', currentToken);
+                        localStorage.setItem('notifications_granted', 'true');
+                        button.style.display = 'none'
+                        
+                    } else {
+                        console.log('No se pudo obtener el token. Asegúrate de que el Service Worker está registrado.');
+                    }
+                    
+                } else {
+                    console.log('Permiso de notificación denegado.');
+                }
+
+            } catch (error) {
+                console.error('Error al solicitar el permiso:', error);
+            }
+        }
+        
+        
+        function setupNotificationButton(registration) {
+            const button = document.getElementById('subscribe-button');
+            if (!button) return;
+
+            // 1. Comprobar si ya tenemos permiso de Notificación (API nativa)
+            const isAPIGranted = ('Notification' in window && Notification.permission === 'granted');
+            
+            // 🆕 PASO 2: COMPROBAR EN LOCALSTORAGE
+            const isLocalStorageGranted = localStorage.getItem('notifications_granted') === 'true';
+
+            const isGranted = isAPIGranted || isLocalStorageGranted;
+
+            if (isGranted) {
+                button.style.display = 'none'; // Ocultar si ya está concedido o marcado en LocalStorage
+                return; 
+            }
+
+            // 2. Si no tenemos permiso, lo mostramos y añadimos el Listener
+            button.style.display = 'block';
+            
+            button.addEventListener('click', () => {
+                requestPermission(registration);
+            });
+        }
+        // ==========================================
+        // 🚀 INICIALIZACIÓN FINAL
+        // ==========================================
+
+        document.addEventListener('DOMContentLoaded', fetchLeaderboardData);
+        document.addEventListener('DOMContentLoaded', askforPwaInstall);
+        document.addEventListener('DOMContentLoaded', toggleMenu);
+        document.addEventListener('DOMContentLoaded', setupDropdownListener);
+
+        // ==========================================
+        // 🌐 REGISTRO DEL SERVICE WORKER (PWA)
+        // ==========================================
+        if ('serviceWorker' in navigator) {
+           window.addEventListener('load', async () => { // 🆕 Hacemos 'load' asíncrono
+            try {
+                // 1. Registramos el Service Worker
+                const registration = await navigator.serviceWorker.register('./sw.js');
+                console.log('SW registrado con éxito:', registration);
+
+                // 2. 🚨 ESPERAR A QUE ESTÉ LISTO (El punto de control crucial)
+                const readyRegistration = await navigator.serviceWorker.ready;
+                console.log('SW activo y listo para la suscripción:', readyRegistration);
+
+                // 3. Llamar a la función de permiso, pasando el registro listo
+                setupNotificationButton(readyRegistration);
+
+            } catch (error) {
+                console.log('Fallo en el registro del SW:', error);
+            }
+        });
+        }
+        // ==========================================
+        // 🔄 PULL TO REFRESH LOGIC
+        // ==========================================
+        let touchStartY = 0;
+        let isPulling = false;
+        const threshold = 170; // Distancia para activar el refresh
+        const indicator = document.getElementById('refresh-indicator');
+        const pullIcon = indicator ? indicator.querySelector('.pull-icon') : null;
+
+        if (pullIcon) {
+            window.addEventListener('touchstart', (e) => {
+                if (window.scrollY === 0) {
+                    touchStartY = e.touches[0].clientY;
+                    isPulling = true;
+                }
+            }, { passive: true });
+
+            window.addEventListener('touchmove', (e) => {
+                if (!isPulling) return;
+
+                const touchY = e.touches[0].clientY;
+                const diff = touchY - touchStartY;
+
+                if (diff > 0 && window.scrollY === 0) {
+                    if (diff < threshold + 80) { // Límite visual
+                        indicator.style.top = `${diff / 2 - 60}px`;
+                        pullIcon.style.transform = `rotate(${diff}deg)`;
+                    }
+
+                    if (diff > threshold) {
+                        pullIcon.classList.replace('fa-arrow-down', 'fa-rotate-right');
+                    } else {
+                        pullIcon.classList.replace('fa-rotate-right', 'fa-arrow-down');
+                    }
+                } else {
+                    isPulling = false;
+                    indicator.style.top = '-60px';
+                }
+            }, { passive: true });
+
+            window.addEventListener('touchend', async () => {
+                if (!isPulling) return;
+                isPulling = false;
+
+                const topValue = parseInt(indicator.style.top || '-60');
+
+                if (topValue > 10) { // Si se ha bajado suficiente
+                    indicator.style.top = '20px';
+                    pullIcon.style.display = 'none';
+
+                    // Recargar datos
+                    await fetchLeaderboardData();
+
+                    // Ocultar después de un momento
+                    setTimeout(() => {
+                        indicator.style.top = '-60px';
+                        setTimeout(() => {
+                            pullIcon.style.display = 'block';
+                            pullIcon.classList.replace('fa-rotate-right', 'fa-arrow-down');
+                        }, 300);
+                    }, 1000);
+                } else {
+                    indicator.style.top = '-60px';
+                }
+            });
+        }
+    </script>
+
+</body>
+
+</html>
