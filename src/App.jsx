@@ -6,6 +6,7 @@ import Profile from './pages/Profile';
 import Races from './pages/Races';
 import Inscripcion from './pages/Inscripcion';
 import RaceDetail from './pages/RaceDetail';
+import AssistanceConfirmation from './pages/AssistanceConfirmation';
 import Sorteo from './pages/Sorteo';
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
           <Route path="/races" element={<Races />} />
           <Route path="/race-detail" element={<RaceDetail />} />
           <Route path="/inscripcion" element={<Inscripcion />} />
+          <Route path="/assistance-confirmation" element={<AssistanceConfirmation />} />
           <Route path="/sorteo" element={<Sorteo />} />
         </Routes>
       </div>

@@ -144,3 +144,36 @@ export async function getRaceDetails() {
         results: parseRaceDetailCSV(resultData)
     };
 }
+
+const ASSISTANCE_WEB_APP_URL_RAW = 'https://script.google.com/macros/s/AKfycbwI3-kUTR31pqN5DhpmvhMrnf_84H3jEVDBHYYVWWsNVB41w5Pd3Ez8w9TKRwIAsFYggg/exec';
+const ASSISTANCE_WEB_APP_URL = `https://corsproxy.io/?url=${encodeURIComponent(ASSISTANCE_WEB_APP_URL_RAW)}`;
+
+/**
+ * Confirms race assistance by sending data to Google Apps Script
+ * @param {Object} assistanceData - The assistance confirmation data
+ * @param {string} assistanceData.raceDate - The race date (YYYY-MM-DD format)
+ * @param {string} assistanceData.email - The pilot's email
+ * @param {string} assistanceData.division - The division name
+ * @param {string} assistanceData.codigo - The verification code
+ * @returns {Promise<Object>} Response object with success status and message
+ */
+export async function confirmAssistance(assistanceData) {
+    try {
+        const response = await fetch(ASSISTANCE_WEB_APP_URL_RAW, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(assistanceData),
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        console.error(`Error confirming assistance:`, error);
+    }
+}
