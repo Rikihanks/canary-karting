@@ -19,20 +19,20 @@ const messaging = firebase.messaging();
 // [START background_handler]
 // El código aquí se ejecuta cuando el navegador recibe un mensaje en segundo plano.
 messaging.onBackgroundMessage((payload) => {
-    console.log('[firebase-messaging-sw.js] Mensaje recibido en segundo plano ', payload);
+  console.log('[firebase-messaging-sw.js] Mensaje recibido en segundo plano ', payload);
 
-    const notificationTitle = payload.notification.title;
-    const notificationOptions = {
-        body: payload.notification.body,
-        icon: '/icons/50.png' // Usa un icono de tu app
-    };
+  const notificationTitle = payload.notification.title;
+  const notificationOptions = {
+    body: payload.notification.body,
+    icon: 'icons/50.png' // Usa un icono de tu app
+  };
 
-    // Muestra la notificación
-    self.registration.showNotification(notificationTitle, notificationOptions);
+  // Muestra la notificación
+  self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
 const urlsToCache = [
-  './manifest.json',
+
   'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Russo+One&display=swap',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css'
 ];
