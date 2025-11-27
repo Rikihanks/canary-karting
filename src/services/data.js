@@ -86,11 +86,12 @@ export function parseCalendarCSV(csvText) {
     for (let i = 1; i < lines.length; i++) {
         const parts = lines[i].split(',');
 
-        if (parts.length >= 3) {
+        if (parts.length >= 4) {
             events.push({
                 id_circuito: parts[0] ? parts[0].trim() : '',
                 nombre: parts[1] ? parts[1].trim() : 'Carrera sin nombre',
                 fecha: parts[2] ? parts[2].trim() : '',
+                activa: parts[3] ? parts[3].trim() : '0',
             });
         }
     }

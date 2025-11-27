@@ -12,6 +12,7 @@ const Races = () => {
             try {
                 const data = await getCalendarData();
                 setEvents(data);
+                console.log(data);
             } catch (error) {
                 console.error(error);
             } finally {
@@ -38,9 +39,13 @@ const Races = () => {
                         {events.map((event, index) => (
                             <li
                                 key={index}
-                                className="event-item"
-                                onClick={() => goToEventDetail(event.id_circuito, event.fecha, event.nombre)}
-                                style={{ cursor: 'pointer' }}
+                                disabled={event.activa == 0}
+                                className={`event-item ${event.activa == 0 ? 'disabled' : ''}`}
+                                onClick={() => event.activa != 0 && goToEventDetail(event.id_circuito, event.fecha, event.nombre)}
+                                style={{
+                                    cursor: event.activa != 0 ? 'pointer' : 'default',
+                                    opacity: event.activa != 0 ? 1 : 0.6
+                                }}
                             >
                                 <div className="event-info">
                                     <span className="event-date" style={{ display: 'block', fontWeight: 'bold', color: 'var(--accent)' }}>{event.fecha}</span>
