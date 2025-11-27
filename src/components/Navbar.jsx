@@ -46,7 +46,7 @@ const Navbar = () => {
                 >
                     <i className={`fa-solid ${isMenuVisible ? '' : 'fa-bars'}`}></i>
                 </button>
-                <span className="navbar-title"><i className="fa-solid fa-trophy"></i> Clasificación Pilotos</span>
+                <span className="navbar-title"><i className="fa-solid fa-trophy"></i> Canary Karting</span>
             </div>
 
             <div id="mobile-menu" className="navbar-menu" data-visible={isMenuVisible}>

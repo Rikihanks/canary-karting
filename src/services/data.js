@@ -145,8 +145,7 @@ export async function getRaceDetails() {
     };
 }
 
-const ASSISTANCE_WEB_APP_URL_RAW = 'https://script.google.com/macros/s/AKfycbwI3-kUTR31pqN5DhpmvhMrnf_84H3jEVDBHYYVWWsNVB41w5Pd3Ez8w9TKRwIAsFYggg/exec';
-const ASSISTANCE_WEB_APP_URL = `https://corsproxy.io/?url=${encodeURIComponent(ASSISTANCE_WEB_APP_URL_RAW)}`;
+const ASSISTANCE_WEB_APP_URL_RAW = 'https://script.google.com/macros/s/AKfycbw_O_PAmJh89uMEKX8eIS6aMr8gZJcXx7k9buqtkk4fsLyxvLCyU4ghqdBwDIoVPypn2g/exec';
 
 /**
  * Confirms race assistance by sending data to Google Apps Script
@@ -162,7 +161,7 @@ export async function confirmAssistance(assistanceData) {
         const response = await fetch(ASSISTANCE_WEB_APP_URL_RAW, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'text/plain',
             },
             body: JSON.stringify(assistanceData),
         });

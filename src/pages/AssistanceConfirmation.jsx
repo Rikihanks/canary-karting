@@ -10,7 +10,7 @@ const AssistanceConfirmation = () => {
     const [status, setStatus] = useState('idle');
     const [message, setMessage] = useState('');
 
-    const race = { id: 1, name: 'Carrera 1 - 15 Diciembre 2024', date: '2024-12-15' };
+    const race = { id: 1, name: 'Carrera 1 - 15 Diciembre 2024', date: '11/09/2025' };
 
     const divisions = [
         { id: 'senior', name: 'Senior' },
@@ -54,7 +54,7 @@ const AssistanceConfirmation = () => {
             }
         } catch (error) {
             setStatus('error');
-            setMessage(error.message || 'Error al conectar con el servidor. Inténtalo de nuevo.');
+            setMessage(error.message || 'Error al conectar con el servidor.');
         }
     };
 

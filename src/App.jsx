@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Profile from './pages/Profile';
@@ -11,7 +11,7 @@ import Sorteo from './pages/Sorteo';
 
 function App() {
   return (
-    <Router basename={import.meta.env.BASE_URL}>
+    <HashRouter>
       <Navbar />
       <div className="app-content" style={{}}>
         <Routes>
@@ -24,7 +24,7 @@ function App() {
           <Route path="/sorteo" element={<Sorteo />} />
         </Routes>
       </div>
-    </Router>
+    </HashRouter>
   );
 }
 
