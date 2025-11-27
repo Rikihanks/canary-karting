@@ -12,7 +12,6 @@ const Races = () => {
             try {
                 const data = await getCalendarData();
                 setEvents(data);
-                console.log(data);
             } catch (error) {
                 console.error(error);
             } finally {
@@ -22,8 +21,12 @@ const Races = () => {
         fetchData();
     }, []);
 
-    const goToEventDetail = (id, date, name) => {
-        navigate(`/race-detail?id=${id}&date=${encodeURIComponent(date)}&circuitName=${encodeURIComponent(name)}`);
+    const handleEventClick = (event) => {
+        if (event.terminada == '0') {
+            navigate('/assistance-confirmation');
+        } else {
+            navigate(`/race-detail?id=${event.id_circuito}&date=${encodeURIComponent(event.fecha)}&circuitName=${encodeURIComponent(event.nombre)}`);
+        }
     };
 
     if (loading) return <div className="container" style={{ textAlign: 'center', color: '#94a3b8', paddingTop: '50px' }}><i className="fa-solid fa-spinner fa-spin"></i> Cargando calendario...</div>;
@@ -39,9 +42,8 @@ const Races = () => {
                         {events.map((event, index) => (
                             <li
                                 key={index}
-                                disabled={event.activa == 0}
                                 className={`event-item ${event.activa == 0 ? 'disabled' : ''}`}
-                                onClick={() => event.activa != 0 && goToEventDetail(event.id_circuito, event.fecha, event.nombre)}
+                                onClick={() => event.activa != 0 && handleEventClick(event)}
                                 style={{
                                     cursor: event.activa != 0 ? 'pointer' : 'default',
                                     opacity: event.activa != 0 ? 1 : 0.6

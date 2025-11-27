@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getMessaging, getToken } from "firebase/messaging";
+import * as fcmMethods from "firebase/messaging";
 
 const firebaseConfig = {
     apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -13,6 +14,12 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 export const messaging = getMessaging(app);
+
+export const addUserToTopic = async (topic) => {
+};
+
+export const removeUserFromTopic = async (topic) => {
+};
 
 export const requestPermission = async () => {
     console.log('Solicitando permiso de notificación...');

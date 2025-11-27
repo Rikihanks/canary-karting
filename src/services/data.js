@@ -20,6 +20,8 @@ export async function fetchWithRetry(url, maxRetries = 3) {
             if (response.ok) return response;
         } catch (error) {
             if (i < maxRetries - 1) {
+                console.log('trying again');
+
                 await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
             }
         }
@@ -82,16 +84,18 @@ export function parseResultsCSV(csvText) {
 export function parseCalendarCSV(csvText) {
     const lines = csvText.split('\n').filter(line => line.trim() !== '');
     const events = [];
+    console.log(lines);
 
     for (let i = 1; i < lines.length; i++) {
         const parts = lines[i].split(',');
 
-        if (parts.length >= 4) {
+        if (parts.length >= 5) {
             events.push({
                 id_circuito: parts[0] ? parts[0].trim() : '',
                 nombre: parts[1] ? parts[1].trim() : 'Carrera sin nombre',
                 fecha: parts[2] ? parts[2].trim() : '',
                 activa: parts[3] ? parts[3].trim() : '0',
+                terminada: parts[4] ? parts[4].trim() : '0',
             });
         }
     }
@@ -130,7 +134,7 @@ export async function getDriverResults() {
 }
 
 export async function getCalendarData() {
-    const response = await fetchWithRetry(CALENDAR_URL);
+    const response = await fetchWithRetry(CALENDAR_CSV_LINK);
     const data = await response.text();
     return parseCalendarCSV(data);
 }
@@ -175,5 +179,29 @@ export async function confirmAssistance(assistanceData) {
         return result;
     } catch (error) {
         console.error(`Error confirming assistance:`, error);
+    }
+}
+
+const LOGIN_API_URL = 'https://script.google.com/macros/s/AKfycbw4eJ74WP22uEA2CILxfBGOIu0eRipZlb5oymIRoI3i28BnIjT1RxoXmsxBhPeadiLmxg/exec';
+
+export async function sendLoginRequest(email) {
+    try {
+        const response = await fetch(LOGIN_API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'text/plain',
+            },
+            body: JSON.stringify({ email }),
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        console.error(`Error sending login request:`, error);
+        throw error;
     }
 }

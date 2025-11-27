@@ -130,6 +130,11 @@ h2 {
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
 }
 
+.navbar-menu> :last-child {
+    margin-top: auto;
+    margin-bottom: calc(20px + var(--sab));
+}
+
 .navbar-menu[data-visible="true"] {
     transform: translateX(0);
 }
