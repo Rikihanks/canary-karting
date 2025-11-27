@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getCalendarData } from '../services/data';
+import { useAuth } from '../context/AuthContext';
 
 const Races = () => {
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
+    const { user } = useAuth();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -22,7 +24,7 @@ const Races = () => {
     }, []);
 
     const handleEventClick = (event) => {
-        if (event.terminada == '0') {
+        if (event.terminada == '0' && user) {
             navigate('/assistance-confirmation');
         } else {
             navigate(`/race-detail?id=${event.id_circuito}&date=${encodeURIComponent(event.fecha)}&circuitName=${encodeURIComponent(event.nombre)}`);

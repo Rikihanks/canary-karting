@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
 import { addUserToTopic, removeUserFromTopic } from '../services/firebase';
 import { sendLoginRequest } from '../services/data';
 
@@ -6,6 +6,18 @@ const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
+
+    useEffect(() => {
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+            try {
+                setUser(JSON.parse(storedUser));
+            } catch (error) {
+                console.error("Error parsing stored user:", error);
+                localStorage.removeItem('user');
+            }
+        }
+    }, []);
 
     const login = async (email) => {
         try {
