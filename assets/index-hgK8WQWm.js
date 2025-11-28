@@ -569,6 +569,9 @@ Verstappen`,value:l,onChange:B=>r(B.target.value)})]}),m.jsxs("div",{style:{disp
                     .inputs-row {
                         grid-template-columns: 1fr;
                     }
+                    .panel {
+                        padding: 15px;
+                    }
                 }
                 
                 label {
