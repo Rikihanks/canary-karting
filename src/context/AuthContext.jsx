@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { addUserToTopic, removeUserFromTopic } from '../services/firebase';
-import { sendLoginRequest } from '../services/data';
+import { sendLoginRequest, sendEmailVerification } from '../services/data';
 
 const AuthContext = createContext(null);
 
@@ -22,15 +22,20 @@ export const AuthProvider = ({ children }) => {
     const login = async (email) => {
         try {
             const response = await sendLoginRequest(email);
-            if (response.success) {
-                const userData = response.data;
-                setUser(userData);
-                localStorage.setItem('user', JSON.stringify(userData));
-                addUserToTopic('pilotos');
-                return { success: true };
-            } else {
+            if (!response.success) {
                 return { success: false, message: response.message || 'Error al iniciar sesión' };
             }
+
+            const emailResponse = await sendEmailVerification(response.data.nombre, response.data.correo, response.data.codigo);
+
+            if (!emailResponse.success) {
+                return { success: false, message: emailResponse.message || 'Error al enviar correo de verificación' };
+            }
+
+            setUser(response.data);
+            localStorage.setItem('user', JSON.stringify(response.data));
+            addUserToTopic('pilotos');
+            return { success: true };
         } catch (error) {
             console.error("Login error:", error);
             return { success: false, message: 'Error de conexión' };

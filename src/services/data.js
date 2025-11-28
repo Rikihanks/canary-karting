@@ -182,7 +182,7 @@ export async function confirmAssistance(assistanceData) {
     }
 }
 
-const LOGIN_API_URL = 'https://script.google.com/macros/s/AKfycbw4eJ74WP22uEA2CILxfBGOIu0eRipZlb5oymIRoI3i28BnIjT1RxoXmsxBhPeadiLmxg/exec';
+const LOGIN_API_URL = 'https://script.google.com/macros/s/AKfycbyAYIDsFRBu8TcRgn1b18b5BOSXHu52eNnmwKy28RhwJa4t8O6O3Uhsh9s5pGlA4A66YQ/exec';
 
 export async function sendLoginRequest(email) {
     try {
@@ -192,6 +192,30 @@ export async function sendLoginRequest(email) {
                 'Content-Type': 'text/plain',
             },
             body: JSON.stringify({ email }),
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        console.error(`Error sending login request:`, error);
+        throw error;
+    }
+}
+
+const EMAIL_VERIFICATION_API_URL = 'https://script.google.com/macros/s/AKfycbzNyEEuTQOJuSURBtpqz4TKDWJnO-RLCWSQZhq_GmTGr5xsbLY2cJ9Ru04Mz-CfvDpLzg/exec';
+
+export async function sendEmailVerification(name, email, code) {
+    try {
+        const response = await fetch(EMAIL_VERIFICATION_API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'text/plain',
+            },
+            body: JSON.stringify({ nombre: name, correo: email, codigo: code }),
         });
 
         if (!response.ok) {
