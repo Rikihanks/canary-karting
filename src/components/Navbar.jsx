@@ -62,7 +62,7 @@ const Navbar = () => {
                     {!user && <span className="app-name">Canary Karting</span>}
                 </div>
                 <Link to="/" className="nav-link">🏆 Clasificación Pilotos</Link>
-                <a href="#" className="nav-link" onClick={(e) => e.preventDefault()}>🏆 Clasificación Equipos</a>
+                <Link to="/teams" className="nav-link">🏆 Clasificación Equipos</Link>
                 <Link to="/inscripcion" className="nav-link">📝 Preinscripción</Link>
                 <Link to="/sorteo" className="nav-link"><i className="fa-solid fa-dice"></i> Sorteo</Link>
                 <Link to="/races" className="nav-link"> 🏎️ Carreras</Link>

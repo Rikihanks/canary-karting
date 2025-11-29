@@ -139,6 +139,51 @@ export async function getCalendarData() {
     return parseCalendarCSV(data);
 }
 
+const TEAMS_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTlPsGq-SypD4WPitvnR7JcluA8_6-5ePtuzyf5zFGJ31eppN55iUIHsKo0oduOZ9AVyVTf6VkPvTyu/pub?gid=1382697089&single=true&output=csv";
+const TEAMS_URL = `https://corsproxy.io/?url=${encodeURIComponent(TEAMS_CSV_LINK)}`;
+
+export function parseTeamsCSV(csvText) {
+    const lines = csvText.split('\n');
+    const teamsMap = new Map();
+
+    for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+
+        const parts = line.split(',');
+
+        if (parts.length >= 8) {
+            const name = parts[0].trim();
+            const pilotName = parts[1].trim();
+
+            if (!teamsMap.has(name)) {
+                teamsMap.set(name, {
+                    name: name,
+                    points: parseInt(parts[2].trim()) || 0,
+                    logo: parts[3] ? parts[3].trim() : "",
+                    podiums: parseInt(parts[4].trim()) || 0,
+                    poles: parseInt(parts[5].trim()) || 0,
+                    wins: parseInt(parts[6].trim()) || 0,
+                    division: parseInt(parts[7].trim()) || 0,
+                    pilots: [pilotName]
+                });
+            } else {
+                const team = teamsMap.get(name);
+                if (pilotName && !team.pilots.includes(pilotName)) {
+                    team.pilots.push(pilotName);
+                }
+            }
+        }
+    }
+    return Array.from(teamsMap.values());
+}
+
+export async function getTeamsData() {
+    const response = await fetchWithRetry(TEAMS_URL);
+    const data = await response.text();
+    return parseTeamsCSV(data);
+}
+
 export async function getRaceDetails() {
     const [clasiData, resultData] = await Promise.all([
         fetchWithRetry(CLASI_URL).then(r => r.text()),

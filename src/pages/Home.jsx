@@ -112,7 +112,7 @@ const Home = () => {
                 </div>
             ) : (
                 <>
-                    <div id="podium-container" className="podium">
+                    <div id="podium-container" className="podium fade-in">
                         {top3.map((driver, index) => {
                             const rank = index + 1;
                             return (
@@ -135,7 +135,7 @@ const Home = () => {
                         })}
                     </div>
 
-                    <div id="list-container" className="list">
+                    <div id="list-container" className="list fade-in" style={{ animationDelay: '0.1s' }}>
                         {rest.map((driver, index) => {
                             const rank = index + 4;
                             return (

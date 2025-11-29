@@ -1,7 +1,9 @@
 import React, { useState, useRef } from 'react';
 import { shuffle, parseHistory, findPerfectMatching, crearListaAnimada } from '../utils/sorteoLogic';
+import html2canvas from 'html2canvas';
 
 const Sorteo = () => {
+    const resultadoRef = useRef(null);
     const [pilotos, setPilotos] = useState('');
     const [karts, setKarts] = useState('');
     const [historial, setHistorial] = useState('');
@@ -11,6 +13,30 @@ const Sorteo = () => {
 
     // To store the last assignments for copying to history
     const [lastAssignments, setLastAssignments] = useState([]);
+
+    const exportarAImagen = async () => {
+        if (resultadoRef.current) {
+            try {
+                const canvas = await html2canvas(resultadoRef.current, {
+                    scale: 2, // Mayor calidad
+                    logging: false,
+                    useCORS: true, // Para imágenes externas,
+                    imageTimeout: 65000
+                });
+
+                // Descargar la imagen
+                const link = document.createElement('a');
+                link.download = `sorteo-karts-${Date.now()}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+
+                // O mostrar la imagen
+                // const imgData = canvas.toDataURL('image/png');
+            } catch (error) {
+                console.error('Error al generar la imagen:', error);
+            }
+        }
+    };
 
     const handleSortear = () => {
         const nombres = pilotos.split(/[\n,]+/).map(n => n.trim()).filter(n => n);
@@ -184,6 +210,9 @@ const Sorteo = () => {
                     <button id="sortearBtn" className="btn-primary" onClick={handleSortear} disabled={isSorting}>
                         {isSorting ? <><i className="fa-solid fa-spinner fa-spin"></i> Sorteando...</> : <><i className="fa-solid fa-shuffle"></i> INICIAR SORTEO</>}
                     </button>
+                    <button className="btn-secondary" style={{ display: (!results.length || isSorting) ? 'none' : 'block' }} onClick={exportarAImagen}>
+                        Exportar como Imagen
+                    </button>
                 </div>
             </div>
 
@@ -193,7 +222,44 @@ const Sorteo = () => {
                 ))}
             </div>
             <br />
-
+            <div
+                ref={resultadoRef}
+                className="grid"
+                style={{
+                    display: 'grid',
+                    position: 'absolute',
+                    width: '93%',
+                    left: '-9999px',
+                    zIndex: -1
+                }}
+            >
+                {results.map((item, index) => (
+                    <div
+                        key={`clon-${index}`}
+                        className="card"
+                        // Aseguramos que la tarjeta esté visible (opacidad y posición final)
+                        style={{ opacity: 1, transform: 'translateY(0)', animation: 'none' }}
+                    >
+                        <div className="nombre">{item.name}</div>
+                        <div className="kart-slot">
+                            {/* Renderizamos solo el resultado final, no la lista animada */}
+                            <div
+                                className="kart-list"
+                                // Estilos para forzar el resultado
+                                style={{
+                                    top: '0px',
+                                    filter: 'none',
+                                    transition: 'none',
+                                    animation: 'none'
+                                }}
+                            >
+                                {/* ⚠️ Esto asume que item.kart es el valor final. */}
+                                <div>{item.kart}</div>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
             <style>{`
                 /* Sorteo Specific Styles */
                 .panel {
@@ -219,6 +285,9 @@ const Sorteo = () => {
                 @media (max-width: 600px) {
                     .inputs-row {
                         grid-template-columns: 1fr;
+                    }
+                    .panel {
+                        padding: 15px;
                     }
                 }
                 
@@ -253,6 +322,7 @@ const Sorteo = () => {
                 }
 
                 .btn-primary, .btn-secondary, .btn-danger {
+                    font-size: 16px;
                     padding: 12px 20px;
                     border: none;
                     border-radius: 8px;

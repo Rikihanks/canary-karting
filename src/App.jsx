@@ -10,6 +10,8 @@ import RaceDetail from './pages/RaceDetail';
 import AssistanceConfirmation from './pages/AssistanceConfirmation';
 import Sorteo from './pages/Sorteo';
 import Login from './pages/Login';
+import Teams from './pages/Teams';
+import TeamProfile from './pages/TeamProfile';
 
 function App() {
   return (
@@ -19,6 +21,8 @@ function App() {
         <div className="app-content" style={{}}>
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/teams" element={<Teams />} />
+            <Route path="/team-profile" element={<TeamProfile />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/races" element={<Races />} />
             <Route path="/race-detail" element={<RaceDetail />} />
