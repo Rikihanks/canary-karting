@@ -84,7 +84,6 @@ export function parseResultsCSV(csvText) {
 export function parseCalendarCSV(csvText) {
     const lines = csvText.split('\n').filter(line => line.trim() !== '');
     const events = [];
-    console.log(lines);
 
     for (let i = 1; i < lines.length; i++) {
         const parts = lines[i].split(',');

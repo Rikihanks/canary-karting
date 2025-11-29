@@ -12,8 +12,6 @@ const Teams = () => {
         const fetchData = async () => {
             try {
                 const data = await getTeamsData();
-                console.log(data);
-
                 setTeams(data);
                 setLoading(false);
             } catch (err) {

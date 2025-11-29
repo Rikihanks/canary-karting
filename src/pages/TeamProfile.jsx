@@ -104,7 +104,7 @@ const TeamProfile = () => {
 
             {/* Roster Section */}
             <div className="roster-section fade-in" style={{ animationDelay: '0.2s' }}>
-                <h2 className="section-title">ROSTER</h2>
+                <h2 className="section-title">PILOTOS</h2>
                 <div className="roster-grid">
                     {pilotsData.map((pilot, index) => (
                         <Link key={index} to={`/profile?driver=${encodeURIComponent(pilot.name)}`} className="pilot-card-link">
@@ -117,7 +117,6 @@ const TeamProfile = () => {
                                     )}
                                 </div>
                                 <div className="pilot-name">{pilot.name}</div>
-                                <div className="pilot-role">PILOTO</div>
                             </div>
                         </Link>
                     ))}

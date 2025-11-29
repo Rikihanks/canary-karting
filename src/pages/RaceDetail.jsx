@@ -13,6 +13,9 @@ const RaceDetail = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    const [isQualyOpen, setIsQualyOpen] = useState(true);
+    const [isResultOpen, setIsResultOpen] = useState(true);
+
     useEffect(() => {
         if (!id || !date) {
             setError('Error: Faltan parámetros de circuito o fecha.');
@@ -78,17 +81,45 @@ const RaceDetail = () => {
             </div>
 
             <section id="clasificacion-section">
-                <h2>⏱️ Qualy</h2>
-                <div id="clasificacion-table" className="results-table-container">
-                    {renderGrid(clasiData, 'clasificacion')}
-                </div>
+                <h2
+                    onClick={() => setIsQualyOpen(!isQualyOpen)}
+                    style={{
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        userSelect: 'none'
+                    }}
+                >
+                    <span>⏱️ Qualy</span>
+                    <i className={`fa-solid fa-chevron-${isQualyOpen ? 'up' : 'down'}`} style={{ fontSize: '0.8em' }}></i>
+                </h2>
+                {isQualyOpen && (
+                    <div id="clasificacion-table" className="results-table-container">
+                        {renderGrid(clasiData, 'clasificacion')}
+                    </div>
+                )}
             </section>
 
             <section id="resultado-section">
-                <h2>🏁 Resultado Final</h2>
-                <div id="resultado-table" className="results-table-container">
-                    {renderGrid(resultData, 'resultados')}
-                </div>
+                <h2
+                    onClick={() => setIsResultOpen(!isResultOpen)}
+                    style={{
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        userSelect: 'none'
+                    }}
+                >
+                    <span>🏁 Resultado Final</span>
+                    <i className={`fa-solid fa-chevron-${isResultOpen ? 'up' : 'down'}`} style={{ fontSize: '0.8em' }}></i>
+                </h2>
+                {isResultOpen && (
+                    <div id="resultado-table" className="results-table-container">
+                        {renderGrid(resultData, 'resultados')}
+                    </div>
+                )}
             </section>
         </div>
     );
