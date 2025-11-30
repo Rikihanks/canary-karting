@@ -58,10 +58,13 @@ const Navbar = () => {
             <div id="mobile-menu" className="navbar-menu" data-visible={isMenuVisible}>
                 <div className="menu-header">
                     <img src={`${import.meta.env.BASE_URL}icons/50.png`} alt="icon" className="app-icon" />
-                    {user && <Link key={user.nombre}
-                        to={`/profile?driver=${encodeURIComponent(user.nombre)}`}
-                        className="podium-card-link"
-                    ><span className="app-name">{user.nombre}</span></Link>}
+                    {user &&
+                        <Link key={user.nombre}
+                            to={`/profile?driver=${encodeURIComponent(user.nombre)}`}
+                            className="podium-card-link">
+                            <span className="app-name">{user.nombre}</span>
+                        </Link>
+                    }
                     {!user && <span className="app-name">Canary Karting</span>}
                 </div>
                 <Link to="/" className="nav-link">🏆 Clasificación Pilotos</Link>
