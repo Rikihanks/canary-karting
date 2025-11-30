@@ -10,14 +10,45 @@ const CALENDAR_URL = `https://corsproxy.io/?url=${encodeURIComponent(CALENDAR_CS
 const CLASI_URL = `https://corsproxy.io/?url=${encodeURIComponent(CLASI_CSV_LINK)}`;
 const RESULT_URL = `https://corsproxy.io/?url=${encodeURIComponent(RESULT_CSV_LINK)}`;
 
+const cache = new Map();
+const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
+
+export function clearCache() {
+    cache.clear();
+    console.log('Cache cleared');
+}
+
 export async function fetchWithRetry(url, maxRetries = 3) {
+    const now = new Date().getTime();
+
+    // Check cache first
+    if (cache.has(url)) {
+        const { data, timestamp } = cache.get(url);
+        if (now - timestamp < CACHE_DURATION) {
+            console.log(`Serving from cache: ${url}`);
+            return data.clone(); // Return a clone so the body can be read multiple times if needed
+        } else {
+            cache.delete(url);
+        }
+    }
+
     const timestamp = new Date().getTime();
+    // Keep the timestamp for cache busting the ACTUAL network request, 
+    // but we use the base URL as the key for OUR cache.
     const cacheBusterUrl = `${url}&_t=${timestamp}`;
 
     for (let i = 0; i < maxRetries; i++) {
         try {
             const response = await fetch(cacheBusterUrl);
-            if (response.ok) return response;
+            if (response.ok) {
+                // Clone the response to store in cache and return
+                const clonedResponse = response.clone();
+                cache.set(url, {
+                    data: clonedResponse,
+                    timestamp: now
+                });
+                return response;
+            }
         } catch (error) {
             if (i < maxRetries - 1) {
                 console.log('trying again');
