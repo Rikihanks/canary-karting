@@ -46,7 +46,7 @@ const Races = () => {
     };
 
     return (
-        <PullToRefresh onRefresh={handleRefresh}>
+        <PullToRefresh onRefresh={handleRefresh} pullingContent={''}>
             <div className="container">
                 <br />
                 <div id="calendar-list">

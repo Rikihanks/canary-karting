@@ -86,7 +86,7 @@ const Home = () => {
     };
 
     return (
-        <PullToRefresh onRefresh={handleRefresh}>
+        <PullToRefresh onRefresh={handleRefresh} pullingContent={''}>
             <div className="container">
                 <div className="division-select-container">
                     {showNotificationButton && (

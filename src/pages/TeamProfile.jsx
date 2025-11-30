@@ -86,7 +86,7 @@ const TeamProfile = () => {
     };
 
     return (
-        <PullToRefresh onRefresh={handleRefresh}>
+        <PullToRefresh onRefresh={handleRefresh} pullingContent={''}>
             <div className="container">
                 {/* Hero Section */}
                 <div className="team-hero fade-in">

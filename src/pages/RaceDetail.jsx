@@ -93,7 +93,7 @@ const RaceDetail = () => {
     };
 
     return (
-        <PullToRefresh onRefresh={handleRefresh}>
+        <PullToRefresh onRefresh={handleRefresh} pullingContent={''}>
             <div className="container">
                 <div id="race-info" style={{ backgroundColor: '#1a233a', padding: '10px', borderRadius: '8px', marginBottom: '20px', textAlign: 'center', color: '#93c5fd' }}>
                     <p className="race-info-date">Fecha: <strong>{date}</strong> <br /> Circuito: {circuitName}</p>

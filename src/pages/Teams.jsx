@@ -61,7 +61,7 @@ const Teams = () => {
     };
 
     return (
-        <PullToRefresh onRefresh={handleRefresh}>
+        <PullToRefresh onRefresh={handleRefresh} pullingContent={''}>
             <div className="container">
                 <div className="division-select-container">
                     <label htmlFor="division-select" className="visually-hidden">Seleccionar División:</label>

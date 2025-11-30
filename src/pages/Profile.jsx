@@ -220,7 +220,7 @@ const Profile = () => {
     };
 
     return (
-        <PullToRefresh onRefresh={handleRefresh}>
+        <PullToRefresh onRefresh={handleRefresh} pullingContent={''}>
             <div className="container">
                 {/* Hero Section */}
                 <div className="driver-hero fade-in">
