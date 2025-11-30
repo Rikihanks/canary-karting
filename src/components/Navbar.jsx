@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
     const [isMenuVisible, setIsMenuVisible] = useState(false);
+    const [isSeasonsOpen, setIsSeasonsOpen] = useState(false);
     const { user, logout } = useAuth();
     const location = useLocation();
     const navigate = useNavigate();
@@ -72,6 +73,28 @@ const Navbar = () => {
                 <Link to="/inscripcion" className="nav-link">📝 Preinscripción</Link>
                 <Link to="/sorteo" className="nav-link"><i className="fa-solid fa-dice"></i> Sorteo</Link>
                 <Link to="/races" className="nav-link"> 🏎️ Carreras</Link>
+
+                <div style={{ height: '5px', backgroundColor: 'var(--card-bg)' }}></div>
+
+                <div
+                    className="nav-link"
+                    onClick={() => setIsSeasonsOpen(!isSeasonsOpen)}
+                    style={{ cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                >
+                    <span>📅 Temporadas [WIP]</span>
+                    <i className={`fa-solid fa-chevron-${isSeasonsOpen ? 'up' : 'down'}`} style={{ fontSize: '0.8em' }}></i>
+                </div>
+
+                <div style={{
+                    maxHeight: isSeasonsOpen ? '200px' : '0',
+                    overflow: 'hidden',
+                    transition: 'max-height 0.3s ease-out',
+                    backgroundColor: 'rgba(0, 0, 0, 0.1)'
+                }}>
+                    <div className="nav-link" style={{ paddingLeft: '30px', cursor: 'pointer', fontSize: '0.95em' }}>2026</div>
+                    <div className="nav-link" style={{ paddingLeft: '30px', cursor: 'pointer', fontSize: '0.95em' }}>2025</div>
+                    <div className="nav-link" style={{ paddingLeft: '30px', cursor: 'pointer', fontSize: '0.95em' }}>2024</div>
+                </div>
                 {!user && <Link to="/login" className="nav-link"><i className="fa-solid fa-right-to-bracket"></i> Iniciar Sesión</Link>}
                 {user && (
                     <Link

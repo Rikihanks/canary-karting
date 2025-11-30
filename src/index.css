@@ -165,7 +165,7 @@ h2 {
     padding: 35px 20px;
     margin-bottom: 10px;
     background-color: var(--color-dark);
-    border-bottom: 3px solid var(--card-bg);
+    border-bottom: 6px solid var(--card-bg);
 }
 
 .app-icon {
