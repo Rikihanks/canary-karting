@@ -109,6 +109,10 @@ const Navbar = () => {
                         <i className="fa-solid fa-right-from-bracket"></i> Cerrar Sesión
                     </Link>
                 )}
+
+                <div style={{ marginTop: '20px', padding: '15px', textAlign: 'center', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
+                    Canary Karting App Próximamente
+                </div>
             </div>
         </nav>
     );

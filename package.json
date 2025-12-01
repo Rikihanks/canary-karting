@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "deploy:main": "node scripts/deploy.js main",
+    "deploy:app": "node scripts/deploy.js app"
   },
   "dependencies": {
     "firebase": "^12.6.0",

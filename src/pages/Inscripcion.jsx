@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbylVampyPezpAMNt4ux_MApY92l8hXZyJmZ1Zr54EkxCn8G_x6cE_boUNOJumDA_Lrx/exec";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyFLHFaf3CYK8ylSv986J2-5XFK7NMxwButky-wHZTOirali6HdTvMuX2NXdEVbdnNE/exec";
 
 const Inscripcion = () => {
     const [formData, setFormData] = useState({
