@@ -71,7 +71,7 @@ const Navbar = () => {
                 <Link to="/" className="nav-link">🏆 Clasificación Pilotos</Link>
                 <Link to="/teams" className="nav-link">🏆 Clasificación Equipos</Link>
                 <Link to="/inscripcion" className="nav-link">📝 Preinscripción</Link>
-                <Link to="/sorteo" className="nav-link"><i className="fa-solid fa-dice"></i> Sorteo</Link>
+                <Link to="/sorteo" className="nav-link"><i className="fa-solid fa-dice"></i> &nbsp;Sorteo</Link>
                 <Link to="/races" className="nav-link"> 🏎️ Carreras</Link>
 
                 <div style={{ height: '5px', backgroundColor: 'var(--card-bg)' }}></div>
@@ -106,7 +106,7 @@ const Navbar = () => {
                         }}
                         style={{ background: 'none', border: 'none', textAlign: 'left', width: '100%', cursor: 'pointer', fontSize: 'inherit', fontFamily: 'inherit', color: 'inherit' }}
                     >
-                        <i className="fa-solid fa-right-from-bracket"></i> Cerrar Sesión
+                        <i className="fa-solid fa-right-from-bracket"></i> &nbsp;Cerrar Sesión
                     </Link>
                 )}
 
