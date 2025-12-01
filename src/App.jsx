@@ -20,7 +20,7 @@ function App() {
         <Navbar />
         <div className="app-content" style={{}}>
           <Routes>
-            <Route path="/" element={<Inscripcion />} />
+            <Route path="/" element={<Home />} />
             <Route path="/teams" element={<Teams />} />
             <Route path="/team-profile" element={<TeamProfile />} />
             <Route path="/profile" element={<Profile />} />
