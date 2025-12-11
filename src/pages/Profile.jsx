@@ -195,6 +195,11 @@ const Profile = () => {
     const poles = driverHistory.filter(r => r.pole_pos === 1).length;
     const fastLaps = driverHistory.filter(r => r.fastest_lap && r.fastest_lap !== 'N/A' && r.fastest_lap.trim() !== '-').length;
 
+    // TODO: Connect to real data when available.
+    const mockChampionships = 1; // MOCKUP DATA
+
+
+
     const handleRefresh = async () => {
         const { clearCache } = await import('../services/data');
         clearCache();
@@ -224,6 +229,7 @@ const Profile = () => {
             <div className="container">
                 {/* Hero Section */}
                 <div className="driver-hero fade-in">
+                    <div className="hero-bg" style={{ backgroundImage: `url(${driverStats.photo})` }}></div>
                     <div className="hero-content">
                         <img src={driverStats.photo} alt={driverStats.name} className="driver-photo-hero" />
                         <div className="driver-info-wrapper">
@@ -237,6 +243,19 @@ const Profile = () => {
                     <div className="total-points-hero">
                         <span className="points-val">{driverStats.points}</span>
                         <span className="points-label">PUNTOS</span>
+                    </div>
+                </div>
+
+                {/* Championships Section (Most Important) */}
+                <div className="fade-in" style={{ animationDelay: '0.05s' }}>
+                    <div className={`championship-section ${mockChampionships > 0 ? 'gold-tier' : 'gray-tier'}`}>
+                        <div className="champ-icon-wrapper">
+                            <i className="fa-solid fa-trophy champ-icon"></i>
+                        </div>
+                        <div className="champ-info">
+                            <span className="champ-count">{mockChampionships}</span>
+                            <span className="champ-label">CAMPEONATOS GANADOS</span>
+                        </div>
                     </div>
                 </div>
 
@@ -315,27 +334,41 @@ const Profile = () => {
                         overflow: hidden;
                     }
 
+                    .hero-bg {
+                        position: absolute;
+                        top: 0; left: 0; width: 100%; height: 100%;
+                        background-size: cover;
+                        background-position: center 20%;
+                        filter: blur(15px) brightness(0.25);
+                        transform: scale(1.1);
+                        z-index: 0;
+                    }
+
                     .driver-hero::before {
                         content: '';
                         position: absolute;
                         top: 0; left: 0; right: 0; height: 4px;
                         background: linear-gradient(90deg, var(--accent), #a855f7, var(--accent));
+                        z-index: 2;
                     }
 
                     .hero-content {
+                        position: relative;
+                        z-index: 1;
                         display: flex;
                         flex-direction: column;
                         align-items: center;
                     }
 
                     .driver-photo-hero {
-                        width: 110px;
-                        height: 110px;
-                        border-radius: 50%;
-                        border: 4px solid rgba(255, 255, 255, 0.1);
-                        box-shadow: 0 0 30px rgba(59, 130, 246, 0.3);
+                        width: 160px;
+                        height: 160px;
+                        border-radius: 20px;
+                        border: 4px solid rgba(255, 255, 255, 0.2);
+                        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
                         margin-bottom: 15px;
                         object-fit: cover;
+                        object-position: top;
                     }
 
                     .driver-info-wrapper {
@@ -379,7 +412,10 @@ const Profile = () => {
                         margin-top: 18px;
                         display: inline-flex;
                         flex-direction: column;
-                        background: rgba(0, 0, 0, 0.3);
+                        background: rgba(0, 0, 0, 0.5);
+                        backdrop-filter: blur(5px);
+                        position: relative;
+                        z-index: 1;
                         padding: 10px 30px;
                         border-radius: 12px;
                         border: 1px solid rgba(255, 255, 255, 0.05);
@@ -398,6 +434,111 @@ const Profile = () => {
                         letter-spacing: 2px;
                         font-weight: 600;
                     }
+
+                    /* Championship Section */
+                    .championship-section {
+                        border-radius: 20px;
+                        padding: 25px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 25px;
+                        margin-bottom: 30px;
+                        position: relative;
+                        overflow: hidden;
+                        transform-style: preserve-3d;
+                        transition: all 0.3s ease;
+                    }
+
+                    .championship-section.gold-tier {
+                        background: linear-gradient(135deg, #F59E0B 0%, #B45309 100%);
+                        box-shadow: 0 10px 30px rgba(245, 158, 11, 0.4);
+                        border: 2px solid rgba(255, 255, 255, 0.2);
+                        animation: pulseGlow 3s infinite ease-in-out;
+                    }
+
+                    .championship-section.gray-tier {
+                        background: rgba(30, 41, 59, 0.4);
+                        border: 1px solid rgba(255, 255, 255, 0.05);
+                    }
+
+                    .championship-section.gray-tier .champ-icon {
+                        color: #64748b;
+                        filter: none;
+                    }
+
+                    .championship-section.gray-tier .champ-count {
+                        color: #94a3b8;
+                        text-shadow: none;
+                    }
+
+                    .championship-section.gray-tier .champ-label {
+                        color: #64748b;
+                    }
+
+                    @keyframes pulseGlow {
+                        0% { box-shadow: 0 10px 30px rgba(245, 158, 11, 0.4); }
+                        50% { box-shadow: 0 10px 40px rgba(245, 158, 11, 0.7); }
+                        100% { box-shadow: 0 10px 30px rgba(245, 158, 11, 0.4); }
+                    }
+
+                    .championship-section.gold-tier::before {
+                        content: '';
+                        position: absolute;
+                        top: -50%;
+                        left: -50%;
+                        width: 200%;
+                        height: 200%;
+                        background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 60%);
+                        animation: rotateShine 10s linear infinite;
+                    }
+
+                    @keyframes rotateShine {
+                        from { transform: rotate(0deg); }
+                        to { transform: rotate(360deg); }
+                    }
+
+                    .champ-icon-wrapper {
+                        background: rgba(255, 255, 255, 0.2);
+                        width: 80px;
+                        height: 80px;
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        backdrop-filter: blur(5px);
+                        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+                        z-index: 1;
+                    }
+
+                    .champ-icon {
+                        font-size: 2.5rem;
+                        color: #FFF;
+                        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+                    }
+
+                    .champ-info {
+                        display: flex;
+                        flex-direction: column;
+                        z-index: 1;
+                    }
+
+                    .champ-count {
+                        font-family: 'Russo One', sans-serif;
+                        font-size: 3.5rem;
+                        color: white;
+                        line-height: 1;
+                        text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+                    }
+
+                    .champ-label {
+                        font-size: 1rem;
+                        color: rgba(255, 255, 255, 0.9);
+                        font-weight: 700;
+                        letter-spacing: 1px;
+                        text-transform: uppercase;
+                    }
+
 
                     /* Stats Row */
                     .stats-row {

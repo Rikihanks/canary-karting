@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { getLeaderboardData } from '../services/data';
 
 const Navbar = () => {
     const [isMenuVisible, setIsMenuVisible] = useState(false);
@@ -9,6 +10,27 @@ const Navbar = () => {
     const { user, logout } = useAuth();
     const location = useLocation();
     const navigate = useNavigate();
+    const [userPhoto, setUserPhoto] = useState(null);
+
+    useEffect(() => {
+        const fetchUserPhoto = async () => {
+            if (user) {
+                try {
+                    const data = await getLeaderboardData();
+                    const driver = data.find(d => d.name === user.nombre);
+                    if (driver && driver.photo) {
+                        setUserPhoto(driver.photo);
+                    }
+                } catch (error) {
+                    console.error("Error fetching user photo:", error);
+                }
+            } else {
+                setUserPhoto(null);
+            }
+        };
+
+        fetchUserPhoto();
+    }, [user]);
 
     const toggleMenu = () => {
         setIsMenuVisible(!isMenuVisible);
@@ -58,7 +80,11 @@ const Navbar = () => {
 
             <div id="mobile-menu" className="navbar-menu" data-visible={isMenuVisible}>
                 <div className="menu-header">
-                    <img src={`${import.meta.env.BASE_URL}icons/50.png`} alt="icon" className="app-icon" />
+                    {user && userPhoto ? (
+                        <img src={userPhoto} alt={user.nombre} className="app-icon" style={{ width: '100px', height: '65px', borderRadius: '12px', objectFit: 'cover', objectPosition: 'top', border: 'none' }} />
+                    ) : (
+                        <img src={`${import.meta.env.BASE_URL}icons/50.png`} alt="icon" className="app-icon" style={{ width: '50px', height: '50px', objectFit: 'contain' }} />
+                    )}
                     {user &&
                         <Link key={user.nombre}
                             to={`/profile?driver=${encodeURIComponent(user.nombre)}`}
@@ -76,6 +102,7 @@ const Navbar = () => {
 
                 <div style={{ height: '5px', backgroundColor: 'var(--card-bg)' }}></div>
 
+                {/*
                 <div
                     className="nav-link"
                     onClick={() => setIsSeasonsOpen(!isSeasonsOpen)}
@@ -84,6 +111,7 @@ const Navbar = () => {
                     <span>📅 Temporadas [WIP]</span>
                     <i className={`fa-solid fa-chevron-${isSeasonsOpen ? 'up' : 'down'}`} style={{ fontSize: '0.8em' }}></i>
                 </div>
+                */}
 
                 <div style={{
                     maxHeight: isSeasonsOpen ? '200px' : '0',

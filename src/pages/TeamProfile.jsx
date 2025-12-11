@@ -89,8 +89,10 @@ const TeamProfile = () => {
         <PullToRefresh onRefresh={handleRefresh} pullingContent={''}>
             <div className="container">
                 {/* Hero Section */}
-                <div className="team-hero fade-in">
-                    <div className="hero-content">
+                {/* Hero Section */}
+                <div className="team-hero fade-in" style={{ '--team-logo': `url(${teamStats.logo})` }}>
+                    <div className="hero-watermark"></div>
+                    <div className="hero-left">
                         {teamStats.logo ? (
                             <img src={teamStats.logo} alt={teamStats.name} className="team-logo-hero" />
                         ) : (
@@ -98,26 +100,30 @@ const TeamProfile = () => {
                                 <i className="fa-solid fa-users"></i>
                             </div>
                         )}
-                        <h1 className="team-name-hero">{teamStats.name}</h1>
-                        <div className="division-badge">
-                            {teamStats.division}ª DIVISIÓN
-                        </div>
                     </div>
-                    <div className="total-points-hero">
-                        <span className="points-val">{teamStats.points}</span>
-                        <span className="points-label">PUNTOS</span>
+                    <div className="hero-right">
+                        <div className="hero-header">
+                            <h1 className="team-name-hero">{teamStats.name}</h1>
+                            <div className="division-badge">
+                                {teamStats.division}ª DIVISIÓN
+                            </div>
+                        </div>
+                        <div className="hero-stats">
+                            <div className="hero-stat-item">
+                                <span className="h-val">{teamStats.points}</span>
+                                <span className="h-lbl">PUNTOS</span>
+                            </div>
+                            <div className="hero-stat-item">
+                                <span className="h-val">{teamStats.wins}</span>
+                                <span className="h-lbl">VICTORIAS</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 {/* Stats Row */}
                 <div className="stats-row fade-in" style={{ animationDelay: '0.1s' }}>
-                    <div className="stat-card gold">
-                        <div className="stat-icon-wrapper"><i className="fa-solid fa-trophy"></i></div>
-                        <div className="stat-info">
-                            <span className="stat-number">{teamStats.wins}</span>
-                            <span className="stat-title">Victorias</span>
-                        </div>
-                    </div>
+
                     <div className="stat-card silver">
                         <div className="stat-icon-wrapper"><i className="fa-solid fa-medal"></i></div>
                         <div className="stat-info">
@@ -174,93 +180,199 @@ const TeamProfile = () => {
                     }
 
                     /* Hero Section */
+                    /* Hero Section */
                     .team-hero {
-                        background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+                        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
                         border-radius: 24px;
-                        padding: 20px 15px;
-                        text-align: center;
+                        padding: 40px;
+                        display: flex;
+                        align-items: center;
+                        gap: 40px;
                         position: relative;
-                        border: 1px solid rgba(255, 255, 255, 0.1);
-                        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-                        margin-bottom: 25px;
                         overflow: hidden;
+                        border: 1px solid rgba(255, 255, 255, 0.1);
+                        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 0 100px rgba(0,0,0,0.5);
+                        margin-bottom: 40px;
+                        z-index: 1;
                     }
 
-                    .team-hero::before {
+                    .hero-watermark {
+                        position: absolute;
+                        top: 50%;
+                        right: -10%;
+                        width: 80%;
+                        height: 150%;
+                        transform: translateY(-50%) rotate(-15deg);
+                        background-image: var(--team-logo);
+                        background-size: contain;
+                        background-repeat: no-repeat;
+                        background-position: center;
+                        opacity: 0.07;
+                        pointer-events: none;
+                        z-index: -1;
+                        filter: grayscale(100%) contrast(1.2);
+                        mix-blend-mode: overlay;
+                    }
+
+                    /* Neon Accent Line */
+                    .team-hero::after {
                         content: '';
                         position: absolute;
-                        top: 0; left: 0; right: 0; height: 4px;
-                        background: linear-gradient(90deg, var(--accent), #a855f7, var(--accent));
+                        bottom: 0; left: 0; width: 100%; height: 6px;
+                        background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
+                        box-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+                    }
+
+                    .hero-left {
+                        flex-shrink: 0;
+                        z-index: 2;
+                        position: relative;
+                    }
+
+                    .hero-right {
+                        flex-grow: 1;
+                        z-index: 2;
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: center;
                     }
 
                     .team-logo-hero {
-                        width: 90px;
-                        height: 90px;
-                        border-radius: 50%;
-                        border: 4px solid rgba(255, 255, 255, 0.1);
-                        box-shadow: 0 0 30px rgba(59, 130, 246, 0.3);
-                        margin-bottom: 12px;
-                        object-fit: cover;
+                        width: 160px;
+                        height: 160px;
+                        border-radius: 24px;
+                        /* Neon Glow Shadow */
+                        box-shadow: 0 0 30px rgba(59, 130, 246, 0.4), 0 10px 20px rgba(0,0,0,0.5);
+                        object-fit: contain; /* Full logo visibility */
+                        background: rgba(15, 23, 42, 0.8);
+                        backdrop-filter: blur(10px);
+                        border: 1px solid rgba(255, 255, 255, 0.1);
+                        padding: 10px; /* Padding inside the card */
+                        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+                    }
+                    
+                    .team-hero:hover .team-logo-hero {
+                         transform: scale(1.1) rotate(2deg);
+                         box-shadow: 0 0 50px rgba(59, 130, 246, 0.6);
                     }
 
                     .team-logo-placeholder {
-                        width: 90px;
-                        height: 90px;
-                        border-radius: 50%;
-                        background: #334155;
+                        width: 160px;
+                        height: 160px;
+                        border-radius: 24px;
+                        background: #1e293b;
                         display: flex;
                         align-items: center;
                         justify-content: center;
-                        font-size: 2.5rem;
-                        margin: 0 auto 12px auto;
-                        border: 4px solid rgba(255, 255, 255, 0.1);
+                        font-size: 4rem;
+                        color: #475569;
+                        box-shadow: inset 0 0 30px rgba(0,0,0,0.5);
+                    }
+
+                    .hero-header {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: flex-start;
+                        margin-bottom: 25px;
                     }
 
                     .team-name-hero {
                         font-family: 'Russo One', sans-serif;
-                        font-size: 2rem;
+                        font-size: 3.5rem; /* Massive */
                         margin: 0;
-                        background: linear-gradient(180deg, #fff, #cbd5e1);
+                        line-height: 0.9;
+                        background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%);
                         -webkit-background-clip: text;
                         -webkit-text-fill-color: transparent;
                         text-transform: uppercase;
-                        letter-spacing: 1px;
+                        letter-spacing: -1px;
+                        text-align: left;
+                        filter: drop-shadow(0 4px 0px rgba(0,0,0,0.5)); /* 3D Text block effect */
+                        position: relative;
+                        z-index: 10;
                     }
 
                     .division-badge {
                         display: inline-block;
-                        background: rgba(59, 130, 246, 0.15);
-                        color: var(--accent);
-                        padding: 6px 16px;
-                        border-radius: 20px;
-                        font-weight: 700;
+                        background: rgba(59, 130, 246, 0.1);
+                        color: #60a5fa;
+                        padding: 8px 16px;
+                        border-radius: 4px;
+                        font-family: 'Montserrat', sans-serif;
+                        font-weight: 800;
                         font-size: 0.9rem;
-                        margin-top: 10px;
-                        border: 1px solid rgba(59, 130, 246, 0.3);
-                    }
-
-                    .total-points-hero {
                         margin-top: 15px;
-                        display: inline-flex;
-                        flex-direction: column;
-                        background: rgba(0, 0, 0, 0.3);
-                        padding: 8px 25px;
-                        border-radius: 12px;
-                        border: 1px solid rgba(255, 255, 255, 0.05);
+                        border-left: 4px solid #60a5fa;
+                        letter-spacing: 2px;
+                        text-transform: uppercase;
+                        backdrop-filter: blur(5px);
                     }
 
-                    .points-val {
+                    .hero-stats {
+                        display: flex;
+                        gap: 40px;
+                        padding-top: 20px;
+                        border-top: 2px solid rgba(255,255,255,0.05);
+                        width: 100%;
+                    }
+
+                    .hero-stat-item {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: flex-start;
+                    }
+
+                    .h-val {
                         font-family: 'Russo One', sans-serif;
                         font-size: 2.5rem;
                         color: #fbbf24;
                         line-height: 1;
+                        text-shadow: 0 0 20px rgba(251, 191, 36, 0.4); /* Gold Glow */
                     }
 
-                    .points-label {
+                    .h-lbl {
                         font-size: 0.8rem;
                         color: #94a3b8;
-                        letter-spacing: 2px;
-                        font-weight: 600;
+                        font-weight: 700;
+                        letter-spacing: 1px;
+                        margin-top: 5px;
+                        text-transform: uppercase;
+                    }
+
+                    @media (max-width: 768px) {
+                        .team-hero {
+                            flex-direction: column;
+                            text-align: center;
+                            padding: 30px 20px;
+                            gap: 20px;
+                        }
+                        .hero-watermark {
+                            width: 100%;
+                            height: 100%;
+                            top: 0;
+                            right: 0;
+                            transform: none;
+                            opacity: 0.05;
+                            background-size: cover;
+                        }
+                        
+                        .hero-right {
+                             align-items: center;
+                        }
+                        .hero-header {
+                            align-items: center;
+                        }
+                        .team-name-hero {
+                            font-size: 2.2rem;
+                            text-align: center;
+                        }
+                        .hero-stats {
+                            justify-content: center;
+                            gap: 30px;
+                        }
+                        .hero-stat-item {
+                            align-items: center;
+                        }
                     }
 
                     /* Stats Row */
@@ -362,8 +474,8 @@ const TeamProfile = () => {
                     }
 
                     .pilot-img-wrapper {
-                        width: 70px;
-                        height: 70px;
+                        width: 75px;
+                        height: 75px;
                         margin: 0 auto 12px auto;
                         position: relative;
                     }
@@ -371,15 +483,16 @@ const TeamProfile = () => {
                     .pilot-img {
                         width: 100%;
                         height: 100%;
-                        border-radius: 50%;
+                        border-radius: 12px;
                         object-fit: cover;
+                        object-position: top;
                         border: 3px solid rgba(255, 255, 255, 0.1);
                     }
 
                     .pilot-img-placeholder {
                         width: 100%;
                         height: 100%;
-                        border-radius: 50%;
+                        border-radius: 12px;
                         background: #334155;
                         display: flex;
                         align-items: center;
