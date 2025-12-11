@@ -1280,7 +1280,7 @@ Verstappen`,value:a,onChange:R=>r(R.target.value)})]}),p.jsxs("div",{style:{disp
                         background-size: contain;
                         background-repeat: no-repeat;
                         background-position: center;
-                        opacity: 0.07;
+                        opacity: 0.10
                         pointer-events: none;
                         z-index: -1;
                         filter: grayscale(100%) contrast(1.2);
@@ -1316,7 +1316,7 @@ Verstappen`,value:a,onChange:R=>r(R.target.value)})]}),p.jsxs("div",{style:{disp
                         border-radius: 24px;
                         /* Neon Glow Shadow */
                         box-shadow: 0 0 30px rgba(59, 130, 246, 0.4), 0 10px 20px rgba(0,0,0,0.5);
-                        object-fit: contain; /* Full logo visibility */
+                        object-fit: cover; /* Full logo visibility */
                         background: rgba(15, 23, 42, 0.8);
                         backdrop-filter: blur(10px);
                         border: 1px solid rgba(255, 255, 255, 0.1);
@@ -1425,7 +1425,7 @@ Verstappen`,value:a,onChange:R=>r(R.target.value)})]}),p.jsxs("div",{style:{disp
                             top: 0;
                             right: 0;
                             transform: none;
-                            opacity: 0.05;
+                            opacity: 0.10;
                             background-size: cover;
                         }
                         
