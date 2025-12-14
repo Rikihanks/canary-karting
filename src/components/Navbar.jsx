@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { getLeaderboardData } from '../services/data';
+import { useConfig } from '../context/ConfigContext';
 
 const Navbar = () => {
     const [isMenuVisible, setIsMenuVisible] = useState(false);
@@ -11,6 +12,7 @@ const Navbar = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const [userPhoto, setUserPhoto] = useState(null);
+    const config = useConfig(); // Consume config context
 
     useEffect(() => {
         const fetchUserPhoto = async () => {
@@ -62,22 +64,92 @@ const Navbar = () => {
         };
     }, [isMenuVisible]);
 
+    // Helper to safely check config (defaults to true if config is loading/undefined, or handle loading state differently)
+    const isEnabled = (key) => config && config[key] !== false;
+
+    // Define navigation items
+    const navItems = [
+        { to: "/", label: "🏆 Clasificación Pilotos" },
+        { to: "/teams", label: "🏆 Clasificación Equipos", feature: "teams" },
+        { to: "/inscripcion", label: "📝 Preinscripción", feature: "inscripcion" },
+        { to: "/sorteo", label: <span><i className="fa-solid fa-dice"></i> &nbsp;Sorteo</span>, feature: "sorteo" },
+        { to: "/races", label: "🏎️ Carreras", feature: "races" },
+    ];
+
+    const renderNavLinks = (isMobile = false) => {
+        return navItems.map((item, index) => {
+            if (item.feature && !isEnabled(item.feature)) return null;
+            return (
+                <Link
+                    key={index}
+                    to={item.to}
+                    className={isMobile ? "nav-link" : "nav-link-desktop"}
+                >
+                    {item.label}
+                </Link>
+            );
+        });
+    };
+
     return (
         <nav className="navbar-wrapper">
             <div className="navbar-top">
-                <button
-                    className="menu-toggle"
-                    aria-controls="mobile-menu"
-                    aria-expanded={isMenuVisible}
-                    onClick={toggleMenu}
-                >
-                    <i className={`fa-solid ${isMenuVisible ? '' : 'fa-bars'}`}></i>
-                </button>
-                <span className="navbar-title">
-                    Canary Karting
-                </span>
+                <div className="navbar-left">
+                    <button
+                        className="menu-toggle"
+                        aria-controls="mobile-menu"
+                        aria-expanded={isMenuVisible}
+                        onClick={toggleMenu}
+                    >
+                        <i className={`fa-solid ${isMenuVisible ? '' : 'fa-bars'}`}></i>
+                    </button>
+                    <div className="navbar-brand">
+                        <span className="navbar-title">
+                            Canary Karting
+                        </span>
+                    </div>
+                </div>
+
+                {/* Desktop Navigation */}
+                <div className="navbar-desktop">
+                    {renderNavLinks(false)}
+
+                    {/* Season Dropdown Desktop */}
+                    {/* 
+                    <div className="nav-link-desktop" style={{ cursor: 'pointer' }}>
+                        Temp. 2025
+                    </div>
+                     */}
+
+                    {(!user && isEnabled('login')) && (
+                        <Link to="/login" className="nav-link-desktop login-btn">
+                            <i className="fa-solid fa-right-to-bracket"></i> Iniciar Sesión
+                        </Link>
+                    )}
+
+                    {user && (
+                        <div className="user-menu-desktop">
+                            <Link
+                                to={`/profile?driver=${encodeURIComponent(user.nombre)}`}
+                                style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', color: 'inherit' }}
+                            >
+                                <span className="user-name">{user.nombre}</span>
+                                {userPhoto && <img src={userPhoto} alt="Profile" className="mini-avatar-nav" />}
+                            </Link>
+                            <button
+                                onClick={() => { logout(); navigate('/'); }}
+                                className="logout-btn-desktop"
+                                title="Cerrar Sesión"
+                            >
+                                <i className="fa-solid fa-power-off"></i>
+                            </button>
+                        </div>
+                    )}
+
+                </div>
             </div>
 
+            {/* Mobile Sidebar */}
             <div id="mobile-menu" className="navbar-menu" data-visible={isMenuVisible}>
                 <div className="menu-header">
                     {user && userPhoto ? (
@@ -94,24 +166,10 @@ const Navbar = () => {
                     }
                     {!user && <span className="app-name">Canary Karting</span>}
                 </div>
-                <Link to="/" className="nav-link">🏆 Clasificación Pilotos</Link>
-                <Link to="/teams" className="nav-link">🏆 Clasificación Equipos</Link>
-                <Link to="/inscripcion" className="nav-link">📝 Preinscripción</Link>
-                <Link to="/sorteo" className="nav-link"><i className="fa-solid fa-dice"></i> &nbsp;Sorteo</Link>
-                <Link to="/races" className="nav-link"> 🏎️ Carreras</Link>
+
+                {renderNavLinks(true)}
 
                 <div style={{ height: '5px', backgroundColor: 'var(--card-bg)' }}></div>
-
-                {/*
-                <div
-                    className="nav-link"
-                    onClick={() => setIsSeasonsOpen(!isSeasonsOpen)}
-                    style={{ cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-                >
-                    <span>📅 Temporadas [WIP]</span>
-                    <i className={`fa-solid fa-chevron-${isSeasonsOpen ? 'up' : 'down'}`} style={{ fontSize: '0.8em' }}></i>
-                </div>
-                */}
 
                 <div style={{
                     maxHeight: isSeasonsOpen ? '200px' : '0',
@@ -123,7 +181,9 @@ const Navbar = () => {
                     <div className="nav-link" style={{ paddingLeft: '30px', cursor: 'pointer', fontSize: '0.95em' }}>2025</div>
                     <div className="nav-link" style={{ paddingLeft: '30px', cursor: 'pointer', fontSize: '0.95em' }}>2024</div>
                 </div>
-                {!user && <Link to="/login" className="nav-link"><i className="fa-solid fa-right-to-bracket"></i> Iniciar Sesión</Link>}
+
+                {(!user && isEnabled('login')) && <Link to="/login" className="nav-link"><i className="fa-solid fa-right-to-bracket"></i> Iniciar Sesión</Link>}
+
                 {user && (
                     <Link
                         className="nav-link"
@@ -138,9 +198,6 @@ const Navbar = () => {
                     </Link>
                 )}
 
-                <div style={{ marginTop: '20px', padding: '15px', textAlign: 'center', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
-                    Canary Karting App Próximamente
-                </div>
             </div>
         </nav>
     );

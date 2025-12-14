@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { confirmAssistance } from '../services/data';
 
 const AssistanceConfirmation = () => {
@@ -9,13 +10,19 @@ const AssistanceConfirmation = () => {
     const [showModal, setShowModal] = useState(false);
     const [status, setStatus] = useState('idle');
     const [message, setMessage] = useState('');
+    const { user } = useAuth();
+
+    useEffect(() => {
+        if (user && user.correo) {
+            setEmail(user.correo);
+        }
+    }, [user]);
 
     const race = { id: 1, name: 'Carrera 1 - 15 Diciembre 2024', date: '11/09/2025' };
 
     const divisions = [
-        { id: 'senior', name: 'Senior' },
-        { id: 'junior', name: 'Junior' },
-        { id: 'master', name: 'Master' }
+        { id: '1', name: 'Primera' },
+        { id: '2', name: 'Segunda' }
     ];
 
     const handleOpenModal = (e) => {
@@ -106,6 +113,8 @@ const AssistanceConfirmation = () => {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 placeholder="tu@email.com"
+                                disabled={!!user}
+                                style={user ? { opacity: 0.7, cursor: 'not-allowed' } : {}}
                             />
                         </div>
 
@@ -120,6 +129,9 @@ const AssistanceConfirmation = () => {
                                 onChange={(e) => setCodigo(e.target.value)}
                                 placeholder="Ingresa tu código"
                             />
+                            <small style={{ marginTop: '8px', color: 'var(--text-muted)' }}>
+                                Si has perdido tu código, contacta con la administración de Canary Karting.
+                            </small>
                         </div>
 
                         <button type="submit" disabled={!isFormValid || status === 'submitting'}>

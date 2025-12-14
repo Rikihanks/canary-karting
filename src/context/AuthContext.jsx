@@ -6,6 +6,7 @@ const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
@@ -17,6 +18,7 @@ export const AuthProvider = ({ children }) => {
                 localStorage.removeItem('user');
             }
         }
+        setIsLoading(false);
     }, []);
 
     const login = async (email) => {
@@ -31,7 +33,7 @@ export const AuthProvider = ({ children }) => {
             if (!emailResponse.success) {
                 return { success: false, message: emailResponse.message || 'Error al enviar correo de verificación' };
             }
-
+            response.data.codigo = null;
             setUser(response.data);
             localStorage.setItem('user', JSON.stringify(response.data));
             addUserToTopic('pilotos');
@@ -49,7 +51,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, logout }}>
+        <AuthContext.Provider value={{ user, isLoading, login, logout }}>
             {children}
         </AuthContext.Provider>
     );

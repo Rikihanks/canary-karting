@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getMessaging, getToken } from "firebase/messaging";
+import { getFirestore } from "firebase/firestore";
 import * as fcmMethods from "firebase/messaging";
 
 const firebaseConfig = {
@@ -13,7 +14,18 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-export const messaging = getMessaging(app);
+
+let messaging = null;
+try {
+    if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
+        messaging = getMessaging(app);
+    }
+} catch (error) {
+    console.error("Firebase Messaging initialization failed:", error);
+}
+
+export { messaging };
+export const db = getFirestore(app);
 
 export const addUserToTopic = async (topic) => {
 };
@@ -30,6 +42,11 @@ export const requestPermission = async () => {
 
             // We need the service worker registration to get the token
             const registration = await navigator.serviceWorker.ready;
+
+            if (!messaging) {
+                console.log('Messaging not supported.');
+                return false;
+            }
 
             const currentToken = await getToken(messaging, {
                 vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,

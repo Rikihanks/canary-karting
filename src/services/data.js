@@ -4,6 +4,11 @@ const CALENDAR_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTq8s
 const CLASI_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTq8sBXfzKkBmGEUxaqB57exxTbF_0yYsHVaRsQ2F7HzCXoMVK8zW8630R4vtSvRn590pj-N65vFQek/pub?gid=25895170&single=true&output=csv";
 const RESULT_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTq8sBXfzKkBmGEUxaqB57exxTbF_0yYsHVaRsQ2F7HzCXoMVK8zW8630R4vtSvRn590pj-N65vFQek/pub?gid=1225782575&single=true&output=csv";
 
+const CONFIG_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRzmcWDtElCuePL4NN3FT5fyBVdLNovmMa0QcibtaeeFAqpVkdioNT14QaG81zbgjrnEtHRsLxKSi17/pub?output=csv";
+const UPDATE_CONFIG_EXEC = "https://script.google.com/macros/s/AKfycbwPsWOaN1WkF7eq5SXDWASonFNJUBW69HmdDSs8EpOZlCAQ8d_ShIQtvGaUaV0-YhZUtA/exec";
+
+const CONFIG_URL = `https://corsproxy.io/?url=${encodeURIComponent(CONFIG_CSV_LINK)}`;
+
 const SHEET_URL = `https://corsproxy.io/?url=${encodeURIComponent(GOOGLE_CSV_LINK)}`;
 const RESULTS_URL = `https://corsproxy.io/?url=${encodeURIComponent(RESULTS_CSV_LINK)}`;
 const CALENDAR_URL = `https://corsproxy.io/?url=${encodeURIComponent(CALENDAR_CSV_LINK)}`;
@@ -17,6 +22,7 @@ export function clearCache() {
     cache.clear();
     console.log('Cache cleared');
 }
+
 
 export async function fetchWithRetry(url, maxRetries = 3) {
     const now = new Date().getTime();
@@ -225,6 +231,65 @@ export async function getRaceDetails() {
     };
 }
 
+export function parseConfigCSV(csvText) {
+    const lines = csvText.split('\n');
+    const config = {};
+
+    lines.forEach(line => {
+        const [key, value] = line.split(',');
+        if (key && value) {
+            // Check for explicitly "FALSE" string (case insensitive)
+            config[key.trim()] = value.trim().toUpperCase() !== 'FALSE';
+        }
+    });
+
+    return config;
+}
+
+export async function getConfigData() {
+    try {
+        const response = await fetchWithRetry(CONFIG_URL); // Use fetchWithRetry if you want caching, or direct fetch if you want instant updates (maybe with lower cache duration)
+        const data = await response.text();
+        return parseConfigCSV(data);
+    } catch (error) {
+        console.error("Error fetching config:", error);
+        // Fallback default config if fetch fails
+        return {
+            teams: true,
+            races: true,
+            inscripcion: false,
+            sorteo: true,
+            login: true
+        };
+    }
+}
+
+// Using the same Script URL for updates (User must update Backend to handle 'updateConfig' action)
+export async function updateConfig(key, value, email) {
+    try {
+        const response = await fetch(UPDATE_CONFIG_EXEC, {
+            method: 'POST',
+            mode: 'no-cors', // Google Apps Script limitations often require no-cors for simple posts if not using proper CORS proxy for writes
+            headers: {
+                'Content-Type': 'text/plain',
+            },
+            body: JSON.stringify({
+                action: 'updateConfig',
+                key: key,
+                value: value,
+                email: email
+            }),
+        });
+
+        // precise response handling with no-cors is limited (response type is opaque)
+        // We assume success if no network error.
+        return { success: true };
+    } catch (error) {
+        console.error("Error updating config:", error);
+        return { success: false, message: error.message };
+    }
+}
+
 const ASSISTANCE_WEB_APP_URL_RAW = 'https://script.google.com/macros/s/AKfycbw_O_PAmJh89uMEKX8eIS6aMr8gZJcXx7k9buqtkk4fsLyxvLCyU4ghqdBwDIoVPypn2g/exec';
 
 /**
@@ -257,7 +322,7 @@ export async function confirmAssistance(assistanceData) {
     }
 }
 
-const LOGIN_API_URL = 'https://script.google.com/macros/s/AKfycbyAYIDsFRBu8TcRgn1b18b5BOSXHu52eNnmwKy28RhwJa4t8O6O3Uhsh9s5pGlA4A66YQ/exec';
+const LOGIN_API_URL = 'https://script.google.com/macros/s/AKfycbyWNeqQxfQRqW8V6gsQP7HtwKEXXduMIiv37e9cWVeJmh7eFVHwBkK5M-8QUfU-9vrtIg/exec';
 
 export async function sendLoginRequest(email) {
     try {
