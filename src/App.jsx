@@ -26,7 +26,11 @@ function App() {
           <Navbar />
           <div className="app-content" style={{}}>
             <Routes>
-              <Route path="/" element={<Home />} />
+              <Route path="/" element={
+                <FeatureGuard feature="inscripcion">
+                  <Inscripcion />
+                </FeatureGuard>
+              } />
 
               <Route path="/teams" element={
                 <FeatureGuard feature="teams">

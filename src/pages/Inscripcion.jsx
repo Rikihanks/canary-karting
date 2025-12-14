@@ -13,6 +13,8 @@ const Inscripcion = () => {
     });
     const [status, setStatus] = useState('idle'); // idle, submitting, success, error
     const [message, setMessage] = useState('');
+    const [termsAccepted, setTermsAccepted] = useState(false);
+    const [pdfOpened, setPdfOpened] = useState(false);
 
     const handleChange = (e) => {
         setFormData({
@@ -71,7 +73,11 @@ const Inscripcion = () => {
 
                 <div className="form-group">
                     <a href="https://drive.google.com/file/d/18RiuNlUViofUXUaP6URrBIJwfPEFuGr3/view?usp=sharing"
-                        target="_blank" className="neon-link" rel="noreferrer">
+                        target="_blank"
+                        className="neon-link"
+                        rel="noreferrer"
+                        onClick={() => setPdfOpened(true)}
+                    >
                         <i className="fa-solid fa-file-pdf"></i> Normativa Preinscripción
                     </a>
                 </div>
@@ -108,7 +114,24 @@ const Inscripcion = () => {
                         <input type="text" id="peso" name="peso" value={formData.peso} onChange={handleChange} />
                     </div>
 
-                    <button type="submit" id="submit-button" disabled={status === 'submitting'}>
+
+                    <div className="form-group" style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                        <input
+                            type="checkbox"
+                            id="terms"
+                            name="terms"
+                            checked={termsAccepted}
+                            onChange={(e) => setTermsAccepted(e.target.checked)}
+                            disabled={!pdfOpened}
+                            style={{ width: '20px', height: '20px', marginTop: '3px', cursor: !pdfOpened ? 'not-allowed' : 'pointer' }}
+                        />
+                        <label htmlFor="terms" style={{ fontWeight: '400', fontSize: '0.9em', color: !pdfOpened ? '#94a3b8' : 'inherit' }}>
+                            He leído y acepto la normativa y los términos de Canary Karting.
+                            {!pdfOpened && <span style={{ display: 'block', color: 'var(--accent)', fontSize: '0.9em', marginTop: '4px', fontWeight: 'bold' }}>⚠️ Abre el documento PDF para activar esta casilla.</span>}
+                        </label>
+                    </div>
+
+                    <button type="submit" id="submit-button" disabled={status === 'submitting' || !termsAccepted}>
                         {status === 'submitting' ? 'Enviando...' : 'Enviar Solicitud'}
                     </button>
 
