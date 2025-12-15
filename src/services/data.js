@@ -236,10 +236,31 @@ export function parseConfigCSV(csvText) {
     const config = {};
 
     lines.forEach(line => {
-        const [key, value] = line.split(',');
-        if (key && value) {
-            // Check for explicitly "FALSE" string (case insensitive)
-            config[key.trim()] = value.trim().toUpperCase() !== 'FALSE';
+        const firstCommaIndex = line.indexOf(',');
+        if (firstCommaIndex !== -1) {
+            const key = line.substring(0, firstCommaIndex);
+            const value = line.substring(firstCommaIndex + 1);
+
+            if (key && value !== undefined) {
+                const trimmedKey = key.trim();
+                let trimmedValue = value.trim();
+
+                // Remove surrounding quotes if present (common in CSV for text with spaces)
+                if (trimmedValue.startsWith('"') && trimmedValue.endsWith('"')) {
+                    trimmedValue = trimmedValue.slice(1, -1);
+                }
+
+                const upperValue = trimmedValue.toUpperCase();
+
+                if (upperValue === 'TRUE') {
+                    config[trimmedKey] = true;
+                } else if (upperValue === 'FALSE') {
+                    config[trimmedKey] = false;
+                } else {
+                    // Keep as string for things like messages/MOTD
+                    config[trimmedKey] = trimmedValue;
+                }
+            }
         }
     });
 

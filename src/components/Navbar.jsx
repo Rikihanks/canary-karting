@@ -69,11 +69,11 @@ const Navbar = () => {
 
     // Define navigation items
     const navItems = [
-        // { to: "/", label: "🏆 Clasificación Pilotos" },
-        // { to: "/teams", label: "🏆 Clasificación Equipos", feature: "teams" },
-        // { to: "/inscripcion", label: "📝 Preinscripción", feature: "inscripcion" },
-        // { to: "/sorteo", label: <span><i className="fa-solid fa-dice"></i> &nbsp;Sorteo</span>, feature: "sorteo" },
-        // { to: "/races", label: "🏎️ Carreras", feature: "races" },
+        { to: "/", label: "🏆 Clasificación Pilotos" },
+        { to: "/teams", label: "🏆 Clasificación Equipos", feature: "teams" },
+        { to: "/inscripcion", label: "📝 Preinscripción", feature: "inscripcion" },
+        { to: "/sorteo", label: <span><i className="fa-solid fa-dice"></i> &nbsp;Sorteo</span>, feature: "sorteo" },
+        { to: "/races", label: "🏎️ Carreras", feature: "races" },
     ];
 
     const renderNavLinks = (isMobile = false) => {
@@ -121,14 +121,21 @@ const Navbar = () => {
                     </div>
                      */}
 
-                    {/* (!user && isEnabled('login')) && (
+                    {(!user && isEnabled('login')) && (
                         <Link to="/login" className="nav-link-desktop login-btn">
                             <i className="fa-solid fa-right-to-bracket"></i> Iniciar Sesión
                         </Link>
-                    ) */}
+                    )}
 
                     {user && (
                         <div className="user-menu-desktop">
+                            {/* Admin Link for Desktop */}
+                            {(user.isAdmin || user.itsAdmin) && (
+                                <Link to="/admin" className="nav-link-desktop" title="Panel de Administración" style={{ color: '#fbbf24' }}>
+                                    <i className="fa-solid fa-lock"></i>
+                                </Link>
+                            )}
+
                             <Link
                                 to={`/profile?driver=${encodeURIComponent(user.nombre)}`}
                                 style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', color: 'inherit' }}
@@ -136,13 +143,13 @@ const Navbar = () => {
                                 <span className="user-name">{user.nombre}</span>
                                 {userPhoto && <img src={userPhoto} alt="Profile" className="mini-avatar-nav" />}
                             </Link>
-                            {/* <button
+                            <button
                                 onClick={() => { logout(); navigate('/'); }}
                                 className="logout-btn-desktop"
                                 title="Cerrar Sesión"
                             >
                                 <i className="fa-solid fa-power-off"></i>
-                            </button> */}
+                            </button>
                         </div>
                     )}
 
@@ -169,6 +176,13 @@ const Navbar = () => {
 
                 {renderNavLinks(true)}
 
+                {/* Admin Link for Mobile */}
+                {user && (user.isAdmin || user.itsAdmin) && (
+                    <Link to="/admin" className="nav-link" style={{ color: '#fbbf24' }}>
+                        <i className="fa-solid fa-lock"></i> &nbsp;Panel de Admin
+                    </Link>
+                )}
+
                 <div style={{ height: '5px', backgroundColor: 'var(--card-bg)' }}></div>
 
                 <div style={{
@@ -182,9 +196,9 @@ const Navbar = () => {
                     <div className="nav-link" style={{ paddingLeft: '30px', cursor: 'pointer', fontSize: '0.95em' }}>2024</div>
                 </div>
 
-                {/* (!user && isEnabled('login')) && <Link to="/login" className="nav-link"><i className="fa-solid fa-right-to-bracket"></i> Iniciar Sesión</Link> */}
+                {(!user && isEnabled('login')) && <Link to="/login" className="nav-link"><i className="fa-solid fa-right-to-bracket"></i> Iniciar Sesión</Link>}
 
-                {/* user && (
+                {user && (
                     <Link
                         className="nav-link"
                         onClick={() => {
@@ -196,7 +210,7 @@ const Navbar = () => {
                     >
                         <i className="fa-solid fa-right-from-bracket"></i> &nbsp;Cerrar Sesión
                     </Link>
-                ) */}
+                )}
 
             </div>
         </nav>

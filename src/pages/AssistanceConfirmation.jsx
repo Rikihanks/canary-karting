@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { confirmAssistance } from '../services/data';
 
@@ -10,13 +11,28 @@ const AssistanceConfirmation = () => {
     const [showModal, setShowModal] = useState(false);
     const [status, setStatus] = useState('idle');
     const [message, setMessage] = useState('');
-    const { user } = useAuth();
+    const { user, isLoading } = useAuth(); // Destructure isLoading
 
+    // Redirect if not logged in
     useEffect(() => {
         if (user && user.correo) {
             setEmail(user.correo);
         }
     }, [user]);
+
+    // Auth Guard Logic
+    if (isLoading) {
+        return (
+            <div className="container" style={{ textAlign: 'center', paddingTop: '50px' }}>
+                <i className="fa-solid fa-spinner fa-spin" style={{ fontSize: '2em', color: 'var(--color-accent)' }}></i>
+                <p style={{ marginTop: '10px', color: 'var(--text-muted)' }}>Cargando...</p>
+            </div>
+        );
+    }
+
+    if (!user) {
+        return <Navigate to="/" replace />;
+    }
 
     const race = { id: 1, name: 'Carrera 1 - 15 Diciembre 2024', date: '11/09/2025' };
 

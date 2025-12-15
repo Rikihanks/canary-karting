@@ -18,19 +18,18 @@ import FeatureGuard from './components/FeatureGuard';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminGuard from './components/AdminGuard';
 
+import MessageBanner from './components/MessageBanner';
+
 function App() {
   return (
     <ConfigProvider>
       <AuthProvider>
         <HashRouter>
           <Navbar />
+          <MessageBanner />
           <div className="app-content" style={{}}>
             <Routes>
-              <Route path="/" element={
-                <FeatureGuard feature="inscripcion">
-                  <Inscripcion />
-                </FeatureGuard>
-              } />
+              <Route path="/" element={<Home />} />
 
               <Route path="/teams" element={
                 <FeatureGuard feature="teams">

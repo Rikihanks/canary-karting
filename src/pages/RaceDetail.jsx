@@ -14,8 +14,18 @@ const RaceDetail = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const [isQualyOpen, setIsQualyOpen] = useState(true);
-    const [isResultOpen, setIsResultOpen] = useState(true);
+    const [isQualyOpen, setIsQualyOpen] = useState(false); // Start closed for animation
+    const [isResultOpen, setIsResultOpen] = useState(false); // Default closed
+
+    // Animate Qualy open when data finishes loading
+    useEffect(() => {
+        if (!loading) {
+            const timer = setTimeout(() => {
+                setIsQualyOpen(true);
+            }, 300); // Slight delay to allow render before animating
+            return () => clearTimeout(timer);
+        }
+    }, [loading]);
 
     useEffect(() => {
         if (!id || !date) {
@@ -111,13 +121,13 @@ const RaceDetail = () => {
                         }}
                     >
                         <span>⏱️ Qualy</span>
-                        <i className={`fa-solid fa-chevron-${isQualyOpen ? 'up' : 'down'}`} style={{ fontSize: '0.8em' }}></i>
+                        <i className={`fa-solid fa-chevron-${isQualyOpen ? 'up' : 'down'}`} style={{ fontSize: '0.8em', transition: 'transform 0.3s' }}></i>
                     </h2>
-                    {isQualyOpen && (
+                    <div className={`collapsible-content ${isQualyOpen ? 'open' : ''}`}>
                         <div id="clasificacion-table" className="results-table-container">
                             {renderGrid(clasiData, 'clasificacion')}
                         </div>
-                    )}
+                    </div>
                 </section>
 
                 <section id="resultado-section">
@@ -132,14 +142,33 @@ const RaceDetail = () => {
                         }}
                     >
                         <span>🏁 Resultado Final</span>
-                        <i className={`fa-solid fa-chevron-${isResultOpen ? 'up' : 'down'}`} style={{ fontSize: '0.8em' }}></i>
+                        <i className={`fa-solid fa-chevron-${isResultOpen ? 'up' : 'down'}`} style={{ fontSize: '0.8em', transition: 'transform 0.3s' }}></i>
                     </h2>
-                    {isResultOpen && (
+                    <div className={`collapsible-content ${isResultOpen ? 'open' : ''}`}>
                         <div id="resultado-table" className="results-table-container">
                             {renderGrid(resultData, 'resultados')}
                         </div>
-                    )}
+                    </div>
                 </section>
+
+                <style>{`
+                    .collapsible-content {
+                        max-height: 0;
+                        overflow: hidden;
+                        transition: max-height 0.4s ease-in-out, opacity 0.4s ease-in-out;
+                        opacity: 0;
+                    }
+                    
+                    .collapsible-content.open {
+                        max-height: 2000px; /* Large enough value to fit content */
+                        opacity: 1;
+                    }
+
+                    .results-table-container {
+                        padding-top: 10px;
+                        padding-bottom: 20px;
+                    }
+                `}</style>
             </div>
         </PullToRefresh>
     );

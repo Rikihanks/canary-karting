@@ -15,9 +15,10 @@ const AdminDashboard = () => {
         }
     }, [config]);
 
-    const handleToggle = async (key) => {
+    const handleToggle = async (key, specificValue = undefined) => {
         const currentValue = localConfig[key];
-        const newValue = !currentValue;
+        // If specificValue is provided, use it. Otherwise toggle boolean.
+        const newValue = specificValue !== undefined ? specificValue : !currentValue;
 
         // Optimistic update
         setLocalConfig(prev => ({ ...prev, [key]: newValue }));
@@ -60,6 +61,28 @@ const AdminDashboard = () => {
                     <button onClick={handleRefresh} className="refresh-btn">
                         <i className="fa-solid fa-rotate-right"></i> Actualizar Datos
                     </button>
+                </div>
+
+                <div className="admin-section" style={{ marginBottom: '30px', padding: '20px', backgroundColor: 'var(--card-bg)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+                    <h3 style={{ marginTop: 0, marginBottom: '15px' }}><i className="fa-solid fa-bullhorn"></i> Mensaje del Día (MOTD)</h3>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                        <input
+                            type="text"
+                            placeholder="Escribe un mensaje para todos los usuarios..."
+                            value={localConfig.motd || ''}
+                            onChange={(e) => setLocalConfig({ ...localConfig, motd: e.target.value })}
+                            style={{ flex: 1, padding: '10px', borderRadius: '6px', border: '1px solid #334155', background: '#1e293b', color: 'white' }}
+                        />
+                        <button
+                            onClick={() => handleToggle('motd', localConfig.motd)}
+                            disabled={loadingState['motd']}
+                            className="btn btn-primary"
+                            style={{ minWidth: '100px', backgroundColor: 'var(--accent)' }}
+                        >
+                            {loadingState['motd'] ? 'Guardando...' : 'Guardar'}
+                        </button>
+                    </div>
+                    <small style={{ color: '#94a3b8', marginTop: '5px', display: 'block' }}>Deja en blanco para ocultar el mensaje.</small>
                 </div>
 
                 <div className="toggles-grid">
