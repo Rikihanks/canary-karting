@@ -4,21 +4,21 @@ import { useConfig } from '../context/ConfigContext';
 const MessageBanner = () => {
     const config = useConfig();
     const [message, setMessage] = useState('');
-    // Start collapsed so we can animate to open if needed
     const [isExpanded, setIsExpanded] = useState(false);
+    const [isLoaded, setIsLoaded] = useState(false);
 
     useEffect(() => {
         if (config && config.motd && config.motd.length > 0) {
             setMessage(config.motd);
-            // Check storage for THIS specific message
             const isCollapsed = localStorage.getItem(`motd_collapsed_${config.motd}`);
 
-            // If explicit "true", stay collapsed (default state)
-            // If explicit "false" (unlikely unless we added logic) or null (new message), Expand!
-            if (isCollapsed !== 'true') {
-                // Slight delay to allow render, then animate open
-                setTimeout(() => setIsExpanded(true), 100);
-            }
+            // Initial animation delay
+            setTimeout(() => {
+                setIsLoaded(true);
+                if (isCollapsed !== 'true') {
+                    setIsExpanded(true);
+                }
+            }, 300);
         } else {
             setMessage('');
         }
@@ -38,141 +38,151 @@ const MessageBanner = () => {
     if (!message) return null;
 
     return (
-        <div className={`message-banner ${!isExpanded ? 'collapsed' : ''}`}>
-            <div className={`banner-content expanded-view ${isExpanded ? 'visible' : 'hidden'}`}
-                style={{ pointerEvents: isExpanded ? 'auto' : 'none', position: isExpanded ? 'relative' : 'absolute' }}>
-                <div className="message-content">
-                    <i className="fa-solid fa-bullhorn feature-icon"></i>
-                    <span dangerouslySetInnerHTML={{ __html: message }}></span>
+        <div className={`message-banner-container ${isLoaded ? 'loaded' : ''}`}>
+            {/* EXPANDED CONTENT */}
+            <div
+                className="banner-expanded"
+                onClick={() => toggleExpand(false)}
+                style={{
+                    maxHeight: isExpanded ? '500px' : '0px',
+                    opacity: isExpanded ? 1 : 0,
+                    pointerEvents: isExpanded ? 'auto' : 'none'
+                }}
+            >
+                {/* Decorative Background Icon */}
+                <i className="fa-solid fa-bullhorn bg-icon"></i>
+
+                <div className="banner-content">
+                    <div className="message-text">
+                        <i className="fa-solid fa-bullhorn" style={{ marginRight: '12px', color: '#fbbf24', fontSize: '1.2em' }}></i>
+                        <span dangerouslySetInnerHTML={{ __html: message }}></span>
+                    </div>
+                    <button className="action-btn" title="Cerrar">
+                        <i className="fa-solid fa-xmark"></i>
+                    </button>
                 </div>
-                <button onClick={() => toggleExpand(false)} className="toggle-btn" aria-label="Minimizar">
-                    <i className="fa-solid fa-chevron-up"></i>
-                </button>
             </div>
 
-            <div className={`banner-content collapsed-view ${!isExpanded ? 'visible' : 'hidden'}`}
-                onClick={() => !isExpanded && toggleExpand(true)}
-                style={{ pointerEvents: !isExpanded ? 'auto' : 'none', position: !isExpanded ? 'relative' : 'absolute' }}>
-                <i className="fa-solid fa-bullhorn feature-icon"></i>
-                <span className="collapsed-text">Mensaje de la organización</span>
-                <i className="fa-solid fa-chevron-down" style={{ marginLeft: 'auto' }}></i>
+            {/* COLLAPSED HANDLE */}
+            <div
+                className="banner-collapsed"
+                onClick={() => toggleExpand(true)}
+                style={{
+                    maxHeight: !isExpanded ? '40px' : '0px',
+                    opacity: !isExpanded ? 1 : 0,
+                    pointerEvents: !isExpanded ? 'auto' : 'none',
+                    marginTop: !isExpanded ? '0' : '0' // Avoid double margin
+                }}
+            >
+                <div className="handle-content">
+                    <i className="fa-solid fa-circle-info" style={{ color: '#fbbf24' }}></i>
+                    <span style={{ fontSize: '0.85em', fontWeight: 'bold', color: '#cbd5e1' }}>Hay un mensaje de la organización</span>
+                    <i className="fa-solid fa-chevron-down" style={{ fontSize: '0.8em', marginLeft: 'auto', color: '#94a3b8' }}></i>
+                </div>
             </div>
 
             <style>{`
-                .message-banner {
-                    margin-top: 1rem;
-                    margin-bottom: 0;
-                    background: linear-gradient(90deg, #eab308 0%, #ca8a04 100%);
-                    color: black;
-                    padding: 0; /* Reset padding to handle inner content better */
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    justify-content: center;
-                    position: relative;
-                    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-                    border-radius: 12px;
-                    overflow: hidden;
-                    /* Use max-width for smooth transition from "full" to "small" */
-                    transition: max-width 0.8s cubic-bezier(0.4, 0, 0.2, 1), background 0.6s ease, border-radius 0.6s ease;
-                    width: 100%; /* Always try to fill space */
-                    
-                    /* CRITICAL: Keep it centered during animation */
-                    margin-left: auto;
-                    margin-right: auto;
+                .message-banner-container {
+                    width: 100%;
+                    max-width: 1200px;
+                    margin: 0 auto;
+                    transition: all 0.5s ease;
+                    opacity: 0;
+                    transform: translateY(-20px);
                 }
 
-                .message-banner.collapsed {
-                    background: linear-gradient(90deg, #ca8a04 0%, #a16207 100%);
-                    cursor: pointer;
-                    max-width: 350px; /* Target width for collapsed state */
-                    border-radius: 30px;
-                    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+                .message-banner-container.loaded {
+                    opacity: 1;
+                    transform: translateY(0);
+                    margin-top: 18px;
+                    margin-bottom: 5px;
                 }
-                
-                .message-banner:not(.collapsed) {
-                    max-width: 100%; /* Fill screen when expanded */
-                    border-radius: 12px;
+
+                .banner-expanded {
+                    /* Dark glass look to match collapsed state */
+                    background: rgba(30, 41, 59, 0.95); 
+                    border: 1px solid rgba(251, 191, 36, 0.3); /* Amber accent border */
+                    border-radius: 8px;
+                    overflow: hidden;
+                    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+                    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); /* Stronger shadow */
+                    margin: 0 5px;
+                    position: relative; /* For bg icon positioning */
+                    cursor: pointer; /* Clickable */
+                }
+
+                .bg-icon {
+                    position: absolute;
+                    right: -10px;
+                    bottom: -20px;
+                    font-size: 5rem;
+                    color: rgba(251, 191, 36, 0.05); /* Very subtle watermark */
+                    transform: rotate(-15deg);
+                    pointer-events: none;
+                    z-index: 0;
                 }
 
                 .banner-content {
+                    padding: 15px 20px;
                     display: flex;
-                    align-items: center;
+                    align-items: flex-start;
                     justify-content: space-between;
-                    width: 100%;
-                    height: 100%;
-                    padding: 10px 20px;
-                    box-sizing: border-box;
-                    
-                    /* The magic sequence: 
-                       When showing: delay opacity (wait for resize)
-                       When hiding: instant opacity (hide before resize) */
-                    transition: opacity 0.2s ease; 
+                    gap: 15px;
+                    color: #f1f5f9; /* Light text */
+                    position: relative; /* Above bg icon */
+                    z-index: 1;
                 }
 
-                /* Expanded View Logic */
-                .expanded-view.visible {
-                    opacity: 1;
-                    transition-delay: 0.3s; /* Wait for expand to finish */
-                }
-                .expanded-view.hidden {
-                    opacity: 0;
-                    transition-delay: 0s; /* Hide instantly */
-                }
-
-                /* Collapsed View Logic */
-                .collapsed-view.visible {
-                    opacity: 1;
-                    transition-delay: 0.3s; /* Wait for collapse to finish */
-                }
-                .collapsed-view.hidden {
-                    opacity: 0;
-                    transition-delay: 0s; /* Hide instantly */
-                }
-
-                .message-content {
-                    font-weight: 600;
+                .message-text {
+                    font-weight: 500;
                     font-size: 0.95rem;
+                    line-height: 1.5;
                     display: flex;
-                    align-items: center;
-                    gap: 12px;
-                    flex: 1;
-                    justify-content: center;
-                    line-height: 1.4;
-                    white-space: nowrap; /* Prevent wrapping jumping during anim? No, we want wrap. */
-                    white-space: normal;
+                    align-items: baseline;
+                    color: #e2e8f0;
                 }
 
-                .collapsed-text {
-                    margin-left: 10px;
-                    font-size: 0.9em;
-                    font-weight: 700;
-                    letter-spacing: 0.5px;
-                }
-
-                .feature-icon {
-                    font-size: 1.2em;
-                }
-
-                .toggle-btn {
-                    background: rgba(0,0,0,0.1);
+                .action-btn {
+                    background: rgba(255, 255, 255, 0.1);
                     border: none;
-                    color: black;
-                    width: 30px;
-                    height: 30px;
+                    color: #cbd5e1;
+                    width: 28px;
+                    height: 28px;
                     border-radius: 50%;
                     display: flex;
                     align-items: center;
                     justify-content: center;
                     cursor: pointer;
-                    margin-left: 15px;
-                    transition: all 0.2s;
                     flex-shrink: 0;
+                    transition: all 0.2s;
                 }
 
-                .toggle-btn:hover {
-                    background: rgba(0,0,0,0.2);
-                    transform: scale(1.1);
+                .action-btn:hover {
+                    background: rgba(255, 255, 255, 0.2);
+                    color: white;
+                    transform: rotate(90deg);
+                }
+
+                .banner-collapsed {
+                    background: rgba(30, 41, 59, 0.6);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    margin: 0 10px;
+                    border-radius: 6px;
+                    overflow: hidden;
+                    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+                    cursor: pointer;
+                }
+
+                .banner-collapsed:hover {
+                    background: rgba(30, 41, 59, 0.9);
+                }
+
+                .handle-content {
+                    padding: 8px 15px;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    height: 40px; /* Match max-height */
                 }
             `}</style>
         </div>
