@@ -129,12 +129,7 @@ const Navbar = () => {
 
                     {user && (
                         <div className="user-menu-desktop">
-                            {/* Admin Link for Desktop */}
-                            {(user.isAdmin || user.itsAdmin) && (
-                                <Link to="/admin" className="nav-link-desktop" title="Panel de Administración" style={{ color: '#fbbf24' }}>
-                                    <i className="fa-solid fa-lock"></i>
-                                </Link>
-                            )}
+                            {/* Admin Link for Desktop - REMOVED */}
 
                             <Link
                                 to={`/profile?driver=${encodeURIComponent(user.nombre)}`}
@@ -175,13 +170,6 @@ const Navbar = () => {
                 </div>
 
                 {renderNavLinks(true)}
-
-                {/* Admin Link for Mobile */}
-                {user && (user.isAdmin || user.itsAdmin) && (
-                    <Link to="/admin" className="nav-link" style={{ color: '#fbbf24' }}>
-                        <i className="fa-solid fa-lock"></i> &nbsp;Panel de Admin
-                    </Link>
-                )}
 
                 <div style={{ height: '5px', backgroundColor: 'var(--card-bg)' }}></div>
 

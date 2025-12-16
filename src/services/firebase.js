@@ -13,6 +13,8 @@ const firebaseConfig = {
     measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
+import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+
 const app = initializeApp(firebaseConfig);
 
 let messaging = null;
@@ -26,6 +28,9 @@ try {
 
 export { messaging };
 export const db = getFirestore(app);
+export const auth = getAuth(app);
+export const googleProvider = new GoogleAuthProvider();
+export { signInWithPopup };
 
 export const addUserToTopic = async (topic) => {
 };
