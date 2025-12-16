@@ -311,7 +311,33 @@ export async function updateConfig(key, value, email) {
     }
 }
 
-const ASSISTANCE_WEB_APP_URL_RAW = 'https://script.google.com/macros/s/AKfycbw_O_PAmJh89uMEKX8eIS6aMr8gZJcXx7k9buqtkk4fsLyxvLCyU4ghqdBwDIoVPypn2g/exec';
+export async function updateRaceStatus(raceName, raceDate, field, value, email) {
+    try {
+        const response = await fetch(ASSISTANCE_WEB_APP_URL_RAW, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: {
+                'Content-Type': 'text/plain',
+            },
+            body: JSON.stringify({
+                action: 'updateRace',
+                raceName: raceName,
+                raceDate: raceDate,
+                field: field, // 'activa' or 'terminada'
+                value: value,
+                email: email
+            }),
+        });
+
+        // no-cors assumption of success
+        return { success: true };
+    } catch (error) {
+        console.error("Error updating race status:", error);
+        return { success: false, message: error.message };
+    }
+}
+
+const ASSISTANCE_WEB_APP_URL_RAW = 'https://script.google.com/macros/s/AKfycbzWCMtDW3DUlbEPqTAqjO4ra7YHT_LMPdShAnhAFL7E7ZwkdDH0-m4smmv74QvnPDTBfw/exec';
 
 /**
  * Confirms race assistance by sending data to Google Apps Script

@@ -1,18 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import { useConfig } from '../context/ConfigContext';
 import { useAuth } from '../context/AuthContext';
-import { updateConfig, clearCache } from '../services/data';
+import { updateConfig, clearCache, getCalendarData, updateRaceStatus } from '../services/data';
+import CollapsibleSection from '../components/CollapsibleSection';
 
 const AdminDashboard = () => {
     const config = useConfig();
-    const { user } = useAuth();
+    // const { user } = useAuth(); // Don't use pilot auth
+    const adminEmail = sessionStorage.getItem('canary_admin_email') || 'admin';
     const [localConfig, setLocalConfig] = useState({});
     const [loadingState, setLoadingState] = useState({}); // Track loading per key
+    const [races, setRaces] = useState([]);
+    const [loadingRaces, setLoadingRaces] = useState(true);
 
     useEffect(() => {
         if (config) {
             setLocalConfig(config);
         }
+
+        // Fetch races
+        const fetchRaces = async () => {
+            try {
+                const data = await getCalendarData();
+                setRaces(data);
+            } catch (err) {
+                console.error("Error fetching races", err);
+            } finally {
+                setLoadingRaces(false);
+            }
+        };
+        fetchRaces();
     }, [config]);
 
     const handleToggle = async (key, specificValue = undefined) => {
@@ -25,7 +42,7 @@ const AdminDashboard = () => {
         setLoadingState(prev => ({ ...prev, [key]: true }));
 
         try {
-            await updateConfig(key, newValue, user.email);
+            await updateConfig(key, newValue, adminEmail);
             // In a real app we might wait for confirmation, but with GAS no-cors we assume it worked
             // and maybe trigger a re-fetch after a delay
         } catch (error) {
@@ -35,6 +52,37 @@ const AdminDashboard = () => {
             alert("Error al actualizar la configuración");
         } finally {
             setLoadingState(prev => ({ ...prev, [key]: false }));
+        }
+    };
+
+    const handleRaceToggle = async (raceName, raceDate, field) => {
+        const raceIndex = races.findIndex(r => r.nombre === raceName && r.fecha === raceDate);
+        if (raceIndex === -1) return;
+
+        const currentRace = races[raceIndex];
+        const currentValue = currentRace[field] === '1'; // '1' is true in CSV
+        const newValue = !currentValue;
+        const newValueString = newValue ? '1' : '0';
+
+        // Optimistic Update
+        const updatedRaces = [...races];
+        updatedRaces[raceIndex] = { ...currentRace, [field]: newValueString };
+        setRaces(updatedRaces);
+
+        const loadingKey = `race-${raceName}-${raceDate}-${field}`;
+        setLoadingState(prev => ({ ...prev, [loadingKey]: true }));
+
+        try {
+            await updateRaceStatus(raceName, raceDate, field, newValueString, adminEmail);
+        } catch (error) {
+            console.error("Failed to update race", error);
+            // Revert
+            const revertedRaces = [...races];
+            revertedRaces[raceIndex] = { ...currentRace, [field]: currentValue ? '1' : '0' };
+            setRaces(revertedRaces);
+            alert("Error al actualizar la carrera");
+        } finally {
+            setLoadingState(prev => ({ ...prev, [loadingKey]: false }));
         }
     };
 
@@ -57,58 +105,113 @@ const AdminDashboard = () => {
         <div className="container push-top">
             <div className="admin-panel">
                 <div className="panel-header">
-                    <h2>Funciones activas</h2>
+                    <h2>Panel de Control</h2>
                     <button onClick={handleRefresh} className="refresh-btn">
                         <i className="fa-solid fa-rotate-right"></i> Actualizar Datos
                     </button>
                 </div>
 
-                <div className="admin-section" style={{ marginBottom: '30px', padding: '20px', backgroundColor: 'var(--card-bg)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-                    <h3 style={{ marginTop: 0, marginBottom: '15px' }}><i className="fa-solid fa-bullhorn"></i> Mensaje del Día (MOTD)</h3>
-                    <div style={{ display: 'flex', gap: '10px' }}>
+                <CollapsibleSection title="Mensaje del Día (MOTD)" icon="fa-solid fa-bullhorn" defaultOpen={false}>
+                    <div className="motd-container">
                         <input
                             type="text"
-                            placeholder="Escribe un mensaje para todos los usuarios..."
+                            placeholder="Mensaje..."
                             value={localConfig.motd || ''}
                             onChange={(e) => setLocalConfig({ ...localConfig, motd: e.target.value })}
                             style={{ flex: 1, padding: '10px', borderRadius: '6px', border: '1px solid #334155', background: '#1e293b', color: 'white' }}
                         />
-                        <button
-                            onClick={() => handleToggle('motd', localConfig.motd)}
-                            disabled={loadingState['motd']}
-                            className="btn btn-primary"
-                            style={{ minWidth: '100px', backgroundColor: 'var(--accent)' }}
-                        >
-                            {loadingState['motd'] ? 'Guardando...' : 'Guardar'}
-                        </button>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                            <button
+                                onClick={() => setLocalConfig({ ...localConfig, motd: '' })}
+                                className="refresh-btn btn btn-primary btn-save "
+                                style={{ fontWeight: 'bold', minWidth: 'auto', padding: '10px' }}
+                                title="Limpiar"
+                            >
+                                <i className="fa-solid fa-trash-can"></i>
+                            </button>
+                            <button
+                                onClick={() => handleToggle('motd', localConfig.motd)}
+                                disabled={loadingState['motd']}
+                                className="refresh-btn btn btn-primary btn-save "
+                            >
+                                {loadingState['motd'] ? '...' : <><i className="fa-solid fa-floppy-disk"></i> Guardar</>}
+                            </button>
+                        </div>
                     </div>
                     <small style={{ color: '#94a3b8', marginTop: '5px', display: 'block' }}>Deja en blanco para ocultar el mensaje.</small>
-                </div>
+                </CollapsibleSection>
 
-                <div className="toggles-grid">
-                    {features.map((feature) => (
-                        <div key={feature.key} className="toggle-card">
-                            <div className="toggle-info">
-                                <span className="toggle-icon">{feature.icon}</span>
-                                <span className="toggle-label">{feature.label}</span>
-                            </div>
-                            <div className="toggle-action">
-                                {loadingState[feature.key] ? (
-                                    <i className="fa-solid fa-spinner fa-spin"></i>
-                                ) : (
-                                    <label className="switch">
-                                        <input
-                                            type="checkbox"
-                                            checked={localConfig[feature.key] === true}
-                                            onChange={() => handleToggle(feature.key)}
-                                        />
-                                        <span className="slider round"></span>
-                                    </label>
-                                )}
-                            </div>
+                <CollapsibleSection title="Gestión de Carreras" icon="fa-solid fa-flag-checkered" defaultOpen={false}>
+                    {loadingRaces ? (
+                        <div style={{ textAlign: 'center', padding: '20px' }}><i className="fa-solid fa-spinner fa-spin"></i> Cargando carreras...</div>
+                    ) : (
+                        <div className="races-grid">
+                            {races.map((race) => (
+                                <div key={`${race.nombre}-${race.fecha}`} className="race-card">
+                                    <div className="race-info">
+                                        <div style={{ fontWeight: 'bold' }}>{race.nombre}</div>
+                                        <div style={{ fontSize: '0.8em', color: '#94a3b8' }}>{race.fecha}</div>
+                                    </div>
+                                    <div className="race-actions">
+                                        <div className="race-toggle">
+                                            <span className="mini-label">Activa</span>
+                                            {loadingState[`race-${race.nombre}-${race.fecha}-activa`] ? <i className="fa-solid fa-spinner fa-spin"></i> : (
+                                                <label className="switch">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={race.activa === '1'}
+                                                        onChange={() => handleRaceToggle(race.nombre, race.fecha, 'activa')}
+                                                    />
+                                                    <span className="slider round"></span>
+                                                </label>
+                                            )}
+                                        </div>
+                                        <div className="race-toggle">
+                                            <span className="mini-label">Terminada</span>
+                                            {loadingState[`race-${race.nombre}-${race.fecha}-terminada`] ? <i className="fa-solid fa-spinner fa-spin"></i> : (
+                                                <label className="switch">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={race.terminada === '1'}
+                                                        onChange={() => handleRaceToggle(race.nombre, race.fecha, 'terminada')}
+                                                    />
+                                                    <span className="slider round"></span>
+                                                </label>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
-                    ))}
-                </div>
+                    )}
+                </CollapsibleSection>
+
+                <CollapsibleSection title="Visibilidad de Páginas" icon="fa-solid fa-eye" defaultOpen={false}>
+                    <div className="toggles-grid">
+                        {features.map((feature) => (
+                            <div key={feature.key} className="toggle-card">
+                                <div className="toggle-info">
+                                    <span className="toggle-icon">{feature.icon}</span>
+                                    <span className="toggle-label">{feature.label}</span>
+                                </div>
+                                <div className="toggle-action">
+                                    {loadingState[feature.key] ? (
+                                        <i className="fa-solid fa-spinner fa-spin"></i>
+                                    ) : (
+                                        <label className="switch">
+                                            <input
+                                                type="checkbox"
+                                                checked={localConfig[feature.key] === true}
+                                                onChange={() => handleToggle(feature.key)}
+                                            />
+                                            <span className="slider round"></span>
+                                        </label>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </CollapsibleSection>
 
                 <div className="admin-note">
                     <p>⚠️ <strong>Nota:</strong> Los cambios pueden tardar unos segundos en propagarse a todos los usuarios debido al caché de Google Sheets.</p>
@@ -117,26 +220,34 @@ const AdminDashboard = () => {
 
             <style>{`
                 .push-top {
-                    margin-top: 2rem;
+                    margin-top: 1rem;
+                    max-width: 900px; /* Wider on desktop */
+                    margin-left: auto;
+                    margin-right: auto;
                 }
                 .admin-panel {
                     background-color: var(--card-bg);
-                    padding: 0.7rem;
+                    padding: 1rem;
                     border-radius: 12px;
                 }
                 .panel-header {
                     display: flex;
-                    flex-direction: column;
+                    justify-content: space-between; /* Horizontal layout */
                     align-items: center;
-                    margin-bottom: 2rem;
-                    padding-bottom: 0.7rem;
+                    margin-bottom: 1rem;
+                    padding-bottom: 0.5rem;
                     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                }
+                .panel-header h2 {
+                    margin: 0;
+                    font-size: 1.2rem;
                 }
                 .refresh-btn {
                     background: none;
                     border: 1px solid var(--color-accent);
                     color: var(--color-accent);
-                    padding: 5px 10px;
+                    padding: 4px 8px;
+                    font-size: 0.85rem;
                     border-radius: 6px;
                     cursor: pointer;
                     transition: all 0.2s;
@@ -147,46 +258,62 @@ const AdminDashboard = () => {
                 }
                 .toggles-grid {
                     display: grid;
-                    gap: 1rem;
+                    gap: 0.5rem; /* Tighter gap */
                 }
                 .toggle-card {
                     display: flex;
                     align-items: center;
                     justify-content: space-between;
                     background: rgba(0, 0, 0, 0.2);
-                    padding: 1rem;
+                    padding: 0.75rem 1rem; /* Compact padding */
                     border-radius: 8px;
                     border: 1px solid rgba(255, 255, 255, 0.05);
                 }
                 .toggle-info {
                     display: flex;
                     align-items: center;
-                    gap: 1rem;
+                    gap: 0.75rem;
                 }
                 .toggle-icon {
-                    font-size: 1.5rem;
+                    font-size: 1.2rem;
                 }
                 .toggle-label {
-                    font-weight: 700;
-                    font-size: 1.1rem;
+                    font-weight: 600;
+                    font-size: 1rem;
                 }
                 .admin-note {
-                    margin-top: 2rem;
+                    margin-top: 1rem;
                     color: var(--text-muted);
-                    font-size: 0.9rem;
+                    font-size: 0.8rem;
                     text-align: center;
                     background: rgba(251, 191, 36, 0.1);
-                    padding: 10px;
+                    padding: 8px;
                     border-radius: 6px;
                     border: 1px solid rgba(251, 191, 36, 0.2);
+                }
+
+                /* Compact MOTD Section */
+                .motd-container {
+                    display: flex;
+                    gap: 8px;
+                }
+                /* Mobile tweaks */
+                @media (max-width: 480px) {
+                    .motd-container {
+                        flex-direction: column;
+                    }
+                    .btn-save {
+                        width: 100%;
+                        padding: 10px;
+                    }
                 }
 
                 /* Switch CSS */
                 .switch {
                     position: relative;
                     display: inline-block;
-                    width: 60px;
-                    height: 34px;
+                    width: 50px; /* Smaller switch */
+                    height: 28px;
                 }
                 .switch input { 
                     opacity: 0;
@@ -201,18 +328,16 @@ const AdminDashboard = () => {
                     right: 0;
                     bottom: 0;
                     background-color: #ccc;
-                    -webkit-transition: .4s;
                     transition: .4s;
                 }
                 .slider:before {
                     position: absolute;
                     content: "";
-                    height: 26px;
-                    width: 26px;
+                    height: 20px; /* Smaller knob */
+                    width: 20px;
                     left: 4px;
                     bottom: 4px;
                     background-color: white;
-                    -webkit-transition: .4s;
                     transition: .4s;
                 }
                 input:checked + .slider {
@@ -222,15 +347,50 @@ const AdminDashboard = () => {
                     box-shadow: 0 0 1px var(--success);
                 }
                 input:checked + .slider:before {
-                    -webkit-transform: translateX(26px);
-                    -ms-transform: translateX(26px);
-                    transform: translateX(26px);
+                    transform: translateX(22px);
                 }
                 .slider.round {
                     border-radius: 34px;
                 }
                 .slider.round:before {
                     border-radius: 50%;
+                }
+                .races-grid {
+                    display: grid;
+                    gap: 0.5rem;
+                }
+                .race-card {
+                    background: rgba(0,0,0,0.3);
+                    padding: 0.8rem;
+                    border-radius: 8px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 10px;
+                }
+                .race-info {
+                    border-bottom: 1px solid rgba(255,255,255,0.1);
+                    padding-bottom: 5px;
+                }
+                .race-actions {
+                    display: flex;
+                    justify-content: space-between;
+                    gap: 10px;
+                }
+                .race-toggle {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    background: rgba(255,255,255,0.05);
+                    padding: 5px 10px;
+                    border-radius: 6px;
+                    flex: 1;
+                    justify-content: center;
+                }
+                .mini-label {
+                    font-size: 0.75rem;
+                    text-transform: uppercase;
+                    color: #cbd5e1;
+                    font-weight: 600;
                 }
             `}</style>
         </div>

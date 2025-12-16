@@ -39,6 +39,7 @@ const AdminGuard = ({ children }) => {
             if (allowedEmails.includes(userEmail)) {
                 setIsAuthenticated(true);
                 sessionStorage.setItem('canary_admin_auth', 'true');
+                sessionStorage.setItem('canary_admin_email', userEmail);
             } else {
                 setError("Acceso denegado: Tu email no está autorizado.");
                 await auth.signOut(); // Ensure they are signed out to try again
