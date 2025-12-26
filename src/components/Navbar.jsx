@@ -72,6 +72,7 @@ const Navbar = () => {
         { to: "/", label: "🏆 Clasificación Pilotos" },
         { to: "/teams", label: "🏆 Clasificación Equipos", feature: "teams" },
         { to: "/inscripcion", label: "📝 Preinscripción", feature: "inscripcion" },
+        { to: "/inscripcion-academia", label: "📝 Inscripción Academia", feature: "inscripcion" },
         { to: "/sorteo", label: <span><i className="fa-solid fa-dice"></i> &nbsp;Sorteo</span>, feature: "sorteo" },
         { to: "/races", label: "🏎️ Carreras", feature: "races" },
     ];
@@ -80,6 +81,10 @@ const Navbar = () => {
         return navItems.map((item, index) => {
             if (item.feature && !isEnabled(item.feature)) return null;
             return (
+                null
+            )
+            /*(
+
                 <Link
                     key={index}
                     to={item.to}
@@ -87,7 +92,7 @@ const Navbar = () => {
                 >
                     {item.label}
                 </Link>
-            );
+            ); */
         });
     };
 
@@ -184,7 +189,7 @@ const Navbar = () => {
                     <div className="nav-link" style={{ paddingLeft: '30px', cursor: 'pointer', fontSize: '0.95em' }}>2024</div>
                 </div>
 
-                {(!user && isEnabled('login')) && <Link to="/login" className="nav-link"><i className="fa-solid fa-right-to-bracket"></i> Iniciar Sesión</Link>}
+                {/*(!user && isEnabled('login')) && <Link to="/login" className="nav-link"><i className="fa-solid fa-right-to-bracket"></i> Iniciar Sesión</Link>*/}
 
                 {user && (
                     <Link

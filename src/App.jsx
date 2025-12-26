@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/Navbar';
@@ -12,6 +12,7 @@ import Sorteo from './pages/Sorteo';
 import Login from './pages/Login';
 import Teams from './pages/Teams';
 import TeamProfile from './pages/TeamProfile';
+import Inscripcion_Academia from './pages/Inscripcion_Academia';
 import FeatureDisabled from './pages/FeatureDisabled';
 import { ConfigProvider } from './context/ConfigContext';
 import FeatureGuard from './components/FeatureGuard';
@@ -19,17 +20,21 @@ import AdminDashboard from './pages/AdminDashboard';
 import AdminGuard from './components/AdminGuard';
 
 import MessageBanner from './components/MessageBanner';
+import WelcomeModal from './components/WelcomeModal';
 
 function App() {
+  const [showWelcome, setShowWelcome] = useState(true);
+
   return (
     <ConfigProvider>
       <AuthProvider>
         <HashRouter>
           <Navbar />
-          <MessageBanner />
+          {/*<MessageBanner />*/}
+          <WelcomeModal isOpen={showWelcome} onClose={() => setShowWelcome(false)} />
           <div className="app-content" style={{}}>
             <Routes>
-              <Route path="/" element={<Home />} />
+              <Route path="/" element={<Inscripcion />} />
 
               <Route path="/teams" element={
                 <FeatureGuard feature="teams">
@@ -59,6 +64,12 @@ function App() {
               <Route path="/inscripcion" element={
                 <FeatureGuard feature="inscripcion">
                   <Inscripcion />
+                </FeatureGuard>
+              } />
+
+              <Route path="/inscripcion-academia" element={
+                <FeatureGuard feature="inscripcion">
+                  <Inscripcion_Academia />
                 </FeatureGuard>
               } />
 
