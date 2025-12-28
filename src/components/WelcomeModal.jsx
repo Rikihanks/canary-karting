@@ -20,19 +20,6 @@ const WelcomeModal = ({ isOpen, onClose }) => {
 
                 <div className="welcome-modal-actions">
                     <button
-                        className="modal-btn competition-btn"
-                        onClick={() => handleChoice('/inscripcion')}
-                    >
-                        <div className="btn-icon">
-                            <i className="fa-solid fa-flag-checkered"></i>
-                        </div>
-                        <div className="btn-text">
-                            <span className="btn-title">Competición</span>
-                            <span className="btn-subtitle">Únete al campeonato oficial</span>
-                        </div>
-                    </button>
-
-                    <button
                         className="modal-btn academia-btn"
                         onClick={() => handleChoice('/inscripcion-academia')}
                     >
@@ -45,6 +32,10 @@ const WelcomeModal = ({ isOpen, onClose }) => {
                         </div>
                     </button>
                 </div>
+
+                <button className="modal-close-text" onClick={onClose}>
+                    Continuar a la web
+                </button>
             </div>
 
             <style>{`

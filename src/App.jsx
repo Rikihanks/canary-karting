@@ -20,21 +20,27 @@ import AdminDashboard from './pages/AdminDashboard';
 import AdminGuard from './components/AdminGuard';
 
 import MessageBanner from './components/MessageBanner';
-import WelcomeModal from './components/WelcomeModal';
 
 function App() {
-  const [showWelcome, setShowWelcome] = useState(true);
-
   return (
     <ConfigProvider>
       <AuthProvider>
         <HashRouter>
           <Navbar />
-          {/*<MessageBanner />*/}
-          <WelcomeModal isOpen={showWelcome} onClose={() => setShowWelcome(false)} />
+          <MessageBanner />
           <div className="app-content" style={{}}>
             <Routes>
-              <Route path="/" element={<Inscripcion />} />
+              <Route path="/clasificacion" element={<Home />} />
+              <Route path="/" element={
+                <FeatureGuard feature="inscripcion">
+                  <Inscripcion_Academia />
+                </FeatureGuard>
+              } />
+              <Route path="/inscripcion" element={
+                <FeatureGuard feature="inscripcion">
+                  <Inscripcion />
+                </FeatureGuard>
+              } />
 
               <Route path="/teams" element={
                 <FeatureGuard feature="teams">
@@ -61,17 +67,7 @@ function App() {
                 </FeatureGuard>
               } />
 
-              <Route path="/inscripcion" element={
-                <FeatureGuard feature="inscripcion">
-                  <Inscripcion />
-                </FeatureGuard>
-              } />
 
-              <Route path="/inscripcion-academia" element={
-                <FeatureGuard feature="inscripcion">
-                  <Inscripcion_Academia />
-                </FeatureGuard>
-              } />
 
               <Route path="/assistance-confirmation" element={<AssistanceConfirmation />} />
 
