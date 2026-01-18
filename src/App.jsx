@@ -38,7 +38,7 @@ function App() {
               } />
               <Route path="/inscripcion" element={
                 <FeatureGuard feature="inscripcion">
-                  <Inscripcion />
+                  {/*<Inscripcion />*/}
                 </FeatureGuard>
               } />
 
