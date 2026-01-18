@@ -6,7 +6,9 @@ const RESULT_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTq8sBX
 
 const CONFIG_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRzmcWDtElCuePL4NN3FT5fyBVdLNovmMa0QcibtaeeFAqpVkdioNT14QaG81zbgjrnEtHRsLxKSi17/pub?output=csv";
 const UPDATE_CONFIG_EXEC = "https://script.google.com/macros/s/AKfycbwPsWOaN1WkF7eq5SXDWASonFNJUBW69HmdDSs8EpOZlCAQ8d_ShIQtvGaUaV0-YhZUtA/exec";
-
+const DRIVER_OF_THE_DAY_EXEC = "https://script.google.com/macros/s/AKfycbydiozYKvqH9hLi-p7y64JF2roL4g4PEqIq-e4Lxm_qrPwNVEw-M1LRthAyjDA-eobDdA/exec";
+const DOTD_RESULTS_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTLNZjbf5AjIxBl659WE4OZsK1RpOpu7HSwa55-b3Dbxxp2Rrggu5lDdjXLyhvZYXpB7uYE6LaEP_G2/pub?output=csv";
+const DOTD_RESULTS_URL = `https://corsproxy.io/?url=${encodeURIComponent(DOTD_RESULTS_CSV_LINK)}`;
 const CONFIG_URL = `https://corsproxy.io/?url=${encodeURIComponent(CONFIG_CSV_LINK)}`;
 
 const SHEET_URL = `https://corsproxy.io/?url=${encodeURIComponent(GOOGLE_CSV_LINK)}`;
@@ -175,6 +177,30 @@ export async function getCalendarData() {
     return parseCalendarCSV(data);
 }
 
+export async function getDOTDResults() {
+    const response = await fetchWithRetry(DOTD_RESULTS_URL);
+    const csvText = await response.text();
+    const lines = csvText.split('\n');
+    const results = [];
+
+    // Skip header
+    for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (line) {
+            const parts = line.split(',');
+            if (parts.length >= 4) {
+                results.push({
+                    date: parts[0].trim(),
+                    division: parseInt(parts[1].trim()) || 0,
+                    driver: parts[2].trim(),
+                    votes: parseInt(parts[3].trim()) || 0
+                });
+            }
+        }
+    }
+    return results;
+}
+
 const TEAMS_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTlPsGq-SypD4WPitvnR7JcluA8_6-5ePtuzyf5zFGJ31eppN55iUIHsKo0oduOZ9AVyVTf6VkPvTyu/pub?gid=1382697089&single=true&output=csv";
 const TEAMS_URL = `https://corsproxy.io/?url=${encodeURIComponent(TEAMS_CSV_LINK)}`;
 
@@ -245,9 +271,9 @@ export function parseConfigCSV(csvText) {
                 const trimmedKey = key.trim();
                 let trimmedValue = value.trim();
 
-                // Remove surrounding quotes if present (common in CSV for text with spaces)
+                // Remove surrounding quotes if present and handle escaped quotes
                 if (trimmedValue.startsWith('"') && trimmedValue.endsWith('"')) {
-                    trimmedValue = trimmedValue.slice(1, -1);
+                    trimmedValue = trimmedValue.slice(1, -1).replace(/""/g, '"');
                 }
 
                 const upperValue = trimmedValue.toUpperCase();
@@ -307,6 +333,29 @@ export async function updateConfig(key, value, email) {
         return { success: true };
     } catch (error) {
         console.error("Error updating config:", error);
+        return { success: false, message: error.message };
+    }
+}
+
+export async function submitVote(driverName, division) {
+    const today = new Date().toISOString().split('T')[0];
+    try {
+        await fetch(DRIVER_OF_THE_DAY_EXEC, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: {
+                'Content-Type': 'text/plain',
+            },
+            body: JSON.stringify({
+                action: 'submitVote',
+                driver: driverName,
+                division: division,
+                date: today
+            }),
+        });
+        return { success: true };
+    } catch (error) {
+        console.error("Error submitting vote:", error);
         return { success: false, message: error.message };
     }
 }

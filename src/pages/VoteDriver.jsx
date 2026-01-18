@@ -1,0 +1,712 @@
+import React, { useState, useEffect } from 'react';
+import PullToRefresh from 'react-simple-pull-to-refresh';
+import { useConfig } from '../context/ConfigContext';
+import { getLeaderboardData, submitVote, getDOTDResults } from '../services/data';
+
+const VoteDriver = () => {
+    const config = useConfig();
+    const [drivers, setDrivers] = useState([]);
+    const [results, setResults] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [activeDivision, setActiveDivision] = useState(1);
+    const [votedDriver, setVotedDriver] = useState(null);
+    const [showSuccess, setShowSuccess] = useState(false);
+    const [hasAlreadyVoted, setHasAlreadyVoted] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // dotd state: 0 (disabled), 1 (active), 2 (finished)
+    const dotdState = parseInt(config?.dotd) || 0;
+
+    const getTodayStr = () => new Date().toISOString().split('T')[0];
+
+    useEffect(() => {
+        const checkVoteStatus = () => {
+            const today = getTodayStr();
+            const savedVotes = JSON.parse(localStorage.getItem('ck_votes') || '{}');
+            const voteData = savedVotes[today] ? savedVotes[today][activeDivision] : null;
+
+            if (voteData && voteData.hasVoted) {
+                setHasAlreadyVoted(true);
+                // Try to find the driver in the current list to show who they voted for
+                if (drivers.length > 0) {
+                    const driver = drivers.find(d => d.name === voteData.votedFor);
+                    if (driver) setVotedDriver(driver);
+                }
+            } else {
+                setHasAlreadyVoted(false);
+                setVotedDriver(null);
+            }
+        };
+
+        checkVoteStatus();
+    }, [activeDivision, drivers]);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const [driversData, resultsData] = await Promise.all([
+                    getLeaderboardData(),
+                    dotdState === 2 ? getDOTDResults() : Promise.resolve([])
+                ]);
+                setDrivers(driversData);
+                setResults(resultsData);
+                setLoading(false);
+            } catch (err) {
+                setError("No se pudieron cargar los datos de la votación.");
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, [dotdState]);
+
+    const handleRefresh = async () => {
+        const { clearCache } = await import('../services/data');
+        clearCache();
+        try {
+            const [driversData, resultsData] = await Promise.all([
+                getLeaderboardData(),
+                dotdState === 2 ? getDOTDResults() : Promise.resolve([])
+            ]);
+            setDrivers(driversData);
+            setResults(resultsData);
+        } catch (err) {
+            setError("Error al refrescar la lista.");
+        }
+    };
+
+    const handleVote = async (driver) => {
+        setIsSubmitting(true);
+        const today = getTodayStr();
+
+        try {
+            // First call backend
+            const result = await submitVote(driver.name, activeDivision);
+
+            if (result.success) {
+                const savedVotes = JSON.parse(localStorage.getItem('ck_votes') || '{}');
+
+                if (!savedVotes[today]) savedVotes[today] = {};
+
+                savedVotes[today][activeDivision] = {
+                    hasVoted: true,
+                    date: today,
+                    division: activeDivision,
+                    votedFor: driver.name
+                };
+
+                localStorage.setItem('ck_votes', JSON.stringify(savedVotes));
+                setVotedDriver(driver);
+                setHasAlreadyVoted(true);
+                setShowSuccess(true);
+            } else {
+                alert("Hubo un problema al registrar tu voto. Por favor, inténtalo de nuevo.");
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Error de conexión al votar.");
+        } finally {
+            setIsSubmitting(false);
+        }
+
+        // Success modal disappears after 5 seconds
+        setTimeout(() => {
+            setShowSuccess(false);
+        }, 5000);
+    };
+
+    const filteredDrivers = drivers
+        .filter(driver => driver.division === activeDivision)
+        .sort((a, b) => a.name.localeCompare(b.name));
+
+    if (loading) {
+        return (
+            <div className="container" style={{ textAlign: 'center', color: '#94a3b8', paddingTop: '50px' }}>
+                <i className="fa-solid fa-spinner fa-spin" style={{ fontSize: '2em' }}></i>
+                <p>Cargando pilotos...</p>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="container" style={{ textAlign: 'center', color: '#ef4444', paddingTop: '50px' }}>
+                {error}
+            </div>
+        );
+    }
+
+    return (
+        <PullToRefresh onRefresh={handleRefresh} pullingContent={''}>
+            <div className="container">
+                <header className="vote-header fade-in">
+                    <h1><i className="fa-solid fa-star"></i> Piloto del Día</h1>
+                </header>
+
+
+                {dotdState === 0 ? (
+                    <div className="disabled-state fade-in">
+                        <i className="fa-solid fa-lock" style={{ fontSize: '3rem', marginBottom: '20px', color: '#94a3b8' }}></i>
+                        <h2>Votaciones Cerradas</h2>
+                        <p>Las votaciones para el Piloto del Día no están activas en este momento.</p>
+                    </div>
+                ) : dotdState === 2 ? (
+                    <div className="results-state fade-in">
+                        <div className="winner-announcement">
+                            <i className="fa-solid fa-crown winner-crown"></i>
+                        </div>
+
+                        <div className="winners-container">
+                            {[1, 2].map(divId => {
+                                const divResults = results.filter(r => r.division === divId);
+                                if (divResults.length === 0) return null;
+
+                                const maxVotes = Math.max(...divResults.map(r => r.votes));
+                                const winners = divResults.filter(r => r.votes === maxVotes);
+                                const isTie = winners.length > 1;
+
+                                return (
+                                    <div key={divId} className="division-results-section fade-in">
+                                        <h3 className="division-result-header">
+                                            {divId}ª División
+                                        </h3>
+
+                                        {isTie && (
+                                            <div className="tie-indicator">
+                                                <i className="fa-solid fa-scale-balanced"></i>
+                                                <span>¡EMPATE EN VOTOS!</span>
+                                            </div>
+                                        )}
+
+                                        <div className="winners-list">
+                                            {winners.map(winner => {
+                                                const driverInfo = drivers.find(d => d.name === winner.driver);
+                                                return (
+                                                    <div key={winner.driver} className="winner-card">
+                                                        <div className="winner-img-container">
+                                                            <img src={driverInfo?.photo || 'https://www.w3schools.com/howto/img_avatar.png'} alt={winner.driver} />
+                                                            <div className="winner-trophy"><i className="fa-solid fa-trophy"></i></div>
+                                                        </div>
+                                                        <div className="winner-info">
+                                                            <div className="winner-name">{winner.driver}</div>
+                                                            <div className="winner-team">{driverInfo?.team}</div>
+                                                            <div className="winner-votes">{winner.votes} votos</div>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+
+                            {results.length === 0 && (
+                                <p className="no-data-msg">No hay votos registrados para hoy.</p>
+                            )}
+                        </div>
+                    </div>
+                ) : (
+                    <div className="voting-main fade-in">
+                        <div className="division-select-container">
+                            <p>Vota por el piloto que mejor rendimiento ha tenido hoy.</p>
+                            <select
+                                className="division-dropdown"
+                                value={activeDivision}
+                                onChange={(e) => setActiveDivision(parseInt(e.target.value))}
+                            >
+                                <option value="1">1ª División</option>
+                                <option value="2">2ª División</option>
+                            </select>
+                        </div>
+
+                        {hasAlreadyVoted && (
+                            <div className="already-voted-msg">
+                                <i className="fa-solid fa-circle-info"></i> Ya has emitido tu voto para esta división hoy.
+                            </div>
+                        )}
+
+                        <div className="voting-grid">
+                            {filteredDrivers.map((driver, index) => (
+                                <div
+                                    key={driver.name}
+                                    className="vote-card fade-in"
+                                    style={{ animationDelay: `${0.1 + index * 0.05}s` }}
+                                >
+                                    <div className="vote-card-inner">
+                                        <div className="driver-img-wrapper">
+                                            <img src={driver.photo} alt={driver.name} className="driver-img" />
+                                        </div>
+                                        <div className="driver-info">
+                                            <h3 className="driver-name">{driver.name}</h3>
+                                            <span className="team-name">{driver.team}</span>
+                                        </div>
+                                        <button
+                                            className={`vote-btn ${votedDriver?.name === driver.name ? 'voted' : ''}`}
+                                            onClick={() => handleVote(driver)}
+                                            disabled={showSuccess || hasAlreadyVoted || isSubmitting}
+                                        >
+                                            {isSubmitting ? (
+                                                <><i className="fa-solid fa-spinner fa-spin"></i> Enviando...</>
+                                            ) : votedDriver?.name === driver.name ? (
+                                                <><i className="fa-solid fa-check"></i> Votado</>
+                                            ) : (
+                                                <><i className="fa-solid fa-thumbs-up"></i> Votar</>
+                                            )}
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {showSuccess && (
+                    <div className="success-overlay" onClick={() => setShowSuccess(false)}>
+                        <div className="success-modal" onClick={(e) => e.stopPropagation()}>
+                            <div className="success-icon">
+                                <i className="fa-solid fa-trophy"></i>
+                            </div>
+                            <h2>¡Voto Registrado!</h2>
+                            <p>Has votado por <strong>{votedDriver?.name}</strong> como Piloto del Día.</p>
+                            <div className="driver-mini-stats">
+                                <img src={votedDriver?.photo} alt={votedDriver?.name} />
+                                <div>
+                                    <div className="mini-name">{votedDriver?.name}</div>
+                                    <div className="mini-team">{votedDriver?.team}</div>
+                                </div>
+                            </div>
+                            <button className="close-success-btn" onClick={() => setShowSuccess(false)}>
+                                Cerrar
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                <style>{`
+                    .disabled-state, .results-state {
+                        text-align: center;
+                        padding: 60px 20px;
+                        background: var(--card-bg);
+                        border-radius: 30px;
+                        border: 1px solid rgba(255,255,255,0.05);
+                        margin-top: 20px;
+                    }
+
+                    .no-data-msg {
+                        color: var(--text-muted);
+                        margin-top: 20px;
+                    }
+
+                    .winner-announcement {
+                        margin-bottom: 20px;
+                    }
+
+                    .division-results-section {
+                        margin-bottom: 60px;
+                    }
+
+                    .division-results-section:last-child {
+                        margin-bottom: 0;
+                    }
+
+                    .division-result-header {
+                        font-family: 'Russo One', sans-serif;
+                        color: var(--text-muted);
+                        text-transform: uppercase;
+                        letter-spacing: 2px;
+                        font-size: 1rem;
+                        margin-bottom: 20px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 15px;
+                    }
+
+                    .division-result-header::before,
+                    .division-result-header::after {
+                        content: '';
+                        flex-grow: 1;
+                        height: 1px;
+                        background: rgba(255,255,255,0.1);
+                    }
+
+                    .winner-crown {
+                        font-size: 3rem;
+                        color: #fbbf24;
+                        margin-bottom: 20px;
+                        filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.4));
+                    }
+
+                    .winners-list {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 20px;
+                        max-width: 400px;
+                        margin: 0 auto;
+                    }
+
+                    .winner-card {
+                        background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+                        border: 2px solid #fbbf24;
+                        border-radius: 25px;
+                        padding: 25px;
+                        display: flex;
+                        align-items: center;
+                        gap: 25px;
+                        text-align: left;
+                        box-shadow: 0 10px 30px rgba(0,0,0,0.4), 0 0 20px rgba(251, 191, 36, 0.2);
+                        animation: winnerFloat 3s ease-in-out infinite;
+                    }
+
+                    @keyframes winnerFloat {
+                        0%, 100% { transform: translateY(0); }
+                        50% { transform: translateY(-10px); }
+                    }
+
+                    .winner-img-container {
+                        position: relative;
+                        width: 100px;
+                        height: 100px;
+                        flex-shrink: 0;
+                    }
+
+                    .winner-img-container img {
+                        width: 100%;
+                        height: 100%;
+                        border-radius: 50%;
+                        object-fit: cover;
+                        object-position: top;
+                        border: 3px solid #fbbf24;
+                    }
+
+                    .winner-trophy {
+                        position: absolute;
+                        bottom: -5px;
+                        right: -5px;
+                        background: #fbbf24;
+                        color: #0f172a;
+                        width: 32px;
+                        height: 32px;
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 1rem;
+                        border: 2px solid #0f172a;
+                        box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+                    }
+
+                    .winner-info {
+                        flex-grow: 1;
+                    }
+
+                    .winner-name {
+                        font-family: 'Russo One', sans-serif;
+                        font-size: 1.5rem;
+                        color: #fbbf24;
+                        line-height: 1.2;
+                        margin-bottom: 5px;
+                    }
+
+                    .winner-team {
+                        font-size: 0.9rem;
+                        color: var(--text-muted);
+                        text-transform: uppercase;
+                        letter-spacing: 1px;
+                        margin-bottom: 10px;
+                    }
+
+                    .winner-votes {
+                        font-weight: 700;
+                        color: white;
+                        background: rgba(255,255,255,0.1);
+                        padding: 4px 12px;
+                        border-radius: 10px;
+                        display: inline-block;
+                        font-size: 0.9rem;
+                    }
+
+                    .tie-indicator {
+                        background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%);
+                        color: #0f172a;
+                        padding: 10px 25px;
+                        border-radius: 50px;
+                        font-family: 'Russo One', sans-serif;
+                        font-size: 1.2rem;
+                        display: flex;
+                        align-items: center;
+                        gap: 12px;
+                        margin: 0 auto 30px;
+                        width: fit-content;
+                        box-shadow: 0 0 20px rgba(251, 191, 36, 0.4);
+                        letter-spacing: 1px;
+                        animation: pulse 2s infinite;
+                    }
+
+                    @keyframes pulse {
+                        0% { transform: scale(1); box-shadow: 0 0 20px rgba(251, 191, 36, 0.4); }
+                        50% { transform: scale(1.05); box-shadow: 0 0 35px rgba(251, 191, 36, 0.6); }
+                        100% { transform: scale(1); box-shadow: 0 0 20px rgba(251, 191, 36, 0.4); }
+                    }
+
+                    .already-voted-msg {
+                        background: rgba(59, 130, 246, 0.1);
+                        border: 1px solid rgba(59, 130, 246, 0.3);
+                        color: var(--accent);
+                        padding: 12px 20px;
+                        border-radius: 12px;
+                        text-align: center;
+                        margin-bottom: 20px;
+                        font-weight: 600;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 10px;
+                    }
+
+                    .vote-header {
+                        text-align: center;
+                        margin-bottom: 30px;
+                        padding-top: 20px;
+                    }
+                    .vote-header h1 {
+                        margin-bottom: 10px;
+                    }
+                    .vote-header p {
+                        color: var(--text-muted);
+                        font-size: 1.1rem;
+                    }
+
+                    .voting-grid {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+                        gap: 20px;
+                        margin-top: 30px;
+                        padding-bottom: 100px;
+                    }
+
+                    .vote-card {
+                        perspective: 1000px;
+                    }
+
+                    .vote-card-inner {
+                        background: var(--card-bg);
+                        border: 1px solid rgba(255, 255, 255, 0.05);
+                        border-radius: 20px;
+                        padding: 15px;
+                        text-align: center;
+                        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                        position: relative;
+                        overflow: hidden;
+                        display: flex;
+                        flex-direction: column;
+                        height: 100%;
+                    }
+
+                    .vote-card-inner:hover {
+                        transform: translateY(-8px);
+                        border-color: var(--accent);
+                        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4), 0 0 15px rgba(59, 130, 246, 0.2);
+                    }
+
+                    .driver-img-wrapper {
+                        position: relative;
+                        width: 100px;
+                        height: 100px;
+                        margin: 0 auto 15px;
+                    }
+
+                    .driver-img {
+                        width: 100%;
+                        height: 100%;
+                        border-radius: 50%;
+                        object-fit: cover;
+                        object-position: top;
+                        border: 3px solid #334155;
+                        transition: border-color 0.3s;
+                    }
+
+                    .vote-card-inner:hover .driver-img {
+                        border-color: var(--accent);
+                    }
+
+                    .division-tag {
+                        position: absolute;
+                        bottom: -5px;
+                        right: -5px;
+                        background: var(--accent);
+                        color: white;
+                        font-family: 'Russo One', sans-serif;
+                        font-size: 0.8rem;
+                        padding: 2px 8px;
+                        border-radius: 10px;
+                        box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+                    }
+
+                    .driver-info {
+                        flex-grow: 1;
+                        margin-bottom: 15px;
+                    }
+
+                    .driver-name {
+                        font-size: 1.1rem;
+                        font-weight: 700;
+                        margin-bottom: 4px;
+                        color: var(--text-main);
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    }
+
+                    .team-name {
+                        font-size: 0.8rem;
+                        color: var(--text-muted);
+                        text-transform: uppercase;
+                        letter-spacing: 0.5px;
+                    }
+
+                    .vote-btn {
+                        width: 100%;
+                        padding: 10px;
+                        border: 1px solid var(--accent);
+                        background: transparent;
+                        color: var(--accent);
+                        border-radius: 12px;
+                        font-weight: 700;
+                        cursor: pointer;
+                        transition: all 0.2s;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 8px;
+                    }
+
+                    .vote-btn:hover:not(:disabled) {
+                        background: var(--accent);
+                        color: white;
+                        box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
+                    }
+
+                    .vote-btn.voted {
+                        background: var(--success);
+                        border-color: var(--success);
+                        color: white;
+                    }
+
+                    /* Success Overlay */
+                    .success-overlay {
+                        position: fixed;
+                        top: 0; left: 0; right: 0; bottom: 0;
+                        background: rgba(0, 0, 0, 0.8);
+                        backdrop-filter: blur(10px);
+                        z-index: 1000;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        padding: 20px;
+                        animation: fadeIn 0.3s ease-out;
+                    }
+
+                    .success-modal {
+                        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+                        border: 1px solid rgba(255, 255, 255, 0.1);
+                        border-radius: 30px;
+                        padding: 40px;
+                        max-width: 400px;
+                        width: 100%;
+                        text-align: center;
+                        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+                        animation: scaleIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                    }
+
+                    @keyframes scaleIn {
+                        from { transform: scale(0.8); opacity: 0; }
+                        to { transform: scale(1); opacity: 1; }
+                    }
+
+                    .success-icon {
+                        width: 80px;
+                        height: 80px;
+                        background: rgba(251, 191, 36, 0.1);
+                        border: 2px solid #fbbf24;
+                        color: #fbbf24;
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 2.5rem;
+                        margin: 0 auto 20px;
+                        animation: bounce 2s infinite;
+                    }
+
+                    @keyframes bounce {
+                        0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+                        40% {transform: translateY(-10px);}
+                        60% {transform: translateY(-5px);}
+                    }
+
+                    .driver-mini-stats {
+                        display: flex;
+                        align-items: center;
+                        gap: 15px;
+                        background: rgba(255,255,255,0.05);
+                        padding: 15px;
+                        border-radius: 15px;
+                        margin: 20px 0;
+                        text-align: left;
+                    }
+
+                    .driver-mini-stats img {
+                        width: 50px;
+                        height: 50px;
+                        border-radius: 50%;
+                        border: 2px solid var(--accent);
+                        object-fit: cover;
+                    }
+
+                    .mini-name {
+                        font-weight: 700;
+                        font-size: 1rem;
+                    }
+
+                    .mini-team {
+                        font-size: 0.8rem;
+                        color: var(--text-muted);
+                    }
+
+                    .close-success-btn {
+                        width: 100%;
+                        padding: 12px;
+                        background: var(--accent);
+                        color: white;
+                        border: none;
+                        border-radius: 12px;
+                        font-weight: 700;
+                        cursor: pointer;
+                        margin-top: 10px;
+                    }
+
+                    @media (max-width: 480px) {
+                        .voting-grid {
+                            grid-template-columns: repeat(2, 1fr);
+                            gap: 12px;
+                        }
+                        .vote-card-inner {
+                            padding: 12px;
+                        }
+                        .driver-img-wrapper {
+                            width: 70px;
+                            height: 70px;
+                        }
+                        .driver-name {
+                            font-size: 0.95rem;
+                        }
+                    }
+                `}</style>
+            </div>
+        </PullToRefresh>
+    );
+};
+
+export default VoteDriver;

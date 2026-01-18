@@ -52,7 +52,14 @@ const Home = () => {
 
     const top3 = filteredDrivers.slice(0, 3);
     const rest = filteredDrivers.slice(3);
-    const divisionName = activeDivision === 1 ? 'PRIMERA' : 'SEGUNDA';
+
+    const getDivisionName = (div) => {
+        if (div === 1) return 'PRIMERA';
+        if (div === 2) return 'SEGUNDA';
+        return 'RESERVAS';
+    };
+
+    const divisionName = getDivisionName(activeDivision);
 
     if (loading) {
         return (
@@ -119,12 +126,13 @@ const Home = () => {
                     >
                         <option value="1">1ª Division</option>
                         <option value="2">2ª Division</option>
+                        <option value="0">Reservas</option>
                     </select>
                 </div>
 
                 {filteredDrivers.length === 0 ? (
                     <div style={{ textAlign: 'center', color: '#94a3b8', paddingTop: '30px' }}>
-                        No hay pilotos registrados o datos disponibles en la {divisionName} División.
+                        No hay pilotos registrados o datos disponibles en la División: {divisionName}.
                     </div>
                 ) : (
                     <>

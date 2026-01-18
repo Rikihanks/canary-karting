@@ -18,8 +18,8 @@ import { ConfigProvider } from './context/ConfigContext';
 import FeatureGuard from './components/FeatureGuard';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminGuard from './components/AdminGuard';
-
 import MessageBanner from './components/MessageBanner';
+import VoteDriver from './pages/VoteDriver';
 
 function App() {
   return (
@@ -88,6 +88,8 @@ function App() {
                   <AdminDashboard />
                 </AdminGuard>
               } />
+
+              <Route path="/votar" element={<VoteDriver />} />
 
               <Route path="/disabled" element={<FeatureDisabled />} />
 

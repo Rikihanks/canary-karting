@@ -19,18 +19,22 @@ const MessageBanner = () => {
                     setIsExpanded(true);
                 }
             }, 300);
-        } else {
-            setMessage('');
         }
     }, [config]);
 
-    const toggleExpand = (newState) => {
+    const toggleExpand = (newState, e) => {
+        // Prevent toggling if a link was clicked
+        if (e && e.target.tagName === 'A' || (e && e.target.closest('a'))) {
+            return;
+        }
+
         setIsExpanded(newState);
         if (message) {
+            const storageKey = config?.motd ? `motd_collapsed_${message}` : `motd_collapsed_test_v1`;
             if (!newState) {
-                localStorage.setItem(`motd_collapsed_${message}`, 'true');
+                localStorage.setItem(storageKey, 'true');
             } else {
-                localStorage.removeItem(`motd_collapsed_${message}`);
+                localStorage.removeItem(storageKey);
             }
         }
     };
@@ -42,7 +46,7 @@ const MessageBanner = () => {
             {/* EXPANDED CONTENT */}
             <div
                 className="banner-expanded"
-                onClick={() => toggleExpand(false)}
+                onClick={(e) => toggleExpand(false, e)}
                 style={{
                     maxHeight: isExpanded ? '500px' : '0px',
                     opacity: isExpanded ? 1 : 0,
@@ -66,7 +70,7 @@ const MessageBanner = () => {
             {/* COLLAPSED HANDLE */}
             <div
                 className="banner-collapsed"
-                onClick={() => toggleExpand(true)}
+                onClick={(e) => toggleExpand(true, e)}
                 style={{
                     maxHeight: !isExpanded ? '40px' : '0px',
                     opacity: !isExpanded ? 1 : 0,
@@ -183,6 +187,26 @@ const MessageBanner = () => {
                     align-items: center;
                     gap: 10px;
                     height: 40px; /* Match max-height */
+                }
+
+                .motd-link {
+                    color: #fbbf24;
+                    font-weight: 700;
+                    text-decoration: underline;
+                    text-underline-offset: 4px;
+                    transition: all 0.2s;
+                    padding: 2px 6px;
+                    border-radius: 4px;
+                    background: rgba(251, 191, 36, 0.1);
+                    display: inline-block;
+                }
+
+                .motd-link:hover {
+                    background: #fbbf24;
+                    color: #0f172a;
+                    text-decoration: none;
+                    transform: translateY(-1px);
+                    box-shadow: 0 4px 8px rgba(251, 191, 36, 0.3);
                 }
             `}</style>
         </div>

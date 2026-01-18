@@ -69,12 +69,13 @@ const Navbar = () => {
 
     // Define navigation items
     const navItems = [
-        // { to: "/clasificacion", label: "🏆 Clasificación Pilotos" },
-        // { to: "/teams", label: "🏆 Clasificación Equipos", feature: "teams" },
+        { to: "/clasificacion", label: "🏆 Clasificación Pilotos" },
+        { to: "/teams", label: "🏆 Clasificación Equipos", feature: "teams" },
         // { to: "/inscripcion", label: "📝 Preinscripción", feature: "inscripcion" },
         { to: "/", label: "📝 Academia", feature: "inscripcion" },
-        // { to: "/sorteo", label: <span><i className="fa-solid fa-dice"></i> &nbsp;Sorteo</span>, feature: "sorteo" },
-        // { to: "/races", label: "🏎️ Carreras", feature: "races" },
+        // { to: "/votar", label: "🗳️ Votar Piloto" },
+        { to: "/sorteo", label: <span><i className="fa-solid fa-dice"></i> &nbsp;Sorteo</span>, feature: "sorteo" },
+        { to: "/races", label: "🏎️ Carreras", feature: "races" },
     ];
 
     const renderNavLinks = (isMobile = false) => {
