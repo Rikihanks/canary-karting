@@ -44,27 +44,6 @@ export const requestPermission = async () => {
         const permission = await Notification.requestPermission();
         if (permission === 'granted') {
             console.log('Permiso de notificación concedido.');
-
-            // We need the service worker registration to get the token
-            const registration = await navigator.serviceWorker.ready;
-
-            if (!messaging) {
-                console.log('Messaging not supported.');
-                return false;
-            }
-
-            const currentToken = await getToken(messaging, {
-                vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
-                serviceWorkerRegistration: registration
-            });
-
-            if (currentToken) {
-                console.log('Token de FCM:', currentToken);
-                localStorage.setItem('notifications_granted', 'true');
-                return true;
-            } else {
-                console.log('No se pudo obtener el token.');
-            }
         } else {
             console.log('Permiso de notificación denegado.');
         }

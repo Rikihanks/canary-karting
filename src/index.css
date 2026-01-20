@@ -20,11 +20,14 @@
     --color-secondary-accent: #fcd34d;
     --color-podium-blue: #60a5fa;
 
-    /* Safe Area Insets */
-    --sab: env(safe-area-inset-bottom);
-    --sal: env(safe-area-inset-left);
-    --sar: env(safe-area-inset-right);
-    --sat: env(safe-area-inset-top);
+    /* Safe Area Insets with fallbacks */
+    --sab: env(safe-area-inset-bottom, 0px);
+    --sal: env(safe-area-inset-left, 0px);
+    --sar: env(safe-area-inset-right, 0px);
+    --sat: env(safe-area-inset-top, 0px);
+
+    --header-height: 60px;
+    --total-header-offset: calc(var(--header-height) + var(--sat));
 }
 
 * {
@@ -36,8 +39,8 @@
 body {
     font-family: 'Montserrat', sans-serif;
     margin: 0;
-    padding-top: 60px;
-    padding-bottom: 100px;
+    padding-top: var(--total-header-offset);
+    padding-bottom: calc(8rem + var(--sab));
     background-color: var(--bg-color);
     background-image:
         radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.15) 0%, transparent 20%),
@@ -93,19 +96,30 @@ h2 {
     margin: 0 auto;
 }
 
-/* Navbar Styles */
-.navbar-wrapper {
+/* Header and Navbar Stack */
+.app-header {
     position: fixed;
     top: 0;
+    left: 0;
     width: 100%;
-    z-index: 100;
+    z-index: 1000;
     background-color: var(--bg-color);
-    border-bottom: 3px solid var(--color-accent);
-    padding-top: calc(15px + var(--sat));
-    padding-bottom: 15px;
+    padding-top: var(--sat);
+    display: flex;
+    flex-direction: column;
+}
+
+.navbar-wrapper {
+    width: 100%;
+    background-color: var(--bg-color);
+    border-bottom: 2px solid var(--color-accent);
+    padding-bottom: 5px;
     padding-left: var(--sal);
     padding-right: var(--sar);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    height: var(--header-height);
+    display: flex;
+    align-items: center;
 }
 
 .navbar-top {
@@ -113,9 +127,9 @@ h2 {
     justify-content: space-between;
     align-items: center;
     padding: 0 20px;
+    width: 100%;
     max-width: 1200px;
     margin: 0 auto;
-    height: 40px;
 }
 
 .navbar-left {
@@ -247,7 +261,7 @@ h2 {
     height: 100vh;
     width: 250px;
     background-color: #111827;
-    z-index: 99;
+    z-index: 9999;
     display: flex;
     flex-direction: column;
     align-items: stretch;

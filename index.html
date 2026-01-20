@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="vite.svg" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Canary Karting</title>
@@ -56,6 +56,22 @@
     };
   </script>
   <script type="module" src="/src/main.jsx" crossorigin="anonymous"></script>
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <script>
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function (OneSignal) {
+      await OneSignal.init({
+        appId: "3771123c-5424-4f99-9b0b-4b507cd155f7",
+        serviceWorkerPath: "canary-karting/OneSignalSDKWorker.js",
+        serviceWorkerUpdaterPath: "canary-karting/OneSignalSDKUpdaterWorker.js",
+        serviceWorkerParam: { scope: "/canary-karting/" },
+        notifyButton: { enable: false }, // ❌ campana
+        promptOptions: {
+          slidedown: { autoPrompt: false } // ❌ prompt automático
+        }
+      });
+    });
+  </script>
 </body>
 
 </html>

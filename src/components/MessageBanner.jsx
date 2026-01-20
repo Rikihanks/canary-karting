@@ -98,7 +98,7 @@ const MessageBanner = () => {
                 .message-banner-container.loaded {
                     opacity: 1;
                     transform: translateY(0);
-                    margin-top: 18px;
+                    margin-top: 5px;
                     margin-bottom: 5px;
                 }
 

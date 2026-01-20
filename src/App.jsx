@@ -20,15 +20,37 @@ import AdminDashboard from './pages/AdminDashboard';
 import AdminGuard from './components/AdminGuard';
 import MessageBanner from './components/MessageBanner';
 import VoteDriver from './pages/VoteDriver';
+import { onMessage } from 'firebase/messaging';
+import { messaging } from './services/firebase';
+import './App.css';
 
 function App() {
+  React.useEffect(() => {
+    if (messaging) {
+      const unsubscribe = onMessage(messaging, (payload) => {
+        console.log('Mensaje en primer plano recibido:', payload);
+
+        // Mostrar notificación del navegador en primer plano
+        if (Notification.permission === 'granted') {
+          new Notification(payload.notification?.title || 'Canary Karting', {
+            body: payload.notification?.body || 'Nuevo mensaje',
+            icon: '/icons/512.png'
+          });
+        }
+      });
+      return () => unsubscribe();
+    }
+  }, []);
+
   return (
     <ConfigProvider>
       <AuthProvider>
         <HashRouter>
-          <Navbar />
-          <MessageBanner />
-          <div className="app-content" style={{}}>
+          <header className="app-header">
+            <Navbar />
+            <MessageBanner />
+          </header>
+          <div className="app-content">
             <Routes>
               <Route path="/clasificacion" element={<Home />} />
               <Route path="/" element={

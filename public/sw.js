@@ -1,35 +1,12 @@
-importScripts('https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js');
-importScripts('https://www.gstatic.com/firebasejs/9.6.1/firebase-messaging-compat.js');
+
+// Configuración de Caché (¡No tocar!)
 
 const CACHE_VERSION = 'v1.5';
 const CACHE_NAME = 'clasificacion-ck-cache-v1.5';
-const firebaseConfig = {
-  // Re-copia tu configuración de Firebase aquí (al menos los campos necesarios)
-  apiKey: "AIzaSyAaz08Re-HOLnPYllQBSVq9hfIbfRKeV2Y",
-  projectId: "TU-canary-karting-ID",
-  messagingSenderId: "16614182534",
-  appId: "1:16614182534:web:b2221350da181d88a50b07"
-};
+// OneSignal se encarga automáticamente de los eventos 'push' y 'notificationclick'.
+// Si necesitas lógica personalizada aquí, OneSignal permite extender el SW, 
+// pero por ahora dejamos que el SDK lo gestione todo para simplificar el "Enviar a todos".
 
-const app = firebase.initializeApp(firebaseConfig);
-const messaging = firebase.messaging();
-// [END initialize_firebase_in_sw]
-
-
-// [START background_handler]
-// El código aquí se ejecuta cuando el navegador recibe un mensaje en segundo plano.
-messaging.onBackgroundMessage((payload) => {
-  console.log('[firebase-messaging-sw.js] Mensaje recibido en segundo plano ', payload);
-
-  const notificationTitle = payload.notification.title;
-  const notificationOptions = {
-    body: payload.notification.body,
-    icon: 'icons/50.png' // Usa un icono de tu app
-  };
-
-  // Muestra la notificación
-  self.registration.showNotification(notificationTitle, notificationOptions);
-});
 
 const urlsToCache = [
 
