@@ -335,87 +335,74 @@
     gap: 10px;
 }
 
-/* Dual Announcer Slot Machine */
-.announcer-dual-reel {
+/* 3D Spinning Cards Announcer */
+.announcer-spinning-cards {
     display: flex;
-    gap: 40px;
-    height: 180px;
-    overflow: hidden;
-    margin-top: 40px;
-    mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
+    gap: 60px;
     justify-content: center;
-    width: 600px;
-    margin-left: auto;
-    margin-right: auto;
+    margin-top: 40px;
+    perspective: 1200px;
 }
 
-.announcer-reel {
-    flex: 1;
-    height: 100%;
+.spinning-card-container {
+    width: 200px;
+    height: 240px;
     position: relative;
 }
 
-.reel-track {
-    display: flex;
-    flex-direction: column;
-    animation: fastReelSpin 0.8s infinite linear;
+.spinning-card {
+    width: 100%;
+    height: 100%;
+    animation: cardFullSpin 0.4s infinite linear;
+    transform-style: preserve-3d;
 }
 
-.reel-2 .reel-track {
-    animation-delay: -0.2s;
-    /* Offset for variety */
-    animation-duration: 0.7s;
-}
-
-.reel-item-card {
-    height: 180px;
-    padding: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.reel-card-inner {
+.spinning-card-inner {
     background: #1a1f2e;
-    border: 2px solid rgba(251, 191, 36, 0.4);
-    border-radius: 12px;
+    border: 3px solid #fbbf24;
+    border-radius: 20px;
     width: 100%;
     height: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
-    filter: blur(1px);
-    /* Motion blur */
+    gap: 15px;
+    box-shadow: 0 0 40px rgba(251, 191, 36, 0.3), inset 0 0 30px rgba(0, 0, 0, 0.6);
+    backface-visibility: visible;
+    filter: blur(0.5px);
 }
 
-.reel-card-photo {
-    width: 80px;
-    height: 80px;
+.spinning-card-photo {
+    width: 120px;
+    height: 120px;
     border-radius: 50%;
     object-fit: cover;
-    border: 3px solid #fbbf24;
+    border: 4px solid #fbbf24;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
 }
 
-.reel-card-name {
+.spinning-card-name {
     font-family: 'Russo One', sans-serif;
-    font-size: 1rem;
+    font-size: 1.3rem;
     color: #fff;
     text-transform: uppercase;
     text-align: center;
-    padding: 0 10px;
 }
 
-@keyframes fastReelSpin {
+@keyframes cardFullSpin {
     from {
-        transform: translateY(0);
+        transform: rotateY(0deg);
     }
 
     to {
-        transform: translateY(-33.33333%);
+        transform: rotateY(360deg);
     }
+}
+
+.reel-2 .spinning-card {
+    animation-delay: -0.15s;
+    animation-duration: 0.35s;
 }
 
 .announcer-names {
@@ -780,4 +767,213 @@
         width: 90%;
         border-radius: 30px;
     }
+}
+
+.draw-hero-area {
+    position: relative;
+    padding-bottom: 2rem;
+}
+
+/* Grand Finale: Celebration Overlay */
+.celebration-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at center, rgba(10, 15, 30, 0.98), #050810);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 40px;
+    animation: fadeInOverlay 0.8s ease-out;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+@keyframes fadeInOverlay {
+    from {
+        opacity: 0;
+        background: transparent;
+    }
+
+    to {
+        opacity: 1;
+        background: radial-gradient(circle at center, rgba(10, 15, 30, 0.95), #050810);
+    }
+}
+
+.celebration-content {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    animation: cinematicZoom 1.5s cubic-bezier(0.19, 1, 0.22, 1) both;
+}
+
+@keyframes cinematicZoom {
+    0% {
+        transform: scale(0.5);
+        filter: blur(20px);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1);
+        filter: blur(0);
+        opacity: 1;
+    }
+}
+
+/* Chrome Title */
+.glitch-title {
+    font-family: 'Russo One', sans-serif;
+    font-size: 8rem;
+    font-weight: 900;
+    line-height: 1;
+    color: #fff;
+    position: relative;
+    text-transform: uppercase;
+    letter-spacing: -2px;
+    background: linear-gradient(180deg, #fff 0%, #aaa 45%, #444 50%, #666 55%, #fff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.3));
+}
+
+.glitch-title::after {
+    content: attr(data-text);
+    position: absolute;
+    left: 2px;
+    text-shadow: -2px 0 #fbbf24;
+    top: 0;
+    color: #fff;
+    background: transparent;
+    overflow: hidden;
+    clip: rect(0, 900px, 0, 0);
+    animation: glitch-anim 2s infinite linear alternate-reverse;
+}
+
+@keyframes glitch-anim {
+    0% {
+        clip: rect(44px, 9999px, 56px, 0);
+    }
+
+    20% {
+        clip: rect(12px, 9999px, 86px, 0);
+    }
+
+    40% {
+        clip: rect(67px, 9999px, 23px, 0);
+    }
+
+    60% {
+        clip: rect(89px, 9999px, 45px, 0);
+    }
+
+    80% {
+        clip: rect(2px, 9999px, 98px, 0);
+    }
+
+    100% {
+        clip: rect(44px, 9999px, 56px, 0);
+    }
+}
+
+.sub-title-wrap {
+    margin-top: -10px;
+}
+
+.sub-text {
+    font-family: 'Russo One', sans-serif;
+    font-size: 2.5rem;
+    /* Canary Islands Flag: White, Blue, Yellow */
+    background: linear-gradient(to right, #ffffff 0%, #0077c8 50%, #ffcc00 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 15px;
+    text-transform: uppercase;
+    text-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+    animation: trackingIn 2s cubic-bezier(0.215, 0.610, 0.355, 1.000) both;
+}
+
+@keyframes trackingIn {
+    0% {
+        letter-spacing: -0.5em;
+        opacity: 0;
+    }
+
+    40% {
+        opacity: 0.6;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+.season-badge {
+    margin-top: 40px;
+    background: rgba(251, 191, 36, 0.1);
+    border: 2px solid #fbbf24;
+    padding: 10px 30px;
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 0 30px rgba(251, 191, 36, 0.2);
+    animation: slideUpFade 1s 1s both;
+}
+
+.season-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    color: #fff;
+    opacity: 0.7;
+    letter-spacing: 2px;
+}
+
+.season-year {
+    font-family: 'Russo One', sans-serif;
+    font-size: 2.2rem;
+    color: #fbbf24;
+}
+
+/* Transition Button Styles */
+.primary-nav-btn {
+    background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+    color: #000;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 12px;
+    font-family: 'Russo One', sans-serif;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.primary-nav-btn:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 6px 20px rgba(251, 191, 36, 0.6);
+}
+
+.export-btn {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 12px;
+    font-family: 'Russo One', sans-serif;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
 }

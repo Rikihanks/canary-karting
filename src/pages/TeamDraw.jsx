@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { getLeaderboardData } from '../services/data';
 import html2canvas from 'html2canvas';
 import drumrollSound from '../assets/drumroll2.mp3';
-import revealSound from '../assets/bell.mp3';
+import revealSound from '../assets/TA-DA.mp3';
+import scapesSound from '../assets/silver-scapes.mp3';
 import './TeamDraw.css';
 
 const TeamDraw = () => {
@@ -15,11 +16,13 @@ const TeamDraw = () => {
     const [activeTeamId, setActiveTeamId] = useState(null);
     const [pairingPilots, setPairingPilots] = useState([]);
     const [manualNumbers, setManualNumbers] = useState({}); // { pilotName: number }
+    const [reelIdx, setReelIdx] = useState(0); // Shuffle index for the spinning cards
     const resultsRef = useRef(null);
 
     // Audio Refs
     const drumrollRef = useRef(new Audio(drumrollSound));
     const revealRef = useRef(new Audio(revealSound));
+    const scapesRef = useRef(new Audio(scapesSound));
 
     useEffect(() => {
         // Configure sounds
@@ -27,8 +30,13 @@ const TeamDraw = () => {
         drumrollRef.current.volume = 0.5; // Ensure it's not too loud/too quiet
         drumrollRef.current.load();
         revealRef.current.load();
+        scapesRef.current.load();
 
-        console.log("Audio elements initialized:", { drum: drumrollRef.current.src, bell: revealRef.current.src });
+        console.log("Audio elements initialized:", {
+            drum: drumrollRef.current.src,
+            bell: revealRef.current.src,
+            scapes: scapesRef.current.src
+        });
     }, []);
 
     useEffect(() => {
@@ -45,6 +53,35 @@ const TeamDraw = () => {
         };
         fetchData();
     }, []);
+
+    useEffect(() => {
+        let interval;
+        if (phase === 'pairing' && activeTeamId && pairingPilots.length === 0) {
+            interval = setInterval(() => {
+                setReelIdx(prev => prev + 1);
+            }, 120); // Velocidad de barajado
+        }
+        return () => clearInterval(interval);
+    }, [phase, activeTeamId, pairingPilots]);
+
+    useEffect(() => {
+        const scapes = scapesRef.current;
+        const handleEnded = () => {
+            setPhase('finished');
+        };
+
+        if (phase === 'celebration') {
+            console.log("Starting Celebration Audio: Silver Scrapes");
+            scapes.currentTime = 0;
+            scapes.play().catch(e => console.error("Scapes failed to play:", e));
+            scapes.addEventListener('ended', handleEnded);
+        }
+
+        return () => {
+            scapes.pause();
+            scapes.removeEventListener('ended', handleEnded);
+        };
+    }, [phase]);
 
     const loadDivision = (data, divId) => {
         const filtered = data
@@ -161,24 +198,35 @@ const TeamDraw = () => {
             finalTeams.push({ id: teamId, pilots: pair });
             setTeams([...finalTeams]);
 
-            // CLEAR STATE FOR NEXT REVEAL (Prevent overlapping/lingering)
-            // Added extra 3s delay between teams as requested
-            await new Promise(r => setTimeout(r, 3000));
+            // FINAL TEAM OPTIMIZATION: Reduce pause for the last team (Team 5)
+            const isLastTeam = i === 5;
+            await new Promise(r => setTimeout(r, isLastTeam ? 1000 : 3000));
+
             setActiveTeamId(null);
             setPairingPilots([]);
-            await new Promise(r => setTimeout(r, 800));
+
+            // Short delay before next team or finish
+            if (!isLastTeam) {
+                await new Promise(r => setTimeout(r, 800));
+            }
         }
 
         setPhase('finished');
         setActiveTeamId(null);
         setPairingPilots([]);
 
-        // Auto-scroll to results after a short delay for the last confetti to start
+        // GRAND FINALE: If Division 1, wait very short delay and show celebration
+        if (division === 1) {
+            await new Promise(r => setTimeout(r, 800)); // Quicker transition to banner
+            setPhase('celebration');
+        }
+
+        // Auto-scroll to results after a short delay
         setTimeout(() => {
             if (resultsRef.current) {
                 resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
-        }, 500);
+        }, 100); // Faster scroll trigger
     };
 
     const shuffleArray = (array) => {
@@ -207,98 +255,103 @@ const TeamDraw = () => {
 
     return (
         <div className="draw-container fade-in">
-            <h1 className="draw-title">SORTEO EXTRAORDINARIO</h1>
+            <div className="draw-hero-area">
+                <h1 className="draw-title">SORTEO EXTRAORDINARIO</h1>
 
-            <div className="draw-controls">
-                <select className="division-dropdown" value={division} onChange={handleDivisionChange} disabled={phase !== 'idle'}>
-                    <option value="1">1ª DIVISIÓN (GRID)</option>
-                    <option value="2">2ª DIVISIÓN (GRID)</option>
-                </select>
+                <div className="draw-controls">
+                    <select className="division-dropdown" value={division} onChange={handleDivisionChange} disabled={phase !== 'idle'}>
+                        <option value="1">1ª DIVISIÓN (GRID)</option>
+                        <option value="2">2ª DIVISIÓN (GRID)</option>
+                    </select>
 
-                {phase === 'idle' && (
-                    <button
-                        className="draw-btn primary pulse"
-                        onClick={() => {
-                            const validation = validateNumbers();
-                            if (validation.valid) {
-                                runEpicSorteo();
-                            } else {
-                                alert(validation.msg);
-                            }
-                        }}
-                    >
-                        <i className="fas fa-magic"></i> COMENZAR SORTEO
-                    </button>
-                )}
-
-                {phase === 'finished' && (
-                    <div className="draw-actions">
-                        <button className="draw-btn secondary" onClick={() => loadDivision(allDrivers, division)}>
-                            NUEVO SORTEO
+                    {phase === 'idle' && (
+                        <button
+                            className="draw-btn primary pulse"
+                            onClick={() => {
+                                const validation = validateNumbers();
+                                if (validation.valid) {
+                                    runEpicSorteo();
+                                } else {
+                                    alert(validation.msg);
+                                }
+                            }}
+                        >
+                            <i className="fas fa-magic"></i> COMENZAR SORTEO
                         </button>
-                        <button className="draw-btn success" onClick={exportImage}>
-                            DESCARGAR IMAGEN
-                        </button>
-                    </div>
-                )}
-            </div>
+                    )}
 
-            {/* Announcement Overlay during Pairing Phase */}
-            {phase === 'pairing' && activeTeamId && (
-                <div className="pairing-announcer">
-                    {pairingPilots.length > 0 && (
-                        <div className="confetti-wrapper">
-                            {[...Array(150)].map((_, i) => (
-                                <div key={i} className="confetti-piece" style={{
-                                    '--x': `${Math.random() * 140 - 70}vmax`,
-                                    '--y': `${Math.random() * 140 - 70}vmax`,
-                                    '--r': `${Math.random() * 1000}deg`,
-                                    '--c': ['#fbbf24', '#3b82f6', '#ffffff', '#ffd700', '#60a5fa'][i % 5]
-                                }}></div>
-                            ))}
+                    {phase === 'finished' && (
+                        <div className="draw-actions">
+                            <button className="export-btn" onClick={exportImage}>
+                                📥 Descargar Resultados
+                            </button>
+                            {division === 2 && (
+                                <button className="primary-nav-btn" onClick={() => loadDivision(allDrivers, 1)}>
+                                    IR A PRIMERA DIVISIÓN 🏎️💨
+                                </button>
+                            )}
+                            <button className="draw-btn secondary" onClick={() => loadDivision(allDrivers, division)}>
+                                NUEVO SORTEO
+                            </button>
                         </div>
                     )}
-                    <div className="announcer-content animate-announce" key={activeTeamId}>
-                        <span className="announcer-label">FORMANDO</span>
-                        <h2 className="announcer-team">
-                            EQUIPO {activeTeamId}
-                        </h2>
-                        {pairingPilots.length === 0 && (
-                            <div className="announcer-dual-reel">
-                                {[1, 2].map(reelIdx => (
-                                    <div key={reelIdx} className={`announcer-reel reel-${reelIdx}`}>
-                                        <div className="reel-track">
-                                            {[...pilots, ...pilots, ...pilots].map((p, idx) => (
-                                                <div key={idx} className="reel-item-card">
-                                                    <div className="reel-card-inner">
-                                                        <img src={p.photo} alt="" className="reel-card-photo" />
-                                                        <span className="reel-card-name">{p.name}</span>
+                </div>
+
+                {/* Announcement Overlay during Pairing Phase */}
+                {phase === 'pairing' && activeTeamId && (
+                    <div className="pairing-announcer">
+                        {pairingPilots.length > 0 && (
+                            <div className="confetti-wrapper">
+                                {[...Array(150)].map((_, i) => (
+                                    <div key={i} className="confetti-piece" style={{
+                                        '--x': `${Math.random() * 140 - 70}vmax`,
+                                        '--y': `${Math.random() * 140 - 70}vmax`,
+                                        '--r': `${Math.random() * 1000}deg`,
+                                        '--c': ['#fbbf24', '#3b82f6', '#ffffff', '#ffd700', '#60a5fa'][i % 5]
+                                    }}></div>
+                                ))}
+                            </div>
+                        )}
+                        <div className="announcer-content animate-announce" key={activeTeamId}>
+                            <span className="announcer-label">FORMANDO</span>
+                            <h2 className="announcer-team">
+                                EQUIPO {activeTeamId}
+                            </h2>
+                            {pairingPilots.length === 0 && (
+                                <div className="announcer-spinning-cards">
+                                    {[1, 2].map(cardIdx => {
+                                        const displayPilot = pilots[(reelIdx + (cardIdx * 3)) % pilots.length];
+                                        return (
+                                            <div key={cardIdx} className={`spinning-card-container reel-${cardIdx}`}>
+                                                <div className="spinning-card">
+                                                    <div className="spinning-card-inner">
+                                                        <img src={displayPilot.photo} alt="" className="spinning-card-photo" />
+                                                        <div className="spinning-card-info">
+                                                            <span className="spinning-card-name">{displayPilot.name}</span>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            ))}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                            {pairingPilots.length > 0 && (
+                                <div className="announcer-names reveal-anim">
+                                    {pairingPilots.map((p, idx) => (
+                                        <div key={idx} className="announcer-pilot">
+                                            <div className="announcer-portrait-wrap">
+                                                <img src={p.photo} alt={p.name} className="announcer-photo" />
+                                                <div className="announcer-pilot-badge">{p.number}</div>
+                                            </div>
+                                            <div className="announcer-pilot-name">{p.name}</div>
                                         </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                        {pairingPilots.length > 0 && (
-                            <div className="announcer-names reveal-anim">
-                                {pairingPilots.map((p, idx) => (
-                                    <div key={idx} className="announcer-pilot">
-                                        <div className="announcer-portrait-wrap">
-                                            <img src={p.photo} alt={p.name} className="announcer-photo" />
-                                            <div className="announcer-pilot-badge">{p.number}</div>
-                                        </div>
-                                        <div className="announcer-pilot-name">{p.name}</div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                     </div>
-                </div>
-            )}
-
-            <div className={`draw-content phase-${phase}`} ref={resultsRef}>
+                )}
 
                 {/* PILOT GRID - Blurs only during pairing phase */}
                 <div className={`pilots-grid ${phase === 'finished' ? 'minimized' : ''} ${phase === 'pairing' ? 'soft-blur' : ''}`}>
@@ -340,25 +393,40 @@ const TeamDraw = () => {
                     ))}
                 </div>
 
-                {/* FINAL TEAMS - Appear one by one in pairing phase or all in finished */}
-                <div className="final-teams-layout">
-                    {teams.map((team) => (
-                        <div key={team.id} className="team-stripe animate-entry">
-                            <div className="stripe-header">EQUIPO {team.id}</div>
-                            <div className="stripe-members">
-                                {team.pilots.map(p => (
-                                    <div key={p.name} className="stripe-member">
-                                        <img src={p.photo} alt={p.name} />
-                                        <div className="sm-info">
-                                            <span className="sm-name">{p.name}</span>
-                                            <span className="sm-rank">Nº {p.number}</span>
-                                        </div>
-                                    </div>
-                                ))}
+                {phase === 'celebration' && (
+                    <div className="celebration-overlay" onClick={() => setPhase('finished')}>
+                        <div className="celebration-content">
+                            <div className="glitch-title" data-text="BIENVENIDOS">BIENVENIDOS</div>
+                            <div className="sub-title-wrap">
+                                <span className="sub-text">A CANARY KARTING</span>
+                            </div>
+                            <div className="season-badge">
+                                <span className="season-label">TEMPORADA</span>
+                                <span className="season-year">2026</span>
                             </div>
                         </div>
-                    ))}
-                </div>
+                    </div>
+                )}
+            </div>
+
+            {/* FINAL TEAMS - Appear one by one in pairing phase or all in finished */}
+            <div className="final-teams-layout" ref={resultsRef}>
+                {teams.map((team) => (
+                    <div key={team.id} className="team-stripe animate-entry">
+                        <div className="stripe-header">EQUIPO {team.id}</div>
+                        <div className="stripe-members">
+                            {team.pilots.map(p => (
+                                <div key={p.name} className="stripe-member">
+                                    <img src={p.photo} alt={p.name} />
+                                    <div className="sm-info">
+                                        <span className="sm-name">{p.name}</span>
+                                        <span className="sm-rank">Nº {p.number}</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                ))}
             </div>
         </div>
     );
