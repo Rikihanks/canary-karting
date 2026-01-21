@@ -20,8 +20,10 @@ import AdminDashboard from './pages/AdminDashboard';
 import AdminGuard from './components/AdminGuard';
 import MessageBanner from './components/MessageBanner';
 import VoteDriver from './pages/VoteDriver';
+import TeamDraw from './pages/TeamDraw';
 import { onMessage } from 'firebase/messaging';
 import { messaging } from './services/firebase';
+import PWAInstallModal from './components/PWAInstallModal';
 import './App.css';
 
 function App() {
@@ -50,6 +52,7 @@ function App() {
             <Navbar />
             <MessageBanner />
           </header>
+          <PWAInstallModal />
           <div className="app-content">
             <Routes>
               <Route path="/clasificacion" element={<Home />} />
@@ -95,7 +98,7 @@ function App() {
 
               <Route path="/sorteo" element={
                 <FeatureGuard feature="sorteo">
-                  <Sorteo />
+                  <TeamDraw />
                 </FeatureGuard>
               } />
 

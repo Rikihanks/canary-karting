@@ -1,0 +1,258 @@
+/* PWA Install Modal - Global Styles */
+.pwa-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    animation: pwaFadeIn 0.3s ease-out;
+}
+
+@keyframes pwaFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* iOS Style */
+.platform-ios {
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.ios-style {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    width: 100%;
+    max-width: 320px;
+    border-radius: 20px;
+    padding: 24px;
+    color: #000;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    position: relative;
+    animation: iosBounce 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes iosBounce {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.ios-indicator {
+    width: 40px;
+    height: 5px;
+    background: #ccc;
+    border-radius: 10px;
+    margin: 0 auto 15px;
+}
+
+.ios-header h2 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    text-shadow: none;
+    color: #000;
+    background: none;
+    -webkit-background-clip: initial;
+    background-clip: initial;
+    filter: none;
+}
+
+.ios-header p {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 25px;
+}
+
+.ios-steps {
+    text-align: left;
+    margin-bottom: 25px;
+}
+
+.ios-steps .step {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 12px;
+}
+
+.ios-steps .step-icon {
+    font-size: 1.2rem;
+    color: #007aff;
+    width: 24px;
+    text-align: center;
+}
+
+.ios-steps .step-text {
+    font-size: 0.85rem;
+    color: #333;
+    line-height: 1.4;
+}
+
+.ios-close-btn {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    background: #007aff;
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+/* Android (Material 3) Style */
+.platform-android {
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.android-style {
+    background: #fff;
+    width: 95%;
+    max-width: 400px;
+    border-radius: 28px;
+    overflow: hidden;
+    color: #1c1b1f;
+    font-family: 'Roboto', sans-serif;
+    box-shadow: 0 4px 30px rgba(0,0,0,0.3);
+    animation: androidSlideUp 0.3s ease-out;
+}
+
+@keyframes androidSlideUp {
+    from { transform: translateY(100px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.android-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 24px 24px 16px;
+}
+
+.android-app-icon img {
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+}
+
+.android-title-group h2 {
+    font-size: 1.5rem;
+    font-weight: 500;
+    margin: 0;
+    background: none;
+    -webkit-background-clip: initial;
+    background-clip: initial;
+    color: #1c1b1f;
+    filter: none;
+    text-shadow: none;
+    text-align: left;
+}
+
+.android-title-group p {
+    font-size: 0.9rem;
+    color: #49454f;
+    margin-top: 4px;
+}
+
+.android-body {
+    padding: 0 24px 24px;
+}
+
+.android-body p {
+    font-size: 0.95rem;
+    color: #49454f;
+    line-height: 1.5;
+    margin-bottom: 20px;
+}
+
+.android-steps {
+    background: #f3f3f3;
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.android-step {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.85rem;
+    color: #49454f;
+}
+
+.android-step i {
+    width: 20px;
+    text-align: center;
+    color: #6750a4;
+}
+
+.android-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 0 24px 24px;
+}
+
+.android-actions button {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 20px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.android-cancel-btn {
+    background: transparent;
+    color: #6750a4;
+}
+
+.android-install-btn {
+    background: #6750a4;
+    color: #fff;
+}
+
+.android-install-btn:hover {
+    background: #5a4590;
+}
+
+/* Dark mode overrides if needed */
+@media (prefers-color-scheme: dark) {
+    .ios-style {
+        background: rgba(30, 30, 30, 0.8);
+        color: #fff;
+    }
+    .ios-header h2 { color: #fff; }
+    .ios-header p { color: #aaa; }
+    .ios-steps .step { background: rgba(255, 255, 255, 0.1); }
+    .ios-steps .step-text { color: #eee; }
+
+    .android-style {
+        background: #1c1b1f;
+        color: #e6e1e5;
+    }
+    .android-title-group h2 { color: #e6e1e5; }
+    .android-title-group p { color: #cac4d0; }
+    .android-body p { color: #cac4d0; }
+    .android-steps { background: #2b2930; }
+    .android-step { color: #e6e1e5; }
+    .android-step i { color: #d0bcff; }
+    .android-cancel-btn { color: #d0bcff; }
+    .android-install-btn { background: #d0bcff; color: #381e72; }
+}

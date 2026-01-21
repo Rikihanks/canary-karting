@@ -74,7 +74,7 @@ const Navbar = () => {
         // { to: "/inscripcion", label: "📝 Preinscripción", feature: "inscripcion" },
         { to: "/", label: "📝 Academia", feature: "inscripcion" },
         // { to: "/votar", label: "🗳️ Votar Piloto" },
-        { to: "/sorteo", label: <span><i className="fa-solid fa-dice"></i> &nbsp;Sorteo</span>, feature: "sorteo" },
+        { to: "/sorteo", label: <span><i className="fa-solid fa-people-group"></i> &nbsp;Sorteo Equipos</span>, feature: "sorteo" },
         { to: "/races", label: "🏎️ Carreras", feature: "races" },
     ];
 
