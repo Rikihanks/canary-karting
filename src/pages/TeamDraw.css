@@ -335,23 +335,86 @@
     gap: 10px;
 }
 
-.announcer-dots {
-    color: #fbbf24;
-    animation: dotsPulse 1s infinite;
-    display: inline-block;
+/* Dual Announcer Slot Machine */
+.announcer-dual-reel {
+    display: flex;
+    gap: 40px;
+    height: 180px;
+    overflow: hidden;
+    margin-top: 40px;
+    mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
+    justify-content: center;
+    width: 600px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
-@keyframes dotsPulse {
+.announcer-reel {
+    flex: 1;
+    height: 100%;
+    position: relative;
+}
 
-    0%,
-    100% {
-        opacity: 0.3;
-        transform: scale(0.9);
+.reel-track {
+    display: flex;
+    flex-direction: column;
+    animation: fastReelSpin 0.8s infinite linear;
+}
+
+.reel-2 .reel-track {
+    animation-delay: -0.2s;
+    /* Offset for variety */
+    animation-duration: 0.7s;
+}
+
+.reel-item-card {
+    height: 180px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.reel-card-inner {
+    background: #1a1f2e;
+    border: 2px solid rgba(251, 191, 36, 0.4);
+    border-radius: 12px;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+    filter: blur(1px);
+    /* Motion blur */
+}
+
+.reel-card-photo {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #fbbf24;
+}
+
+.reel-card-name {
+    font-family: 'Russo One', sans-serif;
+    font-size: 1rem;
+    color: #fff;
+    text-transform: uppercase;
+    text-align: center;
+    padding: 0 10px;
+}
+
+@keyframes fastReelSpin {
+    from {
+        transform: translateY(0);
     }
 
-    50% {
-        opacity: 1;
-        transform: scale(1.1);
+    to {
+        transform: translateY(-33.33333%);
     }
 }
 

@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { getLeaderboardData } from '../services/data';
 import html2canvas from 'html2canvas';
+import drumrollSound from '../assets/drumroll2.mp3';
+import revealSound from '../assets/bell.mp3';
 import './TeamDraw.css';
 
 const TeamDraw = () => {
@@ -16,8 +18,8 @@ const TeamDraw = () => {
     const resultsRef = useRef(null);
 
     // Audio Refs
-    const drumrollRef = useRef(new Audio('https://www.soundjay.com/misc/sounds/drum-roll-04.mp3'));
-    const revealRef = useRef(new Audio('https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3'));
+    const drumrollRef = useRef(new Audio(drumrollSound));
+    const revealRef = useRef(new Audio(revealSound));
 
     useEffect(() => {
         // Configure sounds
@@ -261,7 +263,24 @@ const TeamDraw = () => {
                         <h2 className="announcer-team">
                             EQUIPO {activeTeamId}
                         </h2>
-                        {pairingPilots.length === 0 && <h2 className="announcer-team"> <span className="announcer-dots"> ...</span></h2>}
+                        {pairingPilots.length === 0 && (
+                            <div className="announcer-dual-reel">
+                                {[1, 2].map(reelIdx => (
+                                    <div key={reelIdx} className={`announcer-reel reel-${reelIdx}`}>
+                                        <div className="reel-track">
+                                            {[...pilots, ...pilots, ...pilots].map((p, idx) => (
+                                                <div key={idx} className="reel-item-card">
+                                                    <div className="reel-card-inner">
+                                                        <img src={p.photo} alt="" className="reel-card-photo" />
+                                                        <span className="reel-card-name">{p.name}</span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                         {pairingPilots.length > 0 && (
                             <div className="announcer-names reveal-anim">
                                 {pairingPilots.map((p, idx) => (
