@@ -15,10 +15,21 @@ const VoteDriver = () => {
     const [hasAlreadyVoted, setHasAlreadyVoted] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    const [revealedDivs, setRevealedDivs] = useState([]);
+
     // dotd state: 0 (disabled), 1 (active), 2 (finished)
     const dotdState = parseInt(config?.dotd) || 0;
 
     const getTodayStr = () => new Date().toISOString().split('T')[0];
+
+    // Load revealed state from localStorage on mount
+    useEffect(() => {
+        const today = getTodayStr();
+        const savedReveals = JSON.parse(localStorage.getItem('ck_reveals') || '{}');
+        if (savedReveals[today]) {
+            setRevealedDivs(savedReveals[today]);
+        }
+    }, []);
 
     useEffect(() => {
         const checkVoteStatus = () => {
@@ -47,7 +58,7 @@ const VoteDriver = () => {
             try {
                 const [driversData, resultsData] = await Promise.all([
                     getLeaderboardData(),
-                    dotdState === 2 ? getDOTDResults() : Promise.resolve([])
+                    [2, 3].includes(dotdState) ? getDOTDResults() : Promise.resolve([])
                 ]);
                 setDrivers(driversData);
                 setResults(resultsData);
@@ -67,7 +78,7 @@ const VoteDriver = () => {
         try {
             const [driversData, resultsData] = await Promise.all([
                 getLeaderboardData(),
-                dotdState === 2 ? getDOTDResults() : Promise.resolve([])
+                [2, 3].includes(dotdState) ? getDOTDResults() : Promise.resolve([])
             ]);
             setDrivers(driversData);
             setResults(resultsData);
@@ -116,6 +127,27 @@ const VoteDriver = () => {
         }, 5000);
     };
 
+    const handleReveal = (divId) => {
+        // Sequential check: if there is a div 2 with results, it must be revealed before div 1
+        if (divId === 1) {
+            const hasDiv2Results = results.some(r => r.division === 2);
+            if (hasDiv2Results && !revealedDivs.includes(2)) {
+                return;
+            }
+        }
+
+        if (!revealedDivs.includes(divId)) {
+            const updatedReveals = [...revealedDivs, divId];
+            setRevealedDivs(updatedReveals);
+
+            // Persist to localStorage
+            const today = getTodayStr();
+            const savedReveals = JSON.parse(localStorage.getItem('ck_reveals') || '{}');
+            savedReveals[today] = updatedReveals;
+            localStorage.setItem('ck_reveals', JSON.stringify(savedReveals));
+        }
+    };
+
     const filteredDrivers = drivers
         .filter(driver => driver.division === activeDivision)
         .sort((a, b) => a.name.localeCompare(b.name));
@@ -128,7 +160,6 @@ const VoteDriver = () => {
             </div>
         );
     }
-
     if (error) {
         return (
             <div className="container" style={{ textAlign: 'center', color: '#ef4444', paddingTop: '50px' }}>
@@ -138,11 +169,8 @@ const VoteDriver = () => {
     }
 
     return (
-        <PullToRefresh onRefresh={handleRefresh} pullingContent={''}>
+        <PullToRefresh onRefresh={handleRefresh} pullingContent={''} className="ptr">
             <div className="container">
-                <header className="vote-header fade-in">
-                    <h1><i className="fa-solid fa-star"></i> Piloto del Día</h1>
-                </header>
 
 
                 {dotdState === 0 ? (
@@ -151,14 +179,15 @@ const VoteDriver = () => {
                         <h2>Votaciones Cerradas</h2>
                         <p>Las votaciones para el Piloto del Día no están activas en este momento.</p>
                     </div>
-                ) : dotdState === 2 ? (
-                    <div className="results-state fade-in">
-                        <div className="winner-announcement">
+                ) : (dotdState === 2 || dotdState === 3) ? (
+                    <>
+                        <div className="winner-announcement fade-in">
                             <i className="fa-solid fa-crown winner-crown"></i>
+                            <h2 className="dotd-results-title">PILOTO DEL DÍA</h2>
                         </div>
 
-                        <div className="winners-container">
-                            {[1, 2].map(divId => {
+                        <div className="winners-container fade-in">
+                            {[1, 2].sort((a, b) => b - a).map(divId => {
                                 const divResults = results.filter(r => r.division === divId);
                                 if (divResults.length === 0) return null;
 
@@ -166,36 +195,63 @@ const VoteDriver = () => {
                                 const winners = divResults.filter(r => r.votes === maxVotes);
                                 const isTie = winners.length > 1;
 
+                                // In dotdState 3, everything is already revealed
+                                const isRevealed = dotdState === 3 || revealedDivs.includes(divId);
+                                const canReveal = divId === 2 || dotdState === 3 || revealedDivs.includes(2) || !results.some(r => r.division === 2);
+
                                 return (
-                                    <div key={divId} className="division-results-section fade-in">
+                                    <div key={divId} className={`division-results-section fade-in ${!canReveal ? 'is-locked' : ''}`}>
                                         <h3 className="division-result-header">
                                             {divId}ª División
                                         </h3>
 
-                                        {isTie && (
-                                            <div className="tie-indicator">
-                                                <i className="fa-solid fa-scale-balanced"></i>
-                                                <span>¡EMPATE EN VOTOS!</span>
-                                            </div>
-                                        )}
-
-                                        <div className="winners-list">
-                                            {winners.map(winner => {
-                                                const driverInfo = drivers.find(d => d.name === winner.driver);
-                                                return (
-                                                    <div key={winner.driver} className="winner-card">
-                                                        <div className="winner-img-container">
-                                                            <img src={driverInfo?.photo || 'https://www.w3schools.com/howto/img_avatar.png'} alt={winner.driver} />
-                                                            <div className="winner-trophy"><i className="fa-solid fa-trophy"></i></div>
-                                                        </div>
-                                                        <div className="winner-info">
-                                                            <div className="winner-name">{winner.driver}</div>
-                                                            <div className="winner-team">{driverInfo?.team}</div>
-                                                            <div className="winner-votes">{winner.votes} votos</div>
+                                        <div className="winners-reveal-grid">
+                                            <div
+                                                className={`reveal-card-container ${isRevealed ? 'is-revealed' : ''} ${!isRevealed && !canReveal ? 'cant-tap' : ''}`}
+                                                onClick={() => !isRevealed && canReveal && handleReveal(divId)}
+                                            >
+                                                <div className="reveal-card-inner">
+                                                    {/* FRONT: SPOILER MASK */}
+                                                    <div className="reveal-card-face face-front">
+                                                        <div className="spoiler-content">
+                                                            <div className="mystery-icon">
+                                                                <i className="fa-solid fa-user-secret"></i>
+                                                            </div>
+                                                            <span className="tap-hint">
+                                                                {!canReveal ? 'REVELA 2ª DIV PRIMERO' : 'TOCAR PARA REVELAR'}
+                                                            </span>
                                                         </div>
                                                     </div>
-                                                );
-                                            })}
+
+                                                    {/* BACK: ACTUAL WINNERS (LIST) */}
+                                                    <div className="reveal-card-face face-back">
+                                                        <div className="winners-list-back">
+                                                            {isTie && (
+                                                                <div className="tie-indicator-mini">
+                                                                    <i className="fa-solid fa-scale-balanced"></i>
+                                                                    <span>¡EMPATE!</span>
+                                                                </div>
+                                                            )}
+                                                            {winners.map((winner, idx) => {
+                                                                const driverInfo = drivers.find(d => d.name === winner.driver);
+                                                                return (
+                                                                    <div key={winner.driver} className="winner-card-mini fade-in" style={{ animationDelay: `${idx * 0.2}s` }}>
+                                                                        <div className="winner-img-container">
+                                                                            <img src={driverInfo?.photo || 'https://www.w3schools.com/howto/img_avatar.png'} alt={winner.driver} />
+                                                                            <div className="winner-trophy"><i className="fa-solid fa-trophy"></i></div>
+                                                                        </div>
+                                                                        <div className="winner-info">
+                                                                            <div className="winner-name">{winner.driver}</div>
+                                                                            <div className="winner-team">{driverInfo?.team || 'INDEPENDIENTE'}</div>
+                                                                            <div className="winner-votes">{winner.votes} votos</div>
+                                                                        </div>
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 );
@@ -205,7 +261,7 @@ const VoteDriver = () => {
                                 <p className="no-data-msg">No hay votos registrados para hoy.</p>
                             )}
                         </div>
-                    </div>
+                    </>
                 ) : (
                     <div className="voting-main fade-in">
                         <div className="division-select-container">
@@ -284,13 +340,40 @@ const VoteDriver = () => {
                 )}
 
                 <style>{`
-                    .disabled-state, .results-state {
+                    .disabled-state {
                         text-align: center;
                         padding: 60px 20px;
                         background: var(--card-bg);
                         border-radius: 30px;
                         border: 1px solid rgba(255,255,255,0.05);
                         margin-top: 20px;
+                    }
+
+                    .winners-container {
+                        text-align: center;
+                        padding: 20px 0;
+                        flex-grow: 1;
+                        display: flex;
+                        flex-direction: column;
+                    }
+
+                    /* Ensure PullToRefresh and its children fill the height */
+                    .ptr, 
+                    .ptr__children {
+                        display: flex;
+                        flex-direction: column;
+                        flex-grow: 1;
+                        min-height: 100%;
+                    }
+
+                    .container {
+                        padding: 1rem;
+                        max-width: 800px;
+                        margin: 0 auto;
+                        flex-grow: 1;
+                        display: flex;
+                        flex-direction: column;
+                        width: 100%;
                     }
 
                     .no-data-msg {
@@ -300,10 +383,11 @@ const VoteDriver = () => {
 
                     .winner-announcement {
                         margin-bottom: 20px;
+                        text-align: center;
                     }
 
                     .division-results-section {
-                        margin-bottom: 60px;
+                        margin-bottom: 30px;
                     }
 
                     .division-results-section:last-child {
@@ -427,27 +511,32 @@ const VoteDriver = () => {
                         font-size: 0.9rem;
                     }
 
-                    .tie-indicator {
+                    .tie-indicator-mini {
                         background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%);
                         color: #0f172a;
-                        padding: 10px 25px;
+                        padding: 6px 15px;
                         border-radius: 50px;
                         font-family: 'Russo One', sans-serif;
-                        font-size: 1.2rem;
+                        font-size: 0.9rem;
                         display: flex;
                         align-items: center;
-                        gap: 12px;
-                        margin: 0 auto 30px;
+                        justify-content: center;
+                        gap: 8px;
+                        margin: 0 auto 10px;
                         width: fit-content;
-                        box-shadow: 0 0 20px rgba(251, 191, 36, 0.4);
+                        box-shadow: 0 0 15px rgba(251, 191, 36, 0.4);
                         letter-spacing: 1px;
                         animation: pulse 2s infinite;
                     }
 
                     @keyframes pulse {
-                        0% { transform: scale(1); box-shadow: 0 0 20px rgba(251, 191, 36, 0.4); }
-                        50% { transform: scale(1.05); box-shadow: 0 0 35px rgba(251, 191, 36, 0.6); }
-                        100% { transform: scale(1); box-shadow: 0 0 20px rgba(251, 191, 36, 0.4); }
+                        0% { transform: scale(1); box-shadow: 0 0 15px rgba(251, 191, 36, 0.4); }
+                        50% { transform: scale(1.05); box-shadow: 0 0 25px rgba(251, 191, 36, 0.6); }
+                        100% { transform: scale(1); box-shadow: 0 0 15px rgba(251, 191, 36, 0.4); }
+                    }
+
+                    .fade-in {
+                        animation: fadeIn 0.5s ease-out forwards;
                     }
 
                     .already-voted-msg {
@@ -463,6 +552,170 @@ const VoteDriver = () => {
                         align-items: center;
                         justify-content: center;
                         gap: 10px;
+                    }
+
+                    .dotd-results-title {
+                        font-family: 'Russo One', sans-serif;
+                        font-size: 1.8rem;
+                        margin-top: 10px;
+                        background: linear-gradient(180deg, #fff 0%, #aaa 100%);
+                        -webkit-background-clip: text;
+                        -webkit-text-fill-color: transparent;
+                        text-transform: uppercase;
+                        letter-spacing: 2px;
+                    }
+
+                    .winners-reveal-grid {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 20px;
+                        max-width: 400px;
+                        margin: 0 auto;
+                    }
+
+                    .reveal-card-container {
+                        perspective: 1200px;
+                        width: 100%;
+                        cursor: pointer;
+                        transition: transform 0.3s;
+                    }
+
+                    .reveal-card-container:active {
+                        transform: scale(0.98);
+                    }
+
+                    .reveal-card-container.cant-tap {
+                        cursor: not-allowed;
+                        opacity: 0.7;
+                    }
+
+                    .reveal-card-inner {
+                        position: relative;
+                        width: 100%;
+                        transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                        transform-style: preserve-3d;
+                    }
+
+                    .reveal-card-container.is-revealed .reveal-card-inner {
+                        transform: rotateY(180deg);
+                    }
+
+                    .reveal-card-face {
+                        position: relative;
+                        width: 100%;
+                        backface-visibility: hidden;
+                        border-radius: 25px;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
+                        min-height: 120px;
+                    }
+
+                    .face-back {
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        transform: rotateY(180deg);
+                        justify-content: flex-start;
+                        min-height: 180px;
+                    }
+
+                    /* Spoiler Face Styling */
+                    .face-front {
+                        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+                        border: 2px dashed rgba(251, 191, 36, 0.3);
+                        padding: 30px;
+                        box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+                        transition: all 0.3s;
+                    }
+
+                    .reveal-card-container:hover .face-front:not(.is-locked .face-front) {
+                        border-color: #fbbf24;
+                        background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+                        box-shadow: 0 0 20px rgba(251, 191, 36, 0.2);
+                    }
+
+                    .spoiler-content {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        gap: 15px;
+                    }
+
+                    .mystery-icon {
+                        font-size: 2.5rem;
+                        color: #fbbf24;
+                        opacity: 0.6;
+                        animation: pulseIcon 2s infinite;
+                    }
+
+                    .tap-hint {
+                        font-family: 'Russo One', sans-serif;
+                        font-size: 1rem;
+                        color: #94a3b8;
+                        letter-spacing: 1px;
+                        text-transform: uppercase;
+                    }
+
+                    .is-locked .face-front {
+                        background: #0f172a;
+                        border-color: rgba(255,255,255,0.05);
+                        opacity: 0.5;
+                    }
+
+                    .is-locked .mystery-icon {
+                        color: #475569;
+                        animation: none;
+                    }
+
+                    @keyframes pulseIcon {
+                        0%, 100% { transform: scale(1); opacity: 0.6; }
+                        50% { transform: scale(1.1); opacity: 0.9; }
+                    }
+
+                    @keyframes fadeIn {
+                        from { opacity: 0; transform: translateY(10px); }
+                        to { opacity: 1; transform: translateY(0); }
+                    }
+
+                    .winners-list-back {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 15px;
+                        width: 100%;
+                    }
+
+                    .winner-card-mini {
+                        background: linear-gradient(135deg, rgba(30, 41, 59, 1) 0%, rgba(15, 23, 42, 1) 100%);
+                        border: 2px solid #fbbf24;
+                        border-radius: 20px;
+                        padding: 15px;
+                        display: flex;
+                        align-items: center;
+                        gap: 15px;
+                        text-align: left;
+                        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+                    }
+
+                    .winner-card-mini .winner-img-container {
+                        width: 60px;
+                        height: 60px;
+                    }
+
+                    .winner-card-mini .winner-name {
+                        font-size: 1.1rem;
+                    }
+
+                    .winner-card-mini .winner-info {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 2px;
+                    }
+
+                    .division-results-section.is-locked {
+                        filter: grayscale(1);
+                        pointer-events: none;
                     }
 
                     .vote-header {

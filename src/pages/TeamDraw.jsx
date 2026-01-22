@@ -256,7 +256,7 @@ const TeamDraw = () => {
     return (
         <div className="draw-container fade-in">
             <div className="draw-hero-area">
-                <h1 className="draw-title">SORTEO EXTRAORDINARIO</h1>
+                <h1 className="draw-title">SORTEO</h1>
 
                 <div className="draw-controls">
                     <select className="division-dropdown" value={division} onChange={handleDivisionChange} disabled={phase !== 'idle'}>

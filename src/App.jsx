@@ -53,72 +53,74 @@ function App() {
             <MessageBanner />
           </header>
           <PWAInstallModal />
-          <div className="app-content">
-            <Routes>
-              <Route path="/clasificacion" element={<Home />} />
-              <Route path="/" element={
-                <FeatureGuard feature="inscripcion">
-                  <Inscripcion_Academia />
-                </FeatureGuard>
-              } />
-              <Route path="/inscripcion" element={
-                <FeatureGuard feature="inscripcion">
-                  {/*<Inscripcion />*/}
-                </FeatureGuard>
-              } />
+          <div className="app-main-wrapper">
+            <div className="app-content">
+              <Routes>
+                <Route path="/clasificacion" element={<Home />} />
+                <Route path="/" element={
+                  <FeatureGuard feature="inscripcion">
+                    <Inscripcion_Academia />
+                  </FeatureGuard>
+                } />
+                <Route path="/inscripcion" element={
+                  <FeatureGuard feature="inscripcion">
+                    {/*<Inscripcion />*/}
+                  </FeatureGuard>
+                } />
 
-              <Route path="/teams" element={
-                <FeatureGuard feature="teams">
-                  <Teams />
-                </FeatureGuard>
-              } />
+                <Route path="/teams" element={
+                  <FeatureGuard feature="teams">
+                    <Teams />
+                  </FeatureGuard>
+                } />
 
-              <Route path="/team-profile" element={
-                <FeatureGuard feature="teams">
-                  <TeamProfile />
-                </FeatureGuard>
-              } />
-              <Route path="/profile" element={<Profile />} />
+                <Route path="/team-profile" element={
+                  <FeatureGuard feature="teams">
+                    <TeamProfile />
+                  </FeatureGuard>
+                } />
+                <Route path="/profile" element={<Profile />} />
 
-              <Route path="/races" element={
-                <FeatureGuard feature="races">
-                  <Races />
-                </FeatureGuard>
-              } />
+                <Route path="/races" element={
+                  <FeatureGuard feature="races">
+                    <Races />
+                  </FeatureGuard>
+                } />
 
-              <Route path="/race-detail" element={
-                <FeatureGuard feature="races">
-                  <RaceDetail />
-                </FeatureGuard>
-              } />
+                <Route path="/race-detail" element={
+                  <FeatureGuard feature="races">
+                    <RaceDetail />
+                  </FeatureGuard>
+                } />
 
 
 
-              <Route path="/assistance-confirmation" element={<AssistanceConfirmation />} />
+                <Route path="/assistance-confirmation" element={<AssistanceConfirmation />} />
 
-              <Route path="/sorteo" element={
-                <FeatureGuard feature="sorteo">
-                  <TeamDraw />
-                </FeatureGuard>
-              } />
+                <Route path="/sorteo" element={
+                  <FeatureGuard feature="sorteo">
+                    <TeamDraw />
+                  </FeatureGuard>
+                } />
 
-              <Route path="/login" element={
-                <FeatureGuard feature="login">
-                  <Login />
-                </FeatureGuard>
-              } />
+                <Route path="/login" element={
+                  <FeatureGuard feature="login">
+                    <Login />
+                  </FeatureGuard>
+                } />
 
-              <Route path="/admin" element={
-                <AdminGuard>
-                  <AdminDashboard />
-                </AdminGuard>
-              } />
+                <Route path="/admin" element={
+                  <AdminGuard>
+                    <AdminDashboard />
+                  </AdminGuard>
+                } />
 
-              <Route path="/votar" element={<VoteDriver />} />
+                <Route path="/votar" element={<VoteDriver />} />
 
-              <Route path="/disabled" element={<FeatureDisabled />} />
+                <Route path="/disabled" element={<FeatureDisabled />} />
 
-            </Routes>
+              </Routes>
+            </div>
           </div>
         </HashRouter>
       </AuthProvider>
