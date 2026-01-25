@@ -147,7 +147,7 @@ const Home = () => {
                                 return (
                                     <Link
                                         key={driver.name}
-                                        to={`/profile?driver=${encodeURIComponent(driver.name)}`}
+                                        to={`/profile?driver=${encodeURIComponent(driver.name)}&season=${season}`}
                                         className="podium-card-link"
                                     >
                                         <div className={`list-item rank-${rank}`}>
@@ -170,7 +170,7 @@ const Home = () => {
                                 return (
                                     <Link
                                         key={driver.name}
-                                        to={`/profile?driver=${encodeURIComponent(driver.name)}`}
+                                        to={`/profile?driver=${encodeURIComponent(driver.name)}&season=${season}`}
                                         className="list-item-link"
                                     >
                                         <div className="list-item">

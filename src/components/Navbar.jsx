@@ -89,10 +89,10 @@ const Navbar = () => {
         // { to: "/inscripcion", label: "📝 Preinscripción", feature: "inscripcion" },
         { to: "/", label: "📝 Academia", feature: "inscripcion" },
         // { to: "/votar", label: "🗳️ Votar Piloto" },
-        { to: "/sorteo", label: <span><i className="fa-solid fa-people-group"></i> &nbsp;Sorteo Karts</span>, feature: "sorteo" },
-        { to: "/team-draw-input", label: <span><i className="fa-solid fa-tablet-screen-button"></i> &nbsp;Sorteo Tablet</span>, feature: "sorteo" },
-        { to: "/sorteo-equipo", label: <span><i className="fa-solid fa-people-group"></i> &nbsp;Sorteo TV</span>, feature: "sorteo" },
-        { to: "/races", label: "🏎️ Carreras", feature: "races" },
+        { to: "/sorteo", label: <span><i className="fa-solid fa-ticket"></i> &nbsp;Sorteo Karts</span>, feature: "sorteo" },
+        { to: "/team-draw-input", label: <span><i className="fa-solid fa-tablet-screen-button"></i> &nbsp;Sorteo Equipos Tablet</span>, feature: "sorteo", disabled: true },
+        { to: "/sorteo-equipo", label: <span><i className="fa-solid fa-tv"></i> &nbsp;Sorteo Equipos TV</span>, feature: "sorteo", disabled: true },
+        { to: "/races", label: "🏎️ Calendario Carreras", feature: "races" },
     ];
 
     const toggleSubmenu = (index) => {
@@ -129,6 +129,18 @@ const Navbar = () => {
                                 </Link>
                             ))}
                         </div>
+                    </div>
+                );
+            }
+
+            if (item.disabled) {
+                return (
+                    <div
+                        key={index}
+                        className={isMobile ? "nav-link disabled-link" : "nav-link-desktop disabled-link"}
+                        style={{ opacity: 0.5, cursor: 'not-allowed' }}
+                    >
+                        {item.label}
                     </div>
                 );
             }

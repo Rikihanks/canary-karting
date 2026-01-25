@@ -91,7 +91,7 @@ const Teams = () => {
                             {top3.map((team, index) => {
                                 const rank = index + 1;
                                 return (
-                                    <Link key={team.name} to={`/team-profile?team=${encodeURIComponent(team.name)}`} className="podium-card-link">
+                                    <Link key={team.name} to={`/team-profile?team=${encodeURIComponent(team.name)}&season=${season}`} className="podium-card-link">
                                         <div className={`list-item rank-${rank} team-item`} style={{ '--item-bg': `url(${team.logo || 'https://www.w3schools.com/howto/img_avatar.png'})` }}>
                                             <i className="fa-solid fa-medal crown"></i>
                                             <div className="info">
@@ -108,7 +108,7 @@ const Teams = () => {
                             {rest.map((team, index) => {
                                 const rank = index + 4;
                                 return (
-                                    <Link key={team.name} to={`/team-profile?team=${encodeURIComponent(team.name)}`} className="list-item-link">
+                                    <Link key={team.name} to={`/team-profile?team=${encodeURIComponent(team.name)}&season=${season}`} className="list-item-link">
                                         <div className="list-item team-item" style={{ '--item-bg': `url(${team.logo || 'https://www.w3schools.com/howto/img_avatar.png'})` }}>
                                             <div className="rank-num">{rank}</div>
                                             <div className="info">

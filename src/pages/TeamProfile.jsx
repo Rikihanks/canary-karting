@@ -6,6 +6,7 @@ import { getTeamsData, getLeaderboardData } from '../services/data';
 const TeamProfile = () => {
     const [searchParams] = useSearchParams();
     const teamName = searchParams.get('team');
+    const season = searchParams.get('season') || '2025';
 
     const [teamStats, setTeamStats] = useState(null);
     const [pilotsData, setPilotsData] = useState([]);
@@ -26,14 +27,14 @@ const TeamProfile = () => {
                     getLeaderboardData()
                 ]);
 
-                const stats = teams.find(t => t.name === teamName);
+                const stats = teams.find(t => t.name === teamName && t.season === season);
 
                 if (!stats) {
                     setError("Equipo no encontrado.");
                 } else {
                     setTeamStats(stats);
                     // Find pilot data (photos) from leaderboard
-                    const teamPilots = leaderboard.filter(d => stats.pilots.includes(d.name));
+                    const teamPilots = leaderboard.filter(d => stats.pilots.includes(d.name) && d.season === season);
                     // Also include pilots that might be in the team list but not in leaderboard (fallback)
                     const allPilots = stats.pilots.map(name => {
                         const found = teamPilots.find(p => p.name === name);
@@ -64,14 +65,14 @@ const TeamProfile = () => {
                 getLeaderboardData()
             ]);
 
-            const stats = teams.find(t => t.name === teamName);
+            const stats = teams.find(t => t.name === teamName && t.season === season);
 
             if (!stats) {
                 setError("Equipo no encontrado.");
             } else {
                 setTeamStats(stats);
                 // Find pilot data (photos) from leaderboard
-                const teamPilots = leaderboard.filter(d => stats.pilots.includes(d.name));
+                const teamPilots = leaderboard.filter(d => stats.pilots.includes(d.name) && d.season === season);
                 // Also include pilots that might be in the team list but not in leaderboard (fallback)
                 const allPilots = stats.pilots.map(name => {
                     const found = teamPilots.find(p => p.name === name);
@@ -145,7 +146,7 @@ const TeamProfile = () => {
                     <h2 className="section-title">PILOTOS</h2>
                     <div className="roster-grid">
                         {pilotsData.map((pilot, index) => (
-                            <Link key={index} to={`/profile?driver=${encodeURIComponent(pilot.name)}`} className="pilot-card-link">
+                            <Link key={index} to={`/profile?driver=${encodeURIComponent(pilot.name)}&season=${season}`} className="pilot-card-link">
                                 <div className="pilot-card">
                                     <div className="pilot-img-wrapper">
                                         {pilot.photo ? (

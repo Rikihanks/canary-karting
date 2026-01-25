@@ -6,6 +6,7 @@ import { getLeaderboardData, getDriverResults } from '../services/data';
 const Profile = () => {
     const [searchParams] = useSearchParams();
     const driverName = searchParams.get('driver');
+    const season = searchParams.get('season') || '2025';
 
     const [driverStats, setDriverStats] = useState(null);
     const [driverHistory, setDriverHistory] = useState([]);
@@ -31,8 +32,8 @@ const Profile = () => {
                     getDriverResults()
                 ]);
 
-                const stats = leaderboard.find(d => d.name === driverName);
-                const history = results.filter(r => r.name === driverName);
+                const stats = leaderboard.find(d => d.name === driverName && d.season === season);
+                const history = results.filter(r => r.name === driverName && r.season === season);
 
                 if (!stats) {
                     setError("Piloto no encontrado.");
@@ -209,8 +210,8 @@ const Profile = () => {
                 getDriverResults()
             ]);
 
-            const stats = leaderboard.find(d => d.name === driverName);
-            const history = results.filter(r => r.name === driverName);
+            const stats = leaderboard.find(d => d.name === driverName && d.season === season);
+            const history = results.filter(r => r.name === driverName && r.season === season);
 
             if (!stats) {
                 setError("Piloto no encontrado.");
