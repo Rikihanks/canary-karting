@@ -83,11 +83,12 @@ export function parseCSV(csvText) {
                 name: parts[0].trim(),
                 team: parts[1].trim(),
                 points: parseInt(parts[2].trim()) || 0,
-                photo: parts[3] ? parts[3].trim() : "https://www.w3schools.com/howto/img_avatar.png",
+                photo: parts[3] ? parts[3].trim() : "https://www.shutterstock.com/image-photo/formula-1-pilot-profile-silhouette-600nw-2666928449.jpg",
                 podiums: parseInt(parts[4].trim()) || 0,
                 poles: parseInt(parts[5].trim()) || 0,
                 wins: parseInt(parts[6].trim()) || 0,
                 division: parseInt(parts[7].trim()) || 0,
+                season: parts[8] ? parts[8].trim() : "2025",
             });
         }
     }
@@ -227,7 +228,8 @@ export function parseTeamsCSV(csvText) {
                     poles: parseInt(parts[5].trim()) || 0,
                     wins: parseInt(parts[6].trim()) || 0,
                     division: parseInt(parts[7].trim()) || 0,
-                    pilots: [pilotName]
+                    pilots: [pilotName],
+                    season: parts[8] ? parts[8].trim() : "2025",
                 });
             } else {
                 const team = teamsMap.get(name);

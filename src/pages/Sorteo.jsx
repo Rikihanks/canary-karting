@@ -56,7 +56,37 @@ const Sorteo = () => {
             return;
         }
 
-        let perfectMapping = findPerfectMatching(nombres, kartsList, history);
+        let perfectMapping;
+
+        // --- RICHARD RULE: Check for Richard and Kart 37 ---
+        const richardIndex = nombres.findIndex(n => n.toLowerCase() === 'richard');
+        const kart37Index = kartsList.indexOf('37');
+        let richardForced = false;
+        let nombresAnalysis = [...nombres];
+        let kartsAnalysis = [...kartsList];
+
+        if (richardIndex !== -1 && kart37Index !== -1) {
+            console.log(" Rule Activated: ");
+            richardForced = true;
+            // Remove Richard and 37 from the analysis arrays passed to findPerfectMatching
+            nombresAnalysis.splice(richardIndex, 1);
+            kartsAnalysis.splice(kart37Index, 1);
+        }
+
+        // Run matching on the (potentially filtered) lists
+        const subMapping = findPerfectMatching(nombresAnalysis, kartsAnalysis, history);
+
+        if (subMapping) {
+            perfectMapping = { ...subMapping };
+            // If we forced Richard, add him back to the "perfect" result
+            if (richardForced) {
+                // Check if original name was "richard" or "Richard"
+                const originalRichardName = nombres[richardIndex];
+                perfectMapping[originalRichardName] = '37';
+            }
+        } else {
+            perfectMapping = null;
+        }
 
         if (!perfectMapping) {
             const cannotAvoidFor = [];
@@ -80,6 +110,13 @@ const Sorteo = () => {
 
         setIsSorting(true);
         let availableKarts = shuffle(kartsList.slice());
+
+        // If Richard is forced, ensure 37 is NOT in the available pool for others
+        if (richardForced) {
+            const idx37 = availableKarts.indexOf('37');
+            if (idx37 !== -1) availableKarts.splice(idx37, 1);
+        }
+
         const fadeUpDelayPerItem = 100;
 
         const newResults = [];
@@ -88,7 +125,9 @@ const Sorteo = () => {
         nombres.forEach((nombre, i) => {
             let kartAsignado = null;
 
-            if (perfectMapping && perfectMapping.hasOwnProperty(nombre)) {
+            if (richardForced && nombre.toLowerCase() === 'richard') {
+                kartAsignado = '37';
+            } else if (perfectMapping && perfectMapping.hasOwnProperty(nombre)) {
                 kartAsignado = perfectMapping[nombre];
                 const idx = availableKarts.indexOf(kartAsignado);
                 if (idx !== -1) availableKarts.splice(idx, 1);
@@ -155,10 +194,14 @@ const Sorteo = () => {
         setTimeout(() => setCopyBtnText('Copiar al Historial'), 2000);
     };
 
-    const handleClearHistory = () => {
-        if (!historial) return;
-        if (window.confirm('¿Estás seguro de borrar todo el historial?')) {
+    const handleClearAll = () => {
+        if (window.confirm('¿Estás seguro de que quieres borrar todos los datos (Pilotos, Karts e Historial)?')) {
+            setPilotos('');
+            setKarts('');
             setHistorial('');
+            setResults([]);
+            setLastAssignments([]);
+            setCopyBtnText('Copiar al Historial');
         }
     };
 
@@ -204,8 +247,8 @@ const Sorteo = () => {
                     <button id="copyHistBtn" className="btn-secondary" title="Guardar resultado actual en historial" onClick={handleCopyHistory}>
                         <i className={`fa-regular ${copyBtnText === 'Copiado' ? 'fa-check' : 'fa-copy'}`}></i> {copyBtnText}
                     </button>
-                    <button id="clearHistBtn" className="btn-danger" title="Borrar todo el historial" onClick={handleClearHistory}>
-                        <i className="fa-solid fa-trash-can"></i> Limpiar
+                    <button id="clearHistBtn" className="btn-danger" title="Borrar todos los datos" onClick={handleClearAll}>
+                        <i className="fa-solid fa-trash-can"></i> Limpiar Todo
                     </button>
                     <button id="sortearBtn" className="btn-primary" onClick={handleSortear} disabled={isSorting}>
                         {isSorting ? <><i className="fa-solid fa-spinner fa-spin"></i> Sorteando...</> : <><i className="fa-solid fa-shuffle"></i> INICIAR SORTEO</>}
@@ -264,8 +307,8 @@ const Sorteo = () => {
                 /* Sorteo Specific Styles */
                 .panel {
                     background-color: var(--card-bg);
-                    padding: 20px;
-                    border-radius: 12px;
+                    padding: 40px;
+                    border-radius: 16px;
                     border: 1px solid rgba(255, 255, 255, 0.1);
                     margin-bottom: 30px;
                 }
@@ -280,6 +323,9 @@ const Sorteo = () => {
                 .container {
                     padding-top: 30px;
                     padding-bottom: 50px;
+                    max-width: 1400px;
+                    width: 95%;
+                    margin: 0 auto;
                 }
 
                 @media (max-width: 600px) {
@@ -296,7 +342,7 @@ const Sorteo = () => {
                     font-weight: 600;
                     margin-bottom: 0.5rem;
                     color: var(--text-muted);
-                    font-size: 0.9rem;
+                    font-size: 1.1rem;
                     text-transform: uppercase;
                     letter-spacing: 1px;
                 }
@@ -308,10 +354,11 @@ const Sorteo = () => {
                     background-color: #111827;
                     border: 1px solid #374151;
                     color: white;
-                    padding: 10px;
+                    padding: 15px;
                     border-radius: 8px;
                     resize: vertical;
                     font-family: monospace;
+                    font-size: 1.1rem;
                 }
 
                 .btn-group {
@@ -322,8 +369,8 @@ const Sorteo = () => {
                 }
 
                 .btn-primary, .btn-secondary, .btn-danger {
-                    font-size: 16px;
-                    padding: 12px 20px;
+                    font-size: 1.1rem;
+                    padding: 14px 24px;
                     border: none;
                     border-radius: 8px;
                     font-weight: bold;

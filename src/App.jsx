@@ -21,6 +21,7 @@ import AdminGuard from './components/AdminGuard';
 import MessageBanner from './components/MessageBanner';
 import VoteDriver from './pages/VoteDriver';
 import TeamDraw from './pages/TeamDraw';
+import TeamDrawInput from './pages/TeamDrawInput';
 import { onMessage } from 'firebase/messaging';
 import { messaging } from './services/firebase';
 import PWAInstallModal from './components/PWAInstallModal';
@@ -93,13 +94,23 @@ function App() {
                   </FeatureGuard>
                 } />
 
-
-
                 <Route path="/assistance-confirmation" element={<AssistanceConfirmation />} />
 
                 <Route path="/sorteo" element={
                   <FeatureGuard feature="sorteo">
+                    <Sorteo />
+                  </FeatureGuard>
+                } />
+
+                <Route path="/sorteo-equipo" element={
+                  <FeatureGuard feature="sorteo">
                     <TeamDraw />
+                  </FeatureGuard>
+                } />
+
+                <Route path="/team-draw-input" element={
+                  <FeatureGuard feature="sorteo">
+                    <TeamDrawInput />
                   </FeatureGuard>
                 } />
 

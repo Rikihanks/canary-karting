@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import PullToRefresh from 'react-simple-pull-to-refresh';
 import { getLeaderboardData } from '../services/data';
 import { requestPermission } from '../services/firebase';
@@ -10,6 +10,8 @@ const Home = () => {
     const [error, setError] = useState(null);
     const [activeDivision, setActiveDivision] = useState(1);
     const [showNotificationButton, setShowNotificationButton] = useState(false);
+    const [searchParams] = useSearchParams();
+    const season = searchParams.get('season') || '2025';
 
     useEffect(() => {
         const fetchData = async () => {
@@ -47,7 +49,7 @@ const Home = () => {
     };
 
     const filteredDrivers = drivers
-        .filter(driver => driver.division === activeDivision)
+        .filter(driver => driver.division === activeDivision && (driver.season === season))
         .sort((a, b) => b.points - a.points);
 
     const top3 = filteredDrivers.slice(0, 3);
@@ -128,6 +130,9 @@ const Home = () => {
                         <option value="2">2ª Division</option>
                         <option value="0">Reservas</option>
                     </select>
+                    <div className="season-badge-container">
+                        <span className="season-badge">Temporada {season}</span>
+                    </div>
                 </div>
 
                 {filteredDrivers.length === 0 ? (
@@ -147,7 +152,7 @@ const Home = () => {
                                     >
                                         <div className={`list-item rank-${rank}`}>
                                             <i className="fa-solid fa-medal crown"></i>
-                                            <img src={driver.photo} alt={driver.name} className="mini-avatar" />
+                                            &nbsp;<img src={driver.photo} alt={driver.name} className="mini-avatar" />
                                             <div className="info">
                                                 <div className="l-name">{driver.name}</div>
                                                 <div className="l-team">{driver.team}</div>

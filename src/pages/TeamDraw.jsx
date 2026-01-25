@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { io } from 'socket.io-client';
 import { getLeaderboardData } from '../services/data';
 import html2canvas from 'html2canvas';
 import drumrollSound from '../assets/drumroll2.mp3';
 import revealSound from '../assets/TA-DA.mp3';
 import scapesSound from '../assets/silver-scapes.mp3';
 import './TeamDraw.css';
+
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000';
 
 const TeamDraw = () => {
     const [allDrivers, setAllDrivers] = useState([]);
@@ -13,30 +16,76 @@ const TeamDraw = () => {
     const [phase, setPhase] = useState('idle'); // 'idle', 'numbering', 'pairing', 'finished'
     const [pilots, setPilots] = useState([]);
     const [teams, setTeams] = useState([]);
+    const [savedDiv2Teams, setSavedDiv2Teams] = useState([]); // Store Division 2 results
     const [activeTeamId, setActiveTeamId] = useState(null);
     const [pairingPilots, setPairingPilots] = useState([]);
     const [manualNumbers, setManualNumbers] = useState({}); // { pilotName: number }
     const [reelIdx, setReelIdx] = useState(0); // Shuffle index for the spinning cards
     const resultsRef = useRef(null);
+    const socketRef = useRef(null);
+
+    // -- NEW: Slot Machine / Individual Draw State --
+    const [availableNumbers, setAvailableNumbers] = useState([]);
+    const [drawStatus, setDrawStatus] = useState({}); // { pilotName: { state: 'idle'|'spinning'|'revealed'|'saved', number: null } }
+
 
     // Audio Refs
-    const drumrollRef = useRef(new Audio(drumrollSound));
-    const revealRef = useRef(new Audio(revealSound));
-    const scapesRef = useRef(new Audio(scapesSound));
+    const drumrollRef = useRef(null);
+    const revealRef = useRef(null);
+    const scapesRef = useRef(null);
 
     useEffect(() => {
+        // Initialize audio elements with proper sources
+        drumrollRef.current = new Audio(drumrollSound);
+        revealRef.current = new Audio(revealSound);
+        scapesRef.current = new Audio(scapesSound);
+
         // Configure sounds
         drumrollRef.current.loop = true;
-        drumrollRef.current.volume = 0.5; // Ensure it's not too loud/too quiet
-        drumrollRef.current.load();
-        revealRef.current.load();
-        scapesRef.current.load();
+        drumrollRef.current.volume = 0.5;
+        drumrollRef.current.preload = 'auto';
+
+        revealRef.current.preload = 'auto';
+        scapesRef.current.preload = 'auto';
+        scapesRef.current.volume = 0.7;
 
         console.log("Audio elements initialized:", {
             drum: drumrollRef.current.src,
             bell: revealRef.current.src,
             scapes: scapesRef.current.src
         });
+
+        return () => {
+            // Cleanup audio on unmount
+            [drumrollRef, revealRef, scapesRef].forEach(ref => {
+                if (ref.current) {
+                    ref.current.pause();
+                    ref.current.src = '';
+                }
+            });
+        };
+    }, []);
+
+    useEffect(() => {
+        socketRef.current = io(SOCKET_URL);
+
+        socketRef.current.on('name_number_data', ({ name, number }) => {
+            console.log('Received number picked:', { name, number });
+            setDrawStatus(prev => ({
+                ...prev,
+                [name]: { state: 'revealed', number: number }
+            }));
+            setManualNumbers(prev => ({
+                ...prev,
+                [name]: number
+            }));
+        });
+
+        return () => {
+            if (socketRef.current) {
+                socketRef.current.disconnect();
+            }
+        };
     }, []);
 
     useEffect(() => {
@@ -68,6 +117,12 @@ const TeamDraw = () => {
         const scapes = scapesRef.current;
         const handleEnded = () => {
             setPhase('finished');
+            // Auto-scroll to results after celebration ends
+            setTimeout(() => {
+                if (resultsRef.current) {
+                    resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 500); // Small delay for smooth transition
         };
 
         if (phase === 'celebration') {
@@ -85,7 +140,7 @@ const TeamDraw = () => {
 
     const loadDivision = (data, divId) => {
         const filtered = data
-            .filter(d => d.division === divId)
+            .filter(d => d.division === divId && d.season === '2026')
             .slice(0, 10)
             .map(d => ({
                 ...d,
@@ -96,12 +151,35 @@ const TeamDraw = () => {
                 teamId: null
             }));
         setPilots(filtered);
-        setPhase('idle');
+        setPhase('individual-draw'); // Start with individual draw
         setTeams([]);
         setActiveTeamId(null);
         setPairingPilots([]);
-        setManualNumbers({});
+
+        // Initialize available numbers [1..10]
+        const nums = Array.from({ length: 10 }, (_, i) => i + 1);
+        setAvailableNumbers(shuffleArray(nums));
+
+        // Initialize draw status to idle for all pilots (waiting for socket)
+        const initialStatus = {};
+        const initialManual = {};
+
+        filtered.forEach((p) => {
+            initialStatus[p.name] = { state: 'idle', number: null };
+            initialManual[p.name] = '';
+        });
+
+        setDrawStatus(initialStatus);
+        setManualNumbers(initialManual);
+        setAvailableNumbers([]); // Not used in TV view anymore
     };
+
+    // handleSpin removed as it is not used in TV view (Display Only)
+
+    const allPilotsDrawn = pilots.length > 0 && pilots.every(p => {
+        const s = drawStatus[p.name];
+        return s && (s.state === 'saved' || s.state === 'revealed');
+    });
 
     const handleNumberChange = (pilotName, val) => {
         const num = val === '' ? '' : parseInt(val);
@@ -111,8 +189,9 @@ const TeamDraw = () => {
         }));
     };
 
+    // Kept for fallback manual editing if needed
     const validateNumbers = () => {
-        const values = Object.values(manualNumbers).filter(v => v !== '');
+        const values = Object.values(manualNumbers).filter(v => v !== '' && v !== null && !isNaN(v));
         if (values.length < 10) return { valid: false, msg: "Faltan números por asignar." };
 
         const uniqueValues = new Set(values);
@@ -215,18 +294,23 @@ const TeamDraw = () => {
         setActiveTeamId(null);
         setPairingPilots([]);
 
+        // Save Division 2 results for side-by-side display later
+        if (division === 2) {
+            setSavedDiv2Teams([...finalTeams]);
+        }
+
         // GRAND FINALE: If Division 1, wait very short delay and show celebration
         if (division === 1) {
             await new Promise(r => setTimeout(r, 800)); // Quicker transition to banner
             setPhase('celebration');
+        } else {
+            // If not Division 1, scroll immediately
+            setTimeout(() => {
+                if (resultsRef.current) {
+                    resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 100);
         }
-
-        // Auto-scroll to results after a short delay
-        setTimeout(() => {
-            if (resultsRef.current) {
-                resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        }, 100); // Faster scroll trigger
     };
 
     const shuffleArray = (array) => {
@@ -236,6 +320,18 @@ const TeamDraw = () => {
             [arr[i], arr[j]] = [arr[j], arr[i]];
         }
         return arr;
+    };
+
+    // Helper for slot machine rolling effect
+    const RollingNumber = () => {
+        const [num, setNum] = useState(1);
+        useEffect(() => {
+            const interval = setInterval(() => {
+                setNum(Math.floor(Math.random() * 10) + 1);
+            }, 80);
+            return () => clearInterval(interval);
+        }, []);
+        return <span className="rolling-digit">{num}</span>;
     };
 
     const exportImage = async () => {
@@ -256,7 +352,7 @@ const TeamDraw = () => {
     return (
         <div className="draw-container fade-in">
             <div className="draw-hero-area">
-                <h1 className="draw-title">SORTEO</h1>
+                <h1 className="draw-title">Sorteo 2026</h1>
 
                 <div className="draw-controls">
                     <select className="division-dropdown" value={division} onChange={handleDivisionChange} disabled={phase !== 'idle'}>
@@ -264,7 +360,26 @@ const TeamDraw = () => {
                         <option value="2">2ª DIVISIÓN (GRID)</option>
                     </select>
 
+                    {phase === 'individual-draw' && (
+                        <div className="draw-status-bar">
+                            <div className="status-info">
+                                NUMEROS DISPONIBLES: <span className="highlight">{availableNumbers.length}</span> / 10
+                            </div>
+                            {allPilotsDrawn && (
+                                <button
+                                    className="draw-btn primary pulse"
+                                    onClick={() => {
+                                        runEpicSorteo();
+                                    }}
+                                >
+                                    <i className="fas fa-play"></i> INICIAR SORTEO DE EQUIPOS
+                                </button>
+                            )}
+                        </div>
+                    )}
+
                     {phase === 'idle' && (
+                        /* Legacy/Fallback manual start */
                         <button
                             className="draw-btn primary pulse"
                             onClick={() => {
@@ -276,7 +391,7 @@ const TeamDraw = () => {
                                 }
                             }}
                         >
-                            <i className="fas fa-magic"></i> COMENZAR SORTEO
+                            <i className="fas fa-magic"></i> COMENZAR SORTEO MANUAL
                         </button>
                     )}
 
@@ -355,42 +470,40 @@ const TeamDraw = () => {
 
                 {/* PILOT GRID - Blurs only during pairing phase */}
                 <div className={`pilots-grid ${phase === 'finished' ? 'minimized' : ''} ${phase === 'pairing' ? 'soft-blur' : ''}`}>
-                    {pilots.map((pilot) => (
-                        <div key={pilot.name} className={`pilot-square ${pilot.isFlipped ? 'is-flipped' : ''} ${pilot.isPaired ? 'paired' : ''} team-${pilot.teamId}`}>
-                            <div className="pilot-square-inner">
-                                {/* FRONT FACE */}
-                                <div className="card-face card-front">
-                                    <img src={pilot.photo} alt={pilot.name} className="p-photo" />
-                                    <div className="p-info">
-                                        <span className="p-name">{pilot.name}</span>
-                                    </div>
-                                    <div className={`p-number ${pilot.number ? 'revealed' : ''}`}>
-                                        {phase === 'idle' ? (
-                                            <div className="manual-input-wrapper">
-                                                <span className="manual-input-visual">
-                                                    {manualNumbers[pilot.name] ? '•' : '?'}
-                                                </span>
-                                                <input
-                                                    type="password"
-                                                    className="manual-input-hidden"
-                                                    maxLength="2"
-                                                    value={manualNumbers[pilot.name] || ''}
-                                                    onChange={(e) => handleNumberChange(pilot.name, e.target.value)}
-                                                />
+                    {pilots.map((pilot) => {
+                        const status = drawStatus[pilot.name] || { state: 'idle', number: null };
+                        const hasNumber = status.state === 'saved' || status.state === 'revealed';
+
+                        return (
+                            <div key={pilot.name} className={`pilot-square ${pilot.isFlipped ? 'is-flipped' : ''} ${pilot.isPaired ? 'paired' : ''} ${hasNumber ? 'selected' : ''} team-${pilot.teamId}`}>
+                                <div className="pilot-square-inner">
+                                    {/* FRONT FACE */}
+                                    <div className="card-face card-front">
+                                        <img src={pilot.photo} alt={pilot.name} className="p-photo" />
+                                        <div className="p-info">
+                                            <span className="p-name">{pilot.name}</span>
+                                        </div>
+                                        {hasNumber && phase === 'individual-draw' && (
+                                            <div className="p-assigned-number highlight-yellow">
+                                                <div className="assigned-label">NUMERO SELECCIONADO</div>
                                             </div>
-                                        ) : (
-                                            pilot.showNumber ? pilot.number : '*'
+                                        )}
+                                        {hasNumber && phase !== 'individual-draw' && (
+                                            <div className="p-assigned-number highlight-yellow">
+                                                <div className="assigned-label">NUMERO SELECCIONADO</div>
+                                                <div className="assigned-val">#{status.number}</div>
+                                            </div>
                                         )}
                                     </div>
-                                </div>
-                                {/* BACK FACE (Mystery) */}
-                                <div className="card-face card-back">
-                                    <div className="card-back-logo">CK</div>
-                                    <div className="card-back-pattern"></div>
+                                    {/* BACK FACE (Mystery) */}
+                                    <div className="card-face card-back">
+                                        <div className="card-back-logo">CK</div>
+                                        <div className="card-back-pattern"></div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        )
+                    })}
                 </div>
 
                 {phase === 'celebration' && (
@@ -409,25 +522,77 @@ const TeamDraw = () => {
                 )}
             </div>
 
-            {/* FINAL TEAMS - Appear one by one in pairing phase or all in finished */}
-            <div className="final-teams-layout" ref={resultsRef}>
-                {teams.map((team) => (
-                    <div key={team.id} className="team-stripe animate-entry">
-                        <div className="stripe-header">EQUIPO {team.id}</div>
-                        <div className="stripe-members">
-                            {team.pilots.map(p => (
-                                <div key={p.name} className="stripe-member">
-                                    <img src={p.photo} alt={p.name} />
-                                    <div className="sm-info">
-                                        <span className="sm-name">{p.name}</span>
-                                        <span className="sm-rank">Nº {p.number}</span>
+            {/* FINAL TEAMS - Side-by-side when both divisions complete */}
+            {/* FINAL TEAMS - Side-by-side when both divisions complete */}
+            {savedDiv2Teams.length > 0 && teams.length > 0 && division === 1 ? (
+                <div className="divisions-grid" ref={resultsRef}>
+                    {/* Division 2 Column */}
+                    <div className="division-column">
+                        <h2 className="division-column-header">2ª DIVISIÓN</h2>
+                        <div className="final-teams-layout">
+                            {savedDiv2Teams.map((team) => (
+                                <div key={team.id} className="team-stripe animate-entry">
+                                    <div className="stripe-header">EQUIPO {team.id}</div>
+                                    <div className="stripe-members">
+                                        {team.pilots.map(p => (
+                                            <div key={p.name} className="stripe-member">
+                                                <img src={p.photo} alt={p.name} />
+                                                <div className="sm-info">
+                                                    <span className="sm-name">{p.name}</span>
+                                                    <span className="sm-rank">Nº {p.number}</span>
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
                             ))}
                         </div>
                     </div>
-                ))}
-            </div>
+
+                    {/* Division 1 Column */}
+                    <div className="division-column">
+                        <h2 className="division-column-header">1ª DIVISIÓN</h2>
+                        <div className="final-teams-layout">
+                            {teams.map((team) => (
+                                <div key={team.id} className="team-stripe animate-entry">
+                                    <div className="stripe-header">EQUIPO {team.id}</div>
+                                    <div className="stripe-members">
+                                        {team.pilots.map(p => (
+                                            <div key={p.name} className="stripe-member">
+                                                <img src={p.photo} alt={p.name} />
+                                                <div className="sm-info">
+                                                    <span className="sm-name">{p.name}</span>
+                                                    <span className="sm-rank">Nº {p.number}</span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            ) : (
+                /* Single division display (current behavior) */
+                <div className="final-teams-layout" ref={resultsRef}>
+                    {teams.map((team) => (
+                        <div key={team.id} className="team-stripe animate-entry">
+                            <div className="stripe-header">EQUIPO {team.id}</div>
+                            <div className="stripe-members">
+                                {team.pilots.map(p => (
+                                    <div key={p.name} className="stripe-member">
+                                        <img src={p.photo} alt={p.name} />
+                                        <div className="sm-info">
+                                            <span className="sm-name">{p.name}</span>
+                                            <span className="sm-rank">Nº {p.number}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
     );
 };

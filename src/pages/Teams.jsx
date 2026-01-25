@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import PullToRefresh from 'react-simple-pull-to-refresh';
 import { getTeamsData } from '../services/data';
 
@@ -8,6 +8,8 @@ const Teams = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [activeDivision, setActiveDivision] = useState(1);
+    const [searchParams] = useSearchParams();
+    const season = searchParams.get('season') || '2025';
 
     useEffect(() => {
         const fetchData = async () => {
@@ -25,7 +27,7 @@ const Teams = () => {
     }, []);
 
     const filteredTeams = teams
-        .filter(team => team.division === activeDivision)
+        .filter(team => team.division === activeDivision && (team.season === season))
         .sort((a, b) => b.points - a.points);
 
     const top3 = filteredTeams.slice(0, 3);
@@ -74,6 +76,9 @@ const Teams = () => {
                         <option value="1">1ª Division</option>
                         <option value="2">2ª Division</option>
                     </select>
+                    <div className="season-badge-container">
+                        <span className="season-badge">Temporada {season}</span>
+                    </div>
                 </div>
 
                 {filteredTeams.length === 0 ? (
@@ -87,17 +92,10 @@ const Teams = () => {
                                 const rank = index + 1;
                                 return (
                                     <Link key={team.name} to={`/team-profile?team=${encodeURIComponent(team.name)}`} className="podium-card-link">
-                                        <div className={`list-item rank-${rank}`}>
+                                        <div className={`list-item rank-${rank} team-item`} style={{ '--item-bg': `url(${team.logo || 'https://www.w3schools.com/howto/img_avatar.png'})` }}>
                                             <i className="fa-solid fa-medal crown"></i>
-                                            {team.logo ? (
-                                                <img src={team.logo} alt={team.name} className="mini-avatar" />
-                                            ) : (
-                                                <div className="mini-avatar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#334155', fontSize: '1.5em' }}>
-                                                    <i className="fa-solid fa-users"></i>
-                                                </div>
-                                            )}
                                             <div className="info">
-                                                <div className="l-name">{team.name}</div>
+                                                <div className="l-name">&nbsp;{team.name}</div>
                                             </div>
                                             <div className="l-points">{team.points} <span>PTS</span></div>
                                         </div>
@@ -111,15 +109,8 @@ const Teams = () => {
                                 const rank = index + 4;
                                 return (
                                     <Link key={team.name} to={`/team-profile?team=${encodeURIComponent(team.name)}`} className="list-item-link">
-                                        <div className="list-item">
+                                        <div className="list-item team-item" style={{ '--item-bg': `url(${team.logo || 'https://www.w3schools.com/howto/img_avatar.png'})` }}>
                                             <div className="rank-num">{rank}</div>
-                                            {team.logo ? (
-                                                <img src={team.logo} alt={team.name} className="mini-avatar" />
-                                            ) : (
-                                                <div className="mini-avatar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#334155', fontSize: '1.2em' }}>
-                                                    <i className="fa-solid fa-users"></i>
-                                                </div>
-                                            )}
                                             <div className="info">
                                                 <div className="l-name">{team.name}</div>
                                             </div>

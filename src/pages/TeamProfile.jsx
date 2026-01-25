@@ -238,16 +238,10 @@ const TeamProfile = () => {
                     }
 
                     .team-logo-hero {
-                        width: 160px;
                         height: 160px;
                         border-radius: 24px;
                         /* Neon Glow Shadow */
-                        box-shadow: 0 0 30px rgba(59, 130, 246, 0.4), 0 10px 20px rgba(0,0,0,0.5);
                         object-fit: contain; /* Full logo visibility */
-                        background: rgba(15, 23, 42, 0.8);
-                        backdrop-filter: blur(10px);
-                        border: 1px solid rgba(255, 255, 255, 0.1);
-                        padding: 10px; /* Padding inside the card */
                         transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
                     }
                     

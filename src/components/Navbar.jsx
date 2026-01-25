@@ -7,7 +7,7 @@ import { useConfig } from '../context/ConfigContext';
 
 const Navbar = () => {
     const [isMenuVisible, setIsMenuVisible] = useState(false);
-    const [isSeasonsOpen, setIsSeasonsOpen] = useState(false);
+    const [openSubmenu, setOpenSubmenu] = useState(null); // Track which submenu is open
     const { user, logout } = useAuth();
     const location = useLocation();
     const navigate = useNavigate();
@@ -69,18 +69,70 @@ const Navbar = () => {
 
     // Define navigation items
     const navItems = [
-        { to: "/clasificacion", label: "🏆 Clasificación Pilotos" },
-        { to: "/teams", label: "🏆 Clasificación Equipos", feature: "teams" },
+        {
+            to: "/clasificacion",
+            label: "🏆 Clasificación Pilotos",
+            subItems: [
+                { to: "/clasificacion?season=2026", label: "Temporada 2026" },
+                { to: "/clasificacion?season=2025", label: "Temporada 2025" }
+            ]
+        },
+        {
+            to: "/teams",
+            label: "🏆 Clasificación Equipos",
+            feature: "teams",
+            subItems: [
+                { to: "/teams?season=2026", label: "Temporada 2026" },
+                { to: "/teams?season=2025", label: "Temporada 2025" }
+            ]
+        },
         // { to: "/inscripcion", label: "📝 Preinscripción", feature: "inscripcion" },
         { to: "/", label: "📝 Academia", feature: "inscripcion" },
         // { to: "/votar", label: "🗳️ Votar Piloto" },
-        { to: "/sorteo", label: <span><i className="fa-solid fa-people-group"></i> &nbsp;Sorteo Equipos</span>, feature: "sorteo" },
+        { to: "/sorteo", label: <span><i className="fa-solid fa-people-group"></i> &nbsp;Sorteo Karts</span>, feature: "sorteo" },
+        { to: "/team-draw-input", label: <span><i className="fa-solid fa-tablet-screen-button"></i> &nbsp;Sorteo Tablet</span>, feature: "sorteo" },
+        { to: "/sorteo-equipo", label: <span><i className="fa-solid fa-people-group"></i> &nbsp;Sorteo TV</span>, feature: "sorteo" },
         { to: "/races", label: "🏎️ Carreras", feature: "races" },
     ];
+
+    const toggleSubmenu = (index) => {
+        setOpenSubmenu(openSubmenu === index ? null : index);
+    };
 
     const renderNavLinks = (isMobile = false) => {
         return navItems.map((item, index) => {
             if (item.feature && !isEnabled(item.feature)) return null;
+
+            if (item.subItems) {
+                return (
+                    <div key={index} className="nav-item-container">
+                        <div
+                            className={isMobile ? "nav-link" : "nav-link-desktop"}
+                            onClick={isMobile ? () => toggleSubmenu(index) : undefined}
+                            style={{ cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                        >
+                            {item.label}
+                            {isMobile && <i className={`fa-solid fa-chevron-${openSubmenu === index ? 'up' : 'down'}`} style={{ fontSize: '0.8em' }}></i>}
+                        </div>
+                        <div
+                            className={isMobile ? "nav-sub-menu-mobile" : "nav-sub-menu-desktop"}
+                            data-open={isMobile ? (openSubmenu === index) : undefined}
+                        >
+                            {item.subItems.map((sub, subIdx) => (
+                                <Link
+                                    key={subIdx}
+                                    to={sub.to}
+                                    className={isMobile ? "nav-link sub-link" : "nav-link-desktop sub-link"}
+                                    onClick={isMobile ? closeMenu : undefined}
+                                >
+                                    {sub.label}
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
+                );
+            }
+
             return (
                 <Link
                     key={index}
@@ -174,17 +226,6 @@ const Navbar = () => {
                 {renderNavLinks(true)}
 
                 <div style={{ height: '5px', backgroundColor: 'var(--card-bg)' }}></div>
-
-                <div style={{
-                    maxHeight: isSeasonsOpen ? '200px' : '0',
-                    overflow: 'hidden',
-                    transition: 'max-height 0.3s ease-out',
-                    backgroundColor: 'rgba(0, 0, 0, 0.1)'
-                }}>
-                    <div className="nav-link" style={{ paddingLeft: '30px', cursor: 'pointer', fontSize: '0.95em' }}>2026</div>
-                    <div className="nav-link" style={{ paddingLeft: '30px', cursor: 'pointer', fontSize: '0.95em' }}>2025</div>
-                    <div className="nav-link" style={{ paddingLeft: '30px', cursor: 'pointer', fontSize: '0.95em' }}>2024</div>
-                </div>
 
                 {/*(!user && isEnabled('login')) && <Link to="/login" className="nav-link"><i className="fa-solid fa-right-to-bracket"></i> Iniciar Sesión</Link>*/}
 

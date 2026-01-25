@@ -27,6 +27,10 @@
     align-items: center;
     gap: 1.5rem;
     margin-bottom: 3rem;
+    min-height: 160px;
+    /* Lock height to prevent jumping when buttons change/vanish */
+    justify-content: flex-end;
+    /* Keep content aligned if it's shorter */
 }
 
 .draw-btn {
@@ -87,30 +91,21 @@
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 20px;
     margin-bottom: 3rem;
-    transition: all 0.5s ease;
+    margin-bottom: 3rem;
+    transition: opacity 0.5s ease;
+    /* Only animate opacity, not layout */
+    min-height: 600px;
+    /* Force substantial height for the grid area */
 }
 
+/* Reduced movement for minimized state */
 .pilots-grid.minimized {
-    opacity: 0.2;
-    transform: scale(0.95);
-    filter: blur(10px);
+    opacity: 0.3;
     pointer-events: none;
 }
 
 .pilots-grid.soft-blur {
-    /* Subtle blur, slightly higher opacity to avoid excessive darkness */
-    filter: blur(6px);
-    opacity: 0.85;
-    pointer-events: none;
-    /* Scale plus negative margin to overflow current bounds and hide clean edges */
-    transform: scale(1.08);
-    transition: all 1s ease;
-}
-
-.pilots-grid.soft-blur {
-    filter: blur(2px);
-    /* Softer selective blur */
-    pointer-events: none;
+    filter: blur(4px);
     opacity: 0.6;
 }
 
@@ -173,9 +168,127 @@
     background-size: 20px 20px;
 }
 
-.pilot-square.paired .card-front {
+.pilot-square.paired .card-front,
+.pilot-square.selected .card-front {
     border-color: #fbbf24;
-    box-shadow: 0 0 25px rgba(251, 191, 36, 0.4);
+    box-shadow: 0 0 35px rgba(251, 191, 36, 0.7);
+    background: linear-gradient(135deg, #2d3748 0%, #1e293b 100%);
+    /* position: relative; REMOVED to prevent layout shift */
+    z-index: 2;
+    /* Ensure it stays on top without breaking flow */
+}
+
+.pilot-square.selected .card-front {
+    animation: selectionHighlight 2s ease-out forwards;
+}
+
+@keyframes selectionHighlight {
+    0% {
+        border-width: 2px;
+        box-shadow: 0 0 0px rgba(251, 191, 36, 0);
+    }
+
+    10% {
+        border-width: 6px;
+        box-shadow: 0 0 50px rgba(251, 191, 36, 1);
+    }
+
+    100% {
+        border-width: 2px;
+        box-shadow: 0 0 35px rgba(251, 191, 36, 0.7);
+    }
+}
+
+.p-assigned-number.highlight-yellow {
+    position: absolute;
+    bottom: 0px;
+    left: 0;
+    width: 100%;
+    background: #fbbf24;
+    color: #000;
+    padding: 6px 0;
+    font-family: 'Russo One', sans-serif;
+    font-size: 0.75rem;
+    box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.3);
+    border-bottom-left-radius: 14px;
+    border-bottom-right-radius: 14px;
+    z-index: 10;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.assigned-val {
+    font-size: 1.2rem;
+    font-weight: 800;
+    margin-top: 2px;
+}
+
+/* Tablet Slot Machine Styles */
+.slot-display.spinning {
+    background: #1e293b;
+    border: 2px solid var(--accent);
+    color: var(--accent);
+    width: 60px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-family: 'Russo One', sans-serif;
+    font-size: 1.5rem;
+    animation: slotShake 0.1s infinite alternate;
+}
+
+.slot-display.revealed {
+    background: var(--gold);
+    color: #000;
+    width: 80px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-family: 'Russo One', sans-serif;
+    font-size: 2rem;
+    box-shadow: 0 0 20px var(--gold);
+    animation: revealPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.slot-display.completed {
+    background: #059669;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: bold;
+}
+
+@keyframes slotShake {
+    from {
+        transform: translateY(-2px);
+    }
+
+    to {
+        transform: translateY(2px);
+    }
+}
+
+@keyframes revealPop {
+    0% {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.hidden-number {
+    font-size: 0.8rem;
+    letter-spacing: 1px;
 }
 
 .p-photo {
@@ -193,6 +306,16 @@
     align-items: center;
     justify-content: center;
     background: #0f172a;
+    background: #0f172a;
+}
+
+.p-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    z-index: 2;
 }
 
 .p-name {
@@ -613,6 +736,35 @@
     }
 }
 
+/* Side-by-Side Divisions Grid */
+.divisions-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-top: 2rem;
+}
+
+.division-column {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.division-column-header {
+    font-family: 'Russo One', sans-serif;
+    font-size: 1.8rem;
+    color: var(--accent);
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin: 0;
+    padding: 15px;
+    background: rgba(59, 130, 246, 0.1);
+    border: 2px solid var(--accent);
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+}
+
 /* Final Results Stripes */
 .final-teams-layout {
     display: flex;
@@ -637,7 +789,7 @@
     padding: 25px;
     font-family: 'Russo One', sans-serif;
     font-size: 1.4rem;
-    min-width: 180px;
+    max-width: 130px;
     text-align: center;
     box-shadow: 5px 0 15px rgba(0, 0, 0, 0.2);
 }
@@ -653,9 +805,10 @@
 
 .stripe-member {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 20px;
     flex: 1;
+    font-size: 0.3rem;
     /* uniform space */
     min-width: 0;
 }
@@ -670,7 +823,7 @@
 }
 
 .sm-info {
-    text-align: left;
+    text-align: center;
 }
 
 .sm-name {
@@ -724,6 +877,18 @@
 }
 
 @media (max-width: 768px) {
+
+    /* Stack divisions vertically on mobile */
+    .divisions-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+    }
+
+    .division-column-header {
+        font-size: 1.4rem;
+        padding: 12px;
+    }
+
     .stripe-header {
         min-width: 90px;
         font-size: 1rem;
@@ -771,6 +936,194 @@
         padding: 30px 20px;
         width: 90%;
         border-radius: 30px;
+    }
+}
+
+/* --- INDIVIDUAL DRAW / SLOT MACHINE STYLES --- */
+
+.draw-status-bar {
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 1rem 2rem;
+    border-radius: 50px;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+    backdrop-filter: blur(10px);
+}
+
+.status-info {
+    font-family: 'Russo One', sans-serif;
+    color: #94a3b8;
+    font-size: 1.1rem;
+}
+
+.status-info .highlight {
+    color: #fbbf24;
+    font-size: 1.5rem;
+    margin: 0 0.3rem;
+}
+
+.individual-draw-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    max-width: 800px;
+    margin: 0 auto 3rem auto;
+}
+
+.slot-machine-row {
+    background: rgba(30, 41, 59, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.3s ease;
+}
+
+.slot-machine-row:hover {
+    background: rgba(30, 41, 59, 0.9);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.slot-machine-row.revealed {
+    border-color: #fbbf24;
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.2);
+    background: rgba(251, 191, 36, 0.1);
+}
+
+.slot-machine-row.saved {
+    opacity: 0.6;
+    filter: grayscale(0.5);
+}
+
+.slot-pilot-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.slot-pilot-photo {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.slot-pilot-name {
+    font-family: 'Russo One', sans-serif;
+    font-size: 1.2rem;
+    color: #e2e8f0;
+    text-transform: uppercase;
+}
+
+.slot-machine-action {
+    width: 140px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.spin-btn {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    border: none;
+    color: white;
+    font-family: 'Russo One', sans-serif;
+    font-size: 1rem;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s;
+    width: 100%;
+}
+
+.spin-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 10px -1px rgba(0, 0, 0, 0.4);
+    filter: brightness(1.1);
+}
+
+.spin-btn:active {
+    transform: translateY(0);
+}
+
+.slot-display {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Russo One', sans-serif;
+    font-size: 2rem;
+    color: #fbbf24;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.slot-display.spinning .rolling-digit {
+    animation: blurSpin 0.1s infinite;
+}
+
+.slot-display.revealed {
+    animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    font-size: 2.5rem;
+    color: #fbbf24;
+}
+
+.slot-display.saved {
+    font-size: 0.9rem;
+    color: #10b981;
+    gap: 8px;
+}
+
+.saved-icon {
+    background: #10b981;
+    color: #000;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+}
+
+@keyframes blurSpin {
+    0% {
+        filter: blur(0);
+        transform: translateY(-2px);
+    }
+
+    50% {
+        filter: blur(2px);
+        transform: translateY(2px);
+    }
+
+    100% {
+        filter: blur(0);
+        transform: translateY(-2px);
+    }
+}
+
+@keyframes popIn {
+    0% {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+
+    70% {
+        transform: scale(1.2);
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
     }
 }
 
@@ -922,7 +1275,7 @@
 }
 
 .season-badge {
-    margin-top: 40px;
+    margin-top: 10px;
     background: rgba(251, 191, 36, 0.1);
     border: 2px solid #fbbf24;
     padding: 10px 30px;
@@ -931,7 +1284,6 @@
     align-items: center;
     gap: 15px;
     box-shadow: 0 0 30px rgba(251, 191, 36, 0.2);
-    animation: slideUpFade 1s 1s both;
 }
 
 .season-label {
@@ -981,4 +1333,32 @@
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+}
+
+/* Assigned Number in Pilot Card */
+.p-assigned-number {
+    margin-top: 5px;
+    background: rgba(251, 191, 36, 0.15);
+    border: 1px solid #fbbf24;
+    border-radius: 6px;
+    padding: 2px 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+}
+
+.assigned-label {
+    font-size: 0.65rem;
+    color: black;
+    letter-spacing: 1px;
+    font-weight: bold;
+}
+
+.highlight-num {
+    font-family: 'Russo One', sans-serif;
+    font-size: 1.4rem;
+    color: #fbbf24;
+    line-height: 1;
+    text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
 }

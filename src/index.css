@@ -39,7 +39,7 @@
 body {
     font-family: 'Montserrat', sans-serif;
     margin: 0;
-    padding-top: var(--total-header-offset);
+    padding-top: 0;
     padding-bottom: calc(8rem + var(--sab));
     background-color: var(--bg-color);
     background-image:
@@ -98,7 +98,7 @@ h2 {
 
 /* Header and Navbar Stack */
 .app-header {
-    position: fixed;
+    position: sticky;
     top: 0;
     left: 0;
     width: 100%;
@@ -251,6 +251,40 @@ h2 {
         transition: none;
         /* Disable transition to avoid flicker on resize */
     }
+
+    /* Desktop Submenu Styles */
+    .nav-item-container {
+        position: relative;
+    }
+
+    .nav-sub-menu-desktop {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background-color: var(--color-dark);
+        border: 1px solid var(--color-accent);
+        border-top: none;
+        border-radius: 0 0 8px 8px;
+        min-width: 180px;
+        display: none;
+        flex-direction: column;
+        z-index: 1000;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+    }
+
+    .nav-item-container:hover .nav-sub-menu-desktop {
+        display: flex;
+    }
+
+    .sub-link {
+        padding: 10px 15px;
+        font-size: 0.85rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .sub-link:last-child {
+        border-bottom: none;
+    }
 }
 
 
@@ -319,6 +353,43 @@ h2 {
     color: var(--color-accent);
 }
 
+.nav-sub-menu-mobile {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-left: 3px solid var(--color-accent);
+    margin-left: 10px;
+    margin-top: -1px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+}
+
+.nav-sub-menu-mobile[data-open="true"] {
+    max-height: 200px;
+    /* Enough for the season sub-links */
+}
+
+.sub-link {
+    background-color: transparent !important;
+    font-size: 0.9em;
+    color: var(--text-muted);
+    padding: 10px 20px 10px 30px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.02) !important;
+    display: flex;
+    align-items: center;
+}
+
+.sub-link::before {
+    content: '→';
+    margin-right: 10px;
+    font-size: 0.8em;
+    opacity: 0.5;
+}
+
+.sub-link:hover {
+    color: var(--gold) !important;
+    background-color: rgba(251, 191, 36, 0.05) !important;
+}
+
 /* Leaderboard Styles */
 .podium-card-link,
 .list-item-link {
@@ -353,17 +424,57 @@ h2 {
     align-items: center;
     background: #162039;
     border: 1px solid rgba(255, 255, 255, 0.05);
-    padding: 0.6rem;
+    padding: 0.8rem 1rem;
     border-radius: 12px;
     transition: all 0.2s;
+    min-height: 90px;
+    /* Force consistent row height */
+    position: relative;
+    overflow: hidden;
+}
+
+.list-item.team-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: var(--item-bg);
+    background-size: cover;
+    background-position: center;
+    filter: blur(5px) brightness(0.7);
+    opacity: 0.7;
+    z-index: 0;
+    transition: transform 0.5s ease;
+}
+
+.list-item.team-item:hover::before {
+    transform: scale(1.1);
+    opacity: 0.75;
+}
+
+.rank-num,
+.crown {
+    width: 45px;
+    /* Unified width */
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    position: relative;
+    z-index: 1;
 }
 
 .rank-num {
-    font-family: 'Russo One';
+    font-family: 'Russo One', sans-serif;
     font-size: 1.5rem;
     color: #64748b;
-    width: 40px;
-    text-align: center;
+}
+
+.crown {
+    font-size: 1.5rem;
 }
 
 .mini-avatar {
@@ -374,15 +485,28 @@ h2 {
     object-fit: cover;
     object-position: top;
     border: 2px solid #334155;
+    position: relative;
+    z-index: 1;
+    background: rgba(15, 23, 42, 0.8);
 }
+
+
 
 .info {
     flex-grow: 1;
+    min-width: 0;
+    /* Crucial for flex child truncation */
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    z-index: 1;
 }
 
 .l-name {
     font-weight: 700;
-    font-size: 1.1rem;
+    font-size: 1rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .l-team {
@@ -394,6 +518,11 @@ h2 {
     font-family: 'Russo One';
     font-size: 1.4rem;
     color: var(--accent);
+    flex-shrink: 0;
+    text-align: right;
+    min-width: 80px;
+    position: relative;
+    z-index: 1;
 }
 
 .l-points span {
@@ -515,9 +644,23 @@ h2 {
     padding-right: 40px;
 }
 
-.division-dropdown:focus {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
+.season-badge-container {
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+}
+
+.season-badge {
+    margin-top: 10px;
+    background: rgba(59, 130, 246, 0.15);
+    color: var(--accent);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .visually-hidden {
