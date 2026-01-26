@@ -195,8 +195,6 @@ const Navbar = () => {
 
                     {user && (
                         <div className="user-menu-desktop">
-                            {/* Admin Link for Desktop - REMOVED */}
-
                             <Link
                                 to={`/profile?driver=${encodeURIComponent(user.nombre)}`}
                                 style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', color: 'inherit' }}
@@ -227,7 +225,7 @@ const Navbar = () => {
                     )}
                     {user &&
                         <Link key={user.nombre}
-                            to={`/profile?driver=${encodeURIComponent(user.nombre)}`}
+                            to={`/profile?driver=${encodeURIComponent(user.nombre)}&season=2026`}
                             className="podium-card-link">
                             <span className="app-name">{user.nombre}</span>
                         </Link>
@@ -239,7 +237,7 @@ const Navbar = () => {
 
                 <div style={{ height: '5px', backgroundColor: 'var(--card-bg)' }}></div>
 
-                {/*(!user && isEnabled('login')) && <Link to="/login" className="nav-link"><i className="fa-solid fa-right-to-bracket"></i> Iniciar Sesión</Link>*/}
+                {(!user && isEnabled('login')) && <Link to="/login" className="nav-link"><i className="fa-solid fa-right-to-bracket"></i> Iniciar Sesión</Link>}
 
                 {user && (
                     <Link

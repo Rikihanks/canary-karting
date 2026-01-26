@@ -70,7 +70,7 @@ const Login = () => {
                 />
                 <small>Sólo los pilotos en competición pueden identificarse en la aplicación.</small>
                 {error && <div style={{ color: 'var(--danger)', fontWeight: 'bold' }}>{error}</div>}
-                <button type="submit" className="btn-primary" disabled={isLoading}>
+                <button type="submit" className="btn-primary" disabled={isLoading || !username}>
                     {isLoading ? <i className="fa-solid fa-spinner fa-spin"></i> : 'Entrar'}
                 </button>
             </form>

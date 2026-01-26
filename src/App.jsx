@@ -25,6 +25,7 @@ import TeamDrawInput from './pages/TeamDrawInput';
 import { onMessage } from 'firebase/messaging';
 import { messaging } from './services/firebase';
 import PWAInstallModal from './components/PWAInstallModal';
+import ScrollToTop from './components/ScrollToTop';
 import './App.css';
 
 function App() {
@@ -49,6 +50,7 @@ function App() {
     <ConfigProvider>
       <AuthProvider>
         <HashRouter>
+          <ScrollToTop />
           <header className="app-header">
             <Navbar />
             <MessageBanner />

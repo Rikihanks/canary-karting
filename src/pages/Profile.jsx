@@ -237,7 +237,7 @@ const Profile = () => {
                             <h1 className="driver-name-hero">{driverStats.name}</h1>
                             <div className="team-name-badge">{driverStats.team}</div>
                             <div className="division-badge">
-                                {driverStats.division}ª DIVISIÓN
+                                {driverStats.division == 0 ? 'Piloto Reserva' : driverStats.division + 'ª DIVISIÓN'}
                             </div>
                         </div>
                     </div>
@@ -249,12 +249,12 @@ const Profile = () => {
 
                 {/* Championships Section (Most Important) */}
                 <div className="fade-in" style={{ animationDelay: '0.05s' }}>
-                    <div className={`championship-section ${mockChampionships > 0 ? 'gold-tier' : 'gray-tier'}`}>
+                    <div className={`championship-section ${driverStats.championship > 0 ? 'gold-tier' : 'gray-tier'}`}>
                         <div className="champ-icon-wrapper">
                             <i className="fa-solid fa-trophy champ-icon"></i>
                         </div>
                         <div className="champ-info">
-                            <span className="champ-count">{mockChampionships}</span>
+                            <span className="champ-count">{driverStats.championship}</span>
                             <span className="champ-label">CAMPEONATOS GANADOS</span>
                         </div>
                     </div>

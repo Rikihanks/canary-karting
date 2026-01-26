@@ -35,6 +35,18 @@
     margin: 0;
     padding: 0;
     -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+input,
+textarea {
+    -webkit-user-select: auto;
+    user-select: auto;
 }
 
 body {
@@ -398,6 +410,18 @@ h2 {
     color: inherit;
     display: block;
     transition: transform 0.2s;
+}
+
+.podium-card-link:active,
+.list-item-link:active {
+    transform: scale(0.97);
+    filter: brightness(1.2);
+}
+
+.podium-card-link:active .list-item,
+.list-item-link:active .list-item {
+    background-color: rgba(59, 130, 246, 0.2);
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
 }
 
 .podium {

@@ -40,7 +40,7 @@ const Sorteo = () => {
 
     const handleSortear = () => {
         const nombres = pilotos.split(/[\n,]+/).map(n => n.trim()).filter(n => n);
-        const kartsList = karts.split(",").map(k => k.trim()).filter(k => k);
+        const kartsList = karts.split(";").map(k => k.trim()).filter(k => k);
         const { map: history, originals } = parseHistory(historial);
 
         setResults([]); // Clear previous results
@@ -224,7 +224,7 @@ const Sorteo = () => {
                         <input
                             type="text"
                             id="karts"
-                            placeholder="Ej: 1, 2, 3, 4, 5, 6"
+                            placeholder="Separados por punto y coma: 33;36;37"
                             value={karts}
                             onChange={(e) => setKarts(e.target.value)}
                         />
@@ -348,7 +348,8 @@ const Sorteo = () => {
                 }
 
                 textarea,
-                input[type="text"] {
+                input[type="text"],
+                input[type="tel"] {
                     width: 100%;
                     height: 150px;
                     background-color: #111827;
