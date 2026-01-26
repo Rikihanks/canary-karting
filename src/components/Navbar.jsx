@@ -87,12 +87,12 @@ const Navbar = () => {
             ]
         },
         // { to: "/inscripcion", label: "📝 Preinscripción", feature: "inscripcion" },
-        { to: "/", label: "📝 Academia", feature: "inscripcion" },
-        // { to: "/votar", label: "🗳️ Votar Piloto" },
+        { to: "/votar", label: "🗳️ Piloto del día" },
         { to: "/sorteo", label: <span><i className="fa-solid fa-ticket"></i> &nbsp;Sorteo Karts</span>, feature: "sorteo" },
         { to: "/team-draw-input", label: <span><i className="fa-solid fa-tablet-screen-button"></i> &nbsp;Sorteo Equipos Tablet</span>, feature: "sorteo", disabled: true },
         { to: "/sorteo-equipo", label: <span><i className="fa-solid fa-tv"></i> &nbsp;Sorteo Equipos TV</span>, feature: "sorteo", disabled: true },
         { to: "/races", label: "🏎️ Calendario Carreras", feature: "races" },
+        { to: "/", label: "📝 Academia", feature: "inscripcion" },
     ];
 
     const toggleSubmenu = (index) => {
@@ -180,13 +180,6 @@ const Navbar = () => {
                 <div className="navbar-desktop">
                     {renderNavLinks(false)}
 
-                    {/* Season Dropdown Desktop */}
-                    {/* 
-                    <div className="nav-link-desktop" style={{ cursor: 'pointer' }}>
-                        Temp. 2025
-                    </div>
-                     */}
-
                     {(!user && isEnabled('login')) && (
                         <Link to="/login" className="nav-link-desktop login-btn">
                             <i className="fa-solid fa-right-to-bracket"></i> Iniciar Sesión
@@ -196,7 +189,7 @@ const Navbar = () => {
                     {user && (
                         <div className="user-menu-desktop">
                             <Link
-                                to={`/profile?driver=${encodeURIComponent(user.nombre)}`}
+                                to={`/profile?driver=${encodeURIComponent(user.nombre)}&season=2026`}
                                 style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', color: 'inherit' }}
                             >
                                 <span className="user-name">{user.nombre}</span>

@@ -340,7 +340,7 @@ const Profile = () => {
                         top: 0; left: 0; width: 100%; height: 100%;
                         background-size: cover;
                         background-position: center 20%;
-                        filter: blur(15px) brightness(0.25);
+                        filter: blur(10px) brightness(0.25);
                         transform: scale(1.1);
                         z-index: 0;
                     }
@@ -349,7 +349,7 @@ const Profile = () => {
                         content: '';
                         position: absolute;
                         top: 0; left: 0; right: 0; height: 4px;
-                        background: linear-gradient(90deg, var(--accent), #a855f7, var(--accent));
+                        background: linear-gradient(90deg, var(--accent), #ffde39, var(--accent));
                         z-index: 2;
                     }
 

@@ -65,8 +65,8 @@ const Races = () => {
                                     }}
                                 >
                                     <div className="event-info">
-                                        <span className="event-date" style={{ display: 'block', fontWeight: 'bold', color: 'var(--accent)' }}>{event.fecha}</span>
-                                        <span className="event-name" style={{ display: 'block', fontSize: '1.1em' }}>{event.nombre}</span>
+                                        <span className="event-date" style={{ display: 'block', fontWeight: 'bold', color: 'var(--accent)' }}>Fecha: {event.fecha}</span>
+                                        <span className="event-name" style={{ display: 'block', fontSize: '1.1em' }}>Circuito: {event.nombre}</span>
                                     </div>
                                     <i className="fa-solid fa-chevron-right event-icon" style={{ color: '#64748b' }}></i>
                                 </li>

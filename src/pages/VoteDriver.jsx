@@ -10,6 +10,7 @@ const VoteDriver = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [activeDivision, setActiveDivision] = useState(1);
+    const [activeSeason, setActiveSeason] = useState("2026");
     const [votedDriver, setVotedDriver] = useState(null);
     const [showSuccess, setShowSuccess] = useState(false);
     const [hasAlreadyVoted, setHasAlreadyVoted] = useState(false);
@@ -150,6 +151,7 @@ const VoteDriver = () => {
 
     const filteredDrivers = drivers
         .filter(driver => driver.division === activeDivision)
+        .filter(driver => driver.season === activeSeason)
         .sort((a, b) => a.name.localeCompare(b.name));
 
     if (loading) {
@@ -340,6 +342,9 @@ const VoteDriver = () => {
                 )}
 
                 <style>{`
+                    .division-dropdown {
+                        margin-top: 20px;
+                    }
                     .disabled-state {
                         text-align: center;
                         padding: 60px 20px;
@@ -942,7 +947,6 @@ const VoteDriver = () => {
 
                     @media (max-width: 480px) {
                         .voting-grid {
-                            grid-template-columns: repeat(2, 1fr);
                             gap: 12px;
                         }
                         .vote-card-inner {

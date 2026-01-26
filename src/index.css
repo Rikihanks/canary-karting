@@ -137,11 +137,10 @@ h2 {
 
 .navbar-top {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    justify-content: space-evenly;
+    align-items: flex-end;
     padding: 0 20px;
     width: 100%;
-    max-width: 1200px;
     margin: 0 auto;
 }
 
@@ -818,6 +817,10 @@ h2 {
 }
 
 @media (max-width: 600px) {
+    .navbar-top {
+        justify-content: start;
+    }
+
     .grid-container {
         gap: 10px 5px;
     }
