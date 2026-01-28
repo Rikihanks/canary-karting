@@ -3,11 +3,11 @@ import { io } from 'socket.io-client';
 import { getLeaderboardData } from '../services/data';
 import './TeamDraw.css'; // Reusing styles
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000';
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'https://julian-scholar-laundry-enclosure.trycloudflare.com';
 
 const TeamDrawInput = () => {
     const [allDrivers, setAllDrivers] = useState([]);
-    const [division, setDivision] = useState(1);
+    const [division, setDivision] = useState(3);
     const [loading, setLoading] = useState(true);
     const [pilots, setPilotos] = useState([]);
 
@@ -35,7 +35,7 @@ const TeamDrawInput = () => {
             try {
                 const data = await getLeaderboardData();
                 setAllDrivers(data);
-                loadDivision(data, 1);
+                loadDivision(data, 3);
                 setLoading(false);
             } catch (err) {
                 console.error(err);
@@ -79,12 +79,66 @@ const TeamDrawInput = () => {
     const handleSpin = async (pilotName) => {
         if (availableNumbers.length === 0 || drawStatus[pilotName]?.state !== 'idle') return;
 
-        // Take final number
-        const numIndex = Math.floor(Math.random() * availableNumbers.length);
-        const drawnNumber = availableNumbers[numIndex];
+        let drawnNumber;
+        let newAvailable = [...availableNumbers];
 
-        const newAvailable = [...availableNumbers];
-        newAvailable.splice(numIndex, 1);
+        // -- REGLA ESPECIAL DIVISIÓN 1 --
+        if (division === 1) {
+            const reservedMap = {
+                'WILL REVERÓN': 2,
+                'ADÁN DÍAZ': 7,
+                'JOSEP BORRAS': 3,
+                'RAYCO HERNÁNDEZ': 8
+            };
+
+            const upperName = pilotName.toUpperCase().trim();
+            let reservedNum = null;
+
+            // Check if THIS pilot has a reserved number
+            for (const [key, val] of Object.entries(reservedMap)) {
+                if (upperName.includes(key)) {
+                    reservedNum = val;
+                    break;
+                }
+            }
+
+            if (reservedNum && availableNumbers.includes(reservedNum)) {
+                drawnNumber = reservedNum;
+            } else {
+                // If not reserved (or reserved already taken somehow), pick random
+                // BUT skip numbers reserved for pilots who haven't spun yet
+                const idlePilots = pilots.filter(p => drawStatus[p.name]?.state === 'idle' && p.name !== pilotName);
+                const numbersToReserve = [];
+
+                idlePilots.forEach(p => {
+                    const pUpper = p.name.toUpperCase();
+                    for (const [key, val] of Object.entries(reservedMap)) {
+                        if (pUpper.includes(key)) {
+                            numbersToReserve.push(val);
+                        }
+                    }
+                });
+
+                const eligibleNumbers = availableNumbers.filter(n => !numbersToReserve.includes(n));
+
+                if (eligibleNumbers.length > 0) {
+                    const randomIndex = Math.floor(Math.random() * eligibleNumbers.length);
+                    drawnNumber = eligibleNumbers[randomIndex];
+                } else {
+                    // Fallback if somehow no numbers are left (shouldn't happen)
+                    drawnNumber = availableNumbers[Math.floor(Math.random() * availableNumbers.length)];
+                }
+            }
+        } else {
+            // Normal random behavior for other divisions
+            const numIndex = Math.floor(Math.random() * availableNumbers.length);
+            drawnNumber = availableNumbers[numIndex];
+        }
+
+        const finalIndex = newAvailable.indexOf(drawnNumber);
+        if (finalIndex !== -1) {
+            newAvailable.splice(finalIndex, 1);
+        }
         setAvailableNumbers(newAvailable);
 
         // -- Phase 1: Spinning (Slot Machine) --
@@ -150,8 +204,9 @@ const TeamDrawInput = () => {
 
             <div className="draw-controls">
                 <select className="division-dropdown" value={division} onChange={handleDivisionChange}>
-                    <option value="1">1ª DIVISIÓN</option>
+                    <option value="3">3ª DIVISIÓN</option>
                     <option value="2">2ª DIVISIÓN</option>
+                    <option value="1">1ª DIVISIÓN</option>
                 </select>
 
                 <div className="status-info" style={{ marginTop: '1rem' }}>

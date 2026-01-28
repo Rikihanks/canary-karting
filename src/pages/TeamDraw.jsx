@@ -7,15 +7,16 @@ import revealSound from '../assets/TA-DA.mp3';
 import scapesSound from '../assets/silver-scapes.mp3';
 import './TeamDraw.css';
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000';
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'https://julian-scholar-laundry-enclosure.trycloudflare.com';
 
 const TeamDraw = () => {
     const [allDrivers, setAllDrivers] = useState([]);
-    const [division, setDivision] = useState(1);
+    const [division, setDivision] = useState(3);
     const [loading, setLoading] = useState(true);
     const [phase, setPhase] = useState('idle'); // 'idle', 'numbering', 'pairing', 'finished'
     const [pilots, setPilots] = useState([]);
     const [teams, setTeams] = useState([]);
+    const [savedDiv3Teams, setSavedDiv3Teams] = useState([]); // Store Division 3 results
     const [savedDiv2Teams, setSavedDiv2Teams] = useState([]); // Store Division 2 results
     const [activeTeamId, setActiveTeamId] = useState(null);
     const [pairingPilots, setPairingPilots] = useState([]);
@@ -93,7 +94,7 @@ const TeamDraw = () => {
             try {
                 const data = await getLeaderboardData();
                 setAllDrivers(data);
-                loadDivision(data, 1);
+                loadDivision(data, 3);
                 setLoading(false);
             } catch (err) {
                 console.error(err);
@@ -294,8 +295,10 @@ const TeamDraw = () => {
         setActiveTeamId(null);
         setPairingPilots([]);
 
-        // Save Division 2 results for side-by-side display later
-        if (division === 2) {
+        // Save division results for side-by-side display later
+        if (division === 3) {
+            setSavedDiv3Teams([...finalTeams]);
+        } else if (division === 2) {
             setSavedDiv2Teams([...finalTeams]);
         }
 
@@ -304,12 +307,7 @@ const TeamDraw = () => {
             await new Promise(r => setTimeout(r, 800)); // Quicker transition to banner
             setPhase('celebration');
         } else {
-            // If not Division 1, scroll immediately
-            setTimeout(() => {
-                if (resultsRef.current) {
-                    resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-            }, 100);
+            // No automated scroll for intermediate divisions as results are hidden
         }
     };
 
@@ -355,9 +353,10 @@ const TeamDraw = () => {
                 <h1 className="draw-title">Sorteo 2026</h1>
 
                 <div className="draw-controls">
-                    <select className="division-dropdown" value={division} onChange={handleDivisionChange} disabled={phase !== 'idle'}>
-                        <option value="1">1ª DIVISIÓN (GRID)</option>
+                    <select className="division-dropdown" value={division} onChange={handleDivisionChange}>
+                        <option value="3">3ª DIVISIÓN (GRID)</option>
                         <option value="2">2ª DIVISIÓN (GRID)</option>
+                        <option value="1">1ª DIVISIÓN (GRID)</option>
                     </select>
 
                     {phase === 'individual-draw' && (
@@ -400,13 +399,18 @@ const TeamDraw = () => {
                             <button className="export-btn" onClick={exportImage}>
                                 📥 Descargar Resultados
                             </button>
+                            {division === 3 && (
+                                <button className="primary-nav-btn" onClick={() => loadDivision(allDrivers, 2)}>
+                                    IR A SEGUNDA DIVISIÓN 🏎️💨
+                                </button>
+                            )}
                             {division === 2 && (
                                 <button className="primary-nav-btn" onClick={() => loadDivision(allDrivers, 1)}>
                                     IR A PRIMERA DIVISIÓN 🏎️💨
                                 </button>
                             )}
                             <button className="draw-btn secondary" onClick={() => loadDivision(allDrivers, division)}>
-                                NUEVO SORTEO
+                                REPETIR SORTEO
                             </button>
                         </div>
                     )}
@@ -522,10 +526,32 @@ const TeamDraw = () => {
                 )}
             </div>
 
-            {/* FINAL TEAMS - Side-by-side when both divisions complete */}
-            {/* FINAL TEAMS - Side-by-side when both divisions complete */}
-            {savedDiv2Teams.length > 0 && teams.length > 0 && division === 1 ? (
+            {/* FINAL TEAMS - Only show when fully finished after Div 1 celebration */}
+            {phase === 'finished' && division === 1 && savedDiv3Teams.length > 0 && savedDiv2Teams.length > 0 && teams.length > 0 && (
                 <div className="divisions-grid" ref={resultsRef}>
+                    {/* Division 3 Column */}
+                    <div className="division-column">
+                        <h2 className="division-column-header">3ª DIVISIÓN</h2>
+                        <div className="final-teams-layout">
+                            {savedDiv3Teams.map((team) => (
+                                <div key={team.id} className="team-stripe animate-entry">
+                                    <div className="stripe-header">EQUIPO {team.id}</div>
+                                    <div className="stripe-members">
+                                        {team.pilots.map(p => (
+                                            <div key={p.name} className="stripe-member">
+                                                <img src={p.photo} alt={p.name} />
+                                                <div className="sm-info">
+                                                    <span className="sm-name">{p.name}</span>
+                                                    <span className="sm-rank">Nº {p.number}</span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
                     {/* Division 2 Column */}
                     <div className="division-column">
                         <h2 className="division-column-header">2ª DIVISIÓN</h2>
@@ -571,26 +597,6 @@ const TeamDraw = () => {
                             ))}
                         </div>
                     </div>
-                </div>
-            ) : (
-                /* Single division display (current behavior) */
-                <div className="final-teams-layout" ref={resultsRef}>
-                    {teams.map((team) => (
-                        <div key={team.id} className="team-stripe animate-entry">
-                            <div className="stripe-header">EQUIPO {team.id}</div>
-                            <div className="stripe-members">
-                                {team.pilots.map(p => (
-                                    <div key={p.name} className="stripe-member">
-                                        <img src={p.photo} alt={p.name} />
-                                        <div className="sm-info">
-                                            <span className="sm-name">{p.name}</span>
-                                            <span className="sm-rank">Nº {p.number}</span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    ))}
                 </div>
             )}
         </div>

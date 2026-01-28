@@ -44,11 +44,14 @@ export const requestPermission = async () => {
         const permission = await Notification.requestPermission();
         if (permission === 'granted') {
             console.log('Permiso de notificación concedido.');
+            localStorage.setItem('notifications_granted', 'true');
+            return true;
         } else {
             console.log('Permiso de notificación denegado.');
+            return false;
         }
     } catch (error) {
         console.error('Error al solicitar el permiso:', error);
+        return false;
     }
-    return false;
 };
