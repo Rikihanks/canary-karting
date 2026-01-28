@@ -28,7 +28,6 @@ const PWAInstallModal = () => {
             }
         }
         else if (isAndroid) setPlatform('android');
-        setPlatform('android');
 
         // Only show if not installed and not seen recently
         const hasSeenModal = localStorage.getItem('pwa_modal_seen');

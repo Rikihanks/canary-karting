@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 const Races = () => {
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [selectedDivision, setSelectedDivision] = useState(null);
     const { user } = useAuth();
     const navigate = useNavigate();
 
@@ -24,6 +25,22 @@ const Races = () => {
         fetchData();
     }, []);
 
+    // Set the first division as default when events are loaded
+    useEffect(() => {
+        if (events.length > 0 && selectedDivision === null) {
+            const firstDivision = [...new Set(
+                events
+                    .filter(event => event.temporada == 2026)
+                    .map(event => event.division)
+                    .filter(div => div !== undefined && div !== null)
+            )].sort((a, b) => a - b)[0];
+
+            if (firstDivision !== undefined) {
+                setSelectedDivision(firstDivision);
+            }
+        }
+    }, [events, selectedDivision]);
+
     const handleEventClick = (event) => {
         if (event.terminada == '0' && user) {
             navigate('/assistance-confirmation');
@@ -31,6 +48,21 @@ const Races = () => {
             navigate(`/race-detail?id=${event.id_circuito}&date=${encodeURIComponent(event.fecha)}&circuitName=${encodeURIComponent(event.nombre)}`);
         }
     };
+
+    // Filter events by temporada 2026 and selected division
+    const filteredEvents = events.filter(event => {
+        const isTemporada2026 = event.temporada == 2026;
+        const matchesDivision = event.division == selectedDivision;
+        return isTemporada2026 && matchesDivision;
+    });
+
+    // Get unique divisions from temporada 2026 events
+    const divisions = [...new Set(
+        events
+            .filter(event => event.temporada == 2026)
+            .map(event => event.division)
+            .filter(div => div !== undefined && div !== null)
+    )].sort((a, b) => a - b);
 
     if (loading) return <div className="container" style={{ textAlign: 'center', color: '#94a3b8', paddingTop: '50px' }}><i className="fa-solid fa-spinner fa-spin"></i> Cargando calendario...</div>;
 
@@ -40,6 +72,8 @@ const Races = () => {
         try {
             const data = await getCalendarData();
             setEvents(data);
+            console.log(data);
+
         } catch (error) {
             console.error(error);
         }
@@ -49,12 +83,30 @@ const Races = () => {
         <PullToRefresh onRefresh={handleRefresh} pullingContent={''}>
             <div className="container">
                 <br />
+
+                {/* Division filter dropdown */}
+                <div className="division-select-container">
+                    <label htmlFor="division-filter" className="visually-hidden">
+                        Filtrar por División:
+                    </label>
+                    <select
+                        id="division-filter"
+                        className="division-dropdown"
+                        value={selectedDivision}
+                        onChange={(e) => setSelectedDivision(e.target.value)}
+                    >
+                        {divisions.map(div => (
+                            <option key={div} value={div}>{div}º División </option>
+                        ))}
+                    </select>
+                </div>
+
                 <div id="calendar-list">
-                    {events.length === 0 ? (
-                        <p className="empty-message" style={{ textAlign: 'center', color: '#94a3b8' }}>No hay eventos programados.</p>
+                    {filteredEvents.length === 0 ? (
+                        <p className="empty-message" style={{ textAlign: 'center', color: '#94a3b8' }}>No hay eventos programados para esta división.</p>
                     ) : (
                         <ul className="event-list">
-                            {events.map((event, index) => (
+                            {filteredEvents.map((event, index) => (
                                 <li
                                     key={index}
                                     className={`event-item ${event.activa == 0 ? 'disabled' : ''}`}

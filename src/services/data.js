@@ -129,13 +129,15 @@ export function parseCalendarCSV(csvText) {
     for (let i = 1; i < lines.length; i++) {
         const parts = lines[i].split(',');
 
-        if (parts.length >= 5) {
+        if (parts.length >= 7) {
             events.push({
                 id_circuito: parts[0] ? parts[0].trim() : '',
                 nombre: parts[1] ? parts[1].trim() : 'Carrera sin nombre',
                 fecha: parts[2] ? parts[2].trim() : '',
                 activa: parts[3] ? parts[3].trim() : '0',
                 terminada: parts[4] ? parts[4].trim() : '0',
+                division: parts[5] ? parts[5].trim() : '1',
+                temporada: parts[6] ? parts[6].trim() : '2026',
             });
         }
     }

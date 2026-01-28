@@ -32,7 +32,14 @@ const Teams = () => {
 
     const top3 = filteredTeams.slice(0, 3);
     const rest = filteredTeams.slice(3);
-    const divisionName = activeDivision === 1 ? 'PRIMERA' : 'SEGUNDA';
+
+    const getDivisionName = (div) => {
+        if (div === 1) return 'PRIMERA';
+        if (div === 2) return 'SEGUNDA';
+        if (div === 3) return 'TERCERA';
+    };
+
+    const divisionName = getDivisionName(activeDivision);
 
     if (loading) {
         return (
@@ -75,6 +82,7 @@ const Teams = () => {
                     >
                         <option value="1">1ª Division</option>
                         <option value="2">2ª Division</option>
+                        <option value="3">3ª Division</option>
                     </select>
                     <div className="season-badge-container">
                         <span className="season-badge">Temporada {season}</span>

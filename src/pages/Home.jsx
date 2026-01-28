@@ -58,6 +58,7 @@ const Home = () => {
     const getDivisionName = (div) => {
         if (div === 1) return 'PRIMERA';
         if (div === 2) return 'SEGUNDA';
+        if (div === 3) return 'TERCERA';
         return 'RESERVAS';
     };
 
@@ -128,6 +129,7 @@ const Home = () => {
                     >
                         <option value="1">1ª Division</option>
                         <option value="2">2ª Division</option>
+                        <option value="3">3ª Division</option>
                         <option value="0">Reservas</option>
                     </select>
                     <div className="season-badge-container">
