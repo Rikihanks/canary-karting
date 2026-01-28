@@ -15,8 +15,20 @@ const PWAInstallModal = () => {
         // Detect if already installed (standalone mode)
         const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
 
-        if (isIOS) setPlatform('ios');
+        if (isIOS) {
+            const isChromeIOS = userAgent.includes('crios');
+            const isSafariIOS = userAgent.includes('safari') && !isChromeIOS && !userAgent.includes('fxios');
+
+            if (isChromeIOS) {
+                setPlatform('ios-chrome');
+            } else if (isSafariIOS) {
+                setPlatform('ios');
+            } else {
+                setPlatform('ios-other');
+            }
+        }
         else if (isAndroid) setPlatform('android');
+        setPlatform('android');
 
         // Only show if not installed and not seen recently
         const hasSeenModal = localStorage.getItem('pwa_modal_seen');
@@ -33,11 +45,12 @@ const PWAInstallModal = () => {
     };
 
     if (!showModal) return null;
+    const styleClass = platform.includes('ios') ? 'ios' : 'android';
 
     return (
-        <div className={`pwa-modal-overlay platform-${platform}`} onClick={handleClose}>
-            <div className={`pwa-modal-content ${platform}-style`} onClick={(e) => e.stopPropagation()}>
-                {platform === 'ios' ? (
+        <div className={`pwa-modal-overlay platform-${styleClass}`} onClick={handleClose}>
+            <div className={`pwa-modal-content ${styleClass}-style`} onClick={(e) => e.stopPropagation()}>
+                {platform.includes('ios') ? (
                     <>
                         <div className="ios-indicator"></div>
                         <div className="ios-header">
@@ -45,12 +58,36 @@ const PWAInstallModal = () => {
                             <p>Instala la aplicación en tu iPhone para una mejor experiencia.</p>
                         </div>
                         <div className="ios-steps">
+                            {platform === 'ios-other' && (
+                                <>
+                                    <div className="step">
+                                        <div className="step-icon">
+                                            <i class="fa-brands fa-safari"></i>
+                                        </div>
+                                        <div className="step-text">
+                                            Abre la app en <strong>Safari</strong>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                            {platform !== 'ios-chrome' && platform !== 'ios-other' && (
+                                <>
+                                    <div className="step">
+                                        <div className="step-icon">
+                                            <i class="fa-solid fa-ellipsis"></i>
+                                        </div>
+                                        <div className="step-text">
+                                            Pulsa el menú de tres puntos.
+                                        </div>
+                                    </div>
+                                </>
+                            )}
                             <div className="step">
                                 <div className="step-icon">
                                     <i className="fa-solid fa-arrow-up-from-bracket"></i>
                                 </div>
                                 <div className="step-text">
-                                    1. Pulsa el botón <strong>Compartir</strong> en la barra inferior.
+                                    Pulsa el botón <strong>Compartir</strong>.
                                 </div>
                             </div>
                             <div className="step">
@@ -58,7 +95,7 @@ const PWAInstallModal = () => {
                                     <i className="fa-regular fa-square-plus"></i>
                                 </div>
                                 <div className="step-text">
-                                    2. Desliza hacia abajo y selecciona <strong>Añadir a la pantalla de inicio</strong>.
+                                    Desliza hacia abajo y selecciona <strong>Añadir a la pantalla de inicio</strong>.
                                 </div>
                             </div>
                             <div className="step">
@@ -66,7 +103,7 @@ const PWAInstallModal = () => {
                                     <i className="fa-solid fa-check"></i>
                                 </div>
                                 <div className="step-text">
-                                    3. Disfruta de la aplicación de <strong>Canary Karting</strong>.
+                                    Disfruta de la aplicación de <strong>Canary Karting</strong>.
                                 </div>
                             </div>
                         </div>

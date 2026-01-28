@@ -302,12 +302,14 @@ const VoteDriver = () => {
                                         <button
                                             className={`vote-btn ${votedDriver?.name === driver.name ? 'voted' : ''}`}
                                             onClick={() => handleVote(driver)}
-                                            disabled={showSuccess || hasAlreadyVoted || isSubmitting}
+                                            disabled={showSuccess || hasAlreadyVoted || isSubmitting || votedDriver !== null}
                                         >
                                             {isSubmitting ? (
                                                 <><i className="fa-solid fa-spinner fa-spin"></i> Enviando...</>
                                             ) : votedDriver?.name === driver.name ? (
                                                 <><i className="fa-solid fa-check"></i> Votado</>
+                                            ) : hasAlreadyVoted ? (
+                                                <><i className="fa-solid fa-xmark"></i> </>
                                             ) : (
                                                 <><i className="fa-solid fa-thumbs-up"></i> Votar</>
                                             )}

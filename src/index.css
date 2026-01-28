@@ -60,6 +60,7 @@ body {
         radial-gradient(circle at 90% 80%, rgba(239, 68, 68, 0.15) 0%, transparent 20%);
     color: var(--text-main);
     min-height: 100vh;
+    touch-action: pan-y;
 }
 
 h1 {
