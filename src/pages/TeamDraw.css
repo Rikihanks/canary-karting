@@ -375,7 +375,7 @@
 }
 
 .p-number.revealed {
-    background: #fbbf24;
+    background: white;
     color: #000;
     border-color: #000;
     animation: bouncePop 0.4s;
@@ -990,7 +990,7 @@
 }
 
 .slot-machine-row.revealed {
-    border-color: #fbbf24;
+    border-color: white;
     box-shadow: 0 0 20px rgba(251, 191, 36, 0.2);
     background: rgba(251, 191, 36, 0.1);
 }
@@ -1072,7 +1072,7 @@
 .slot-display.revealed {
     animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     font-size: 2.5rem;
-    color: #fbbf24;
+    color: white;
 }
 
 .slot-display.saved {
