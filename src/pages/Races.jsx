@@ -57,12 +57,7 @@ const Races = () => {
     });
 
     // Get unique divisions from temporada 2026 events
-    const divisions = [...new Set(
-        events
-            .filter(event => event.temporada == 2026)
-            .map(event => event.division)
-            .filter(div => div !== undefined && div !== null)
-    )].sort((a, b) => a - b);
+    const divisions = [1, 2, 3];
 
     if (loading) return <div className="container" style={{ textAlign: 'center', color: '#94a3b8', paddingTop: '50px' }}><i className="fa-solid fa-spinner fa-spin"></i> Cargando calendario...</div>;
 
@@ -99,6 +94,7 @@ const Races = () => {
                             <option key={div} value={div}>{div}º División </option>
                         ))}
                     </select>
+                    <div className="division-description">Consulta el calendario de la temporada 2026, confirma tu asistencia a la carrera y comprueba los resultados en este mismo sitio.</div>
                 </div>
 
                 <div id="calendar-list">

@@ -195,10 +195,7 @@ const Profile = () => {
     const podiums = driverHistory.filter(r => r.position > 0 && r.position <= 3).length;
     const poles = driverHistory.filter(r => r.pole_pos === 1).length;
     const fastLaps = driverHistory.filter(r => r.fastest_lap && r.fastest_lap !== 'N/A' && r.fastest_lap.trim() !== '-').length;
-
-    // TODO: Connect to real data when available.
-    const mockChampionships = 1; // MOCKUP DATA
-
+    const dotd = driverStats.dotdTimes;
 
 
     const handleRefresh = async () => {
@@ -209,6 +206,8 @@ const Profile = () => {
                 getLeaderboardData(),
                 getDriverResults()
             ]);
+
+            console.log(results);
 
             const stats = leaderboard.find(d => d.name === driverName && d.season === season);
             const history = results.filter(r => r.name === driverName && r.season === season);
@@ -247,8 +246,11 @@ const Profile = () => {
                     </div>
                 </div>
 
-                {/* Championships Section (Most Important) */}
-                <div className="fade-in" style={{ animationDelay: '0.05s' }}>
+                {/* Statistics Section */}
+                <div className="stats-section fade-in" style={{ animationDelay: '0.05s' }}>
+                    <h2 className="section-title">ESTADÍSTICAS</h2>
+
+                    {/* Championships Section (Most Important) */}
                     <div className={`championship-section ${driverStats.championship > 0 ? 'gold-tier' : 'gray-tier'}`}>
                         <div className="champ-icon-wrapper">
                             <i className="fa-solid fa-trophy champ-icon"></i>
@@ -258,36 +260,44 @@ const Profile = () => {
                             <span className="champ-label">CAMPEONATOS GANADOS</span>
                         </div>
                     </div>
-                </div>
 
-                {/* Stats Row */}
-                <div className="stats-row fade-in" style={{ animationDelay: '0.1s' }}>
-                    <div className="stat-card gold toggle-modal" onClick={() => openModal('victories')}>
-                        <div className="stat-icon-wrapper"><i className="fa-solid fa-trophy"></i></div>
-                        <div className="stat-info">
-                            <span className="stat-number">{victories}</span>
-                            <span className="stat-title">Victorias</span>
+                    {/* Stats Row */}
+                    <div className="stats-row">
+                        <div className="stat-card gold toggle-modal" onClick={() => openModal('victories')}>
+                            <div className="stat-icon-wrapper"><i className="fa-solid fa-trophy"></i></div>
+                            <div className="stat-info">
+                                <span className="stat-number">{victories}</span>
+                                <span className="stat-title">Victorias</span>
+                            </div>
+                        </div>
+                        <div className="stat-card silver toggle-modal" onClick={() => openModal('podiums')}>
+                            <div className="stat-icon-wrapper"><i className="fa-solid fa-medal"></i></div>
+                            <div className="stat-info">
+                                <span className="stat-number">{podiums}</span>
+                                <span className="stat-title">Podios</span>
+                            </div>
+                        </div>
+                        <div className="stat-card purple toggle-modal" onClick={() => openModal('poles')}>
+                            <div className="stat-icon-wrapper"><i className="fa-solid fa-stopwatch"></i></div>
+                            <div className="stat-info">
+                                <span className="stat-number">{poles}</span>
+                                <span className="stat-title">Poles</span>
+                            </div>
+                        </div>
+                        <div className="stat-card orange toggle-modal" onClick={() => openModal('fastLaps')}>
+                            <div className="stat-icon-wrapper"><i className="fa-solid fa-bolt"></i></div>
+                            <div className="stat-info">
+                                <span className="stat-number">{fastLaps}</span>
+                                <span className="stat-title">Mejor Vuelta</span>
+                            </div>
                         </div>
                     </div>
-                    <div className="stat-card silver toggle-modal" onClick={() => openModal('podiums')}>
-                        <div className="stat-icon-wrapper"><i className="fa-solid fa-medal"></i></div>
+
+                    <div className="stat-card dotd">
+                        <div className="stat-icon-wrapper"><i className="fa-solid fa-thumbs-up"></i></div>
                         <div className="stat-info">
-                            <span className="stat-number">{podiums}</span>
-                            <span className="stat-title">Podios</span>
-                        </div>
-                    </div>
-                    <div className="stat-card purple toggle-modal" onClick={() => openModal('poles')}>
-                        <div className="stat-icon-wrapper"><i className="fa-solid fa-stopwatch"></i></div>
-                        <div className="stat-info">
-                            <span className="stat-number">{poles}</span>
-                            <span className="stat-title">Poles</span>
-                        </div>
-                    </div>
-                    <div className="stat-card orange toggle-modal" onClick={() => openModal('fastLaps')}>
-                        <div className="stat-icon-wrapper"><i className="fa-solid fa-bolt"></i></div>
-                        <div className="stat-info">
-                            <span className="stat-number">{fastLaps}</span>
-                            <span className="stat-title">Mejor Vuelta</span>
+                            <span className="stat-number">{dotd}</span>
+                            <span className="stat-title">Veces elegido como piloto del día</span>
                         </div>
                     </div>
                 </div>
@@ -320,6 +330,33 @@ const Profile = () => {
                     @keyframes fadeIn {
                         from { opacity: 0; transform: translateY(20px); }
                         to { opacity: 1; transform: translateY(0); }
+                    }
+
+                    .section-title {
+                        margin-top: 10px;
+                        font-family: 'Russo One', sans-serif;
+                        font-size: 0.85rem;
+                        color: #64748b;
+                        text-transform: uppercase;
+                        letter-spacing: 2px;
+                        margin-bottom: 15px;
+                        display: flex;
+                        align-items: center;
+                    }
+
+                    .section-title::after {
+                        content: '';
+                        flex-grow: 1;
+                        height: 1px;
+                        background: rgba(255, 255, 255, 0.1);
+                    }
+
+                    .stats-section {
+                        background: rgba(30, 41, 59, 0.4);
+                        border: 1px solid rgba(255, 255, 255, 0.05);
+                        border-radius: 28px;
+                        padding: 18px;
+                        margin-bottom: 20px;
                     }
 
                     /* Hero Section */
@@ -438,13 +475,13 @@ const Profile = () => {
 
                     /* Championship Section */
                     .championship-section {
-                        border-radius: 20px;
-                        padding: 25px;
+                        border-radius: 16px;
+                        padding: 15px;
                         display: flex;
                         align-items: center;
                         justify-content: center;
-                        gap: 25px;
-                        margin-bottom: 30px;
+                        gap: 15px;
+                        margin-bottom: 15px;
                         position: relative;
                         overflow: hidden;
                         transform-style: preserve-3d;
@@ -501,8 +538,8 @@ const Profile = () => {
 
                     .champ-icon-wrapper {
                         background: rgba(255, 255, 255, 0.2);
-                        width: 80px;
-                        height: 80px;
+                        width: 50px;
+                        height: 50px;
                         border-radius: 50%;
                         display: flex;
                         align-items: center;
@@ -513,7 +550,7 @@ const Profile = () => {
                     }
 
                     .champ-icon {
-                        font-size: 2.5rem;
+                        font-size: 1.5rem;
                         color: #FFF;
                         filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
                     }
@@ -526,14 +563,14 @@ const Profile = () => {
 
                     .champ-count {
                         font-family: 'Russo One', sans-serif;
-                        font-size: 3.5rem;
+                        font-size: 2rem;
                         color: white;
                         line-height: 1;
                         text-shadow: 0 4px 8px rgba(0,0,0,0.3);
                     }
 
                     .champ-label {
-                        font-size: 1rem;
+                        font-size: 0.75rem;
                         color: rgba(255, 255, 255, 0.9);
                         font-weight: 700;
                         letter-spacing: 1px;
@@ -545,14 +582,14 @@ const Profile = () => {
                     .stats-row {
                         display: grid;
                         grid-template-columns: repeat(2, 1fr);
-                        gap: 15px;
-                        margin-bottom: 35px;
+                        gap: 10px;
+                        margin-bottom: 10px;
                     }
 
                     .stat-card {
                         background: #1e293b;
-                        border-radius: 16px;
-                        padding: 22px;
+                        border-radius: 12px;
+                        padding: 15px;
                         display: flex;
                         align-items: center;
                         border: 1px solid rgba(255, 255, 255, 0.05);
@@ -560,7 +597,7 @@ const Profile = () => {
                         cursor: pointer;
                     }
 
-                    .stat-card:hover {
+                    .stat-card:active {
                         transform: translateY(-5px);
                         box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
                     }
@@ -569,17 +606,18 @@ const Profile = () => {
                     .stat-card.silver { background: linear-gradient(145deg, #1e293b, rgba(148, 163, 184, 0.1)); border-bottom: 3px solid #94a3b8; }
                     .stat-card.purple { background: linear-gradient(145deg, #1e293b, rgba(168, 85, 247, 0.1)); border-bottom: 3px solid #a855f7; }
                     .stat-card.orange { background: linear-gradient(145deg, #1e293b, rgba(249, 115, 22, 0.1)); border-bottom: 3px solid #f97316; }
+                    .stat-card.dotd { background: linear-gradient(145deg, #1e293b, rgba(39, 36, 251, 0.1)); border-bottom: 3px solid #244bfbff; border-top: 0 }
 
                     .stat-icon-wrapper {
-                        width: 45px;
-                        height: 45px;
-                        border-radius: 12px;
+                        width: 36px;
+                        height: 36px;
+                        border-radius: 10px;
                         background: rgba(255, 255, 255, 0.05);
                         display: flex;
                         align-items: center;
                         justify-content: center;
-                        font-size: 1.2rem;
-                        margin-right: 15px;
+                        font-size: 1rem;
+                        margin-right: 12px;
                     }
 
                     .gold .stat-icon-wrapper { color: #fbbf24; }
@@ -594,12 +632,12 @@ const Profile = () => {
 
                     .stat-number {
                         font-family: 'Russo One', sans-serif;
-                        font-size: 1.8rem;
+                        font-size: 1.4rem;
                         line-height: 1;
                     }
 
                     .stat-title {
-                        font-size: 0.85rem;
+                        font-size: 0.7rem;
                         color: #94a3b8;
                         text-transform: uppercase;
                         font-weight: 600;

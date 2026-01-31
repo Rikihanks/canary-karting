@@ -89,10 +89,8 @@ const Navbar = () => {
         // { to: "/inscripcion", label: "📝 Preinscripción", feature: "inscripcion" },
         { to: "/votar", label: "🗳️ Piloto del día" },
         { to: "/sorteo", label: <span><i className="fa-solid fa-ticket"></i> &nbsp;Sorteo Karts</span>, feature: "sorteo" },
-        { to: "/team-draw-input", label: <span><i className="fa-solid fa-tablet-screen-button"></i> &nbsp;Sorteo Equipos Tablet</span>, feature: "sorteo", disabled: true },
-        { to: "/sorteo-equipo", label: <span><i className="fa-solid fa-tv"></i> &nbsp;Sorteo Equipos TV</span>, feature: "sorteo", disabled: true },
         { to: "/races", label: "🏎️ Calendario Carreras", feature: "races" },
-        { to: "/", label: "📝 Academia", feature: "inscripcion" },
+        { to: "/inscripcion-academia", label: "📝 Academia", feature: "inscripcion-academia" },
     ];
 
     const toggleSubmenu = (index) => {
@@ -181,13 +179,24 @@ const Navbar = () => {
                     {renderNavLinks(false)}
 
                     {(!user && isEnabled('login')) && (
-                        <Link to="/login" className="nav-link-desktop login-btn">
-                            <i className="fa-solid fa-right-to-bracket"></i> Iniciar Sesión
-                        </Link>
+                        <>
+                            <Link to="/configuracion" className="nav-link-desktop" title="Configuración">
+                                <i className="fa-solid fa-gear"></i>
+                                {config?.hasUpdate && <span className="notification-badge-dot pulse-animation"></span>}
+                            </Link>
+                            <Link to="/login" className="nav-link-desktop login-btn">
+                                <i className="fa-solid fa-right-to-bracket"></i> Iniciar Sesión
+                            </Link>
+                        </>
                     )}
 
                     {user && (
                         <div className="user-menu-desktop">
+                            <Link to="/configuracion" className="nav-link-desktop" title="Configuración" style={{ padding: '0 10px' }}>
+                                <i className="fa-solid fa-gear"></i>
+                                {config?.hasUpdate && <span className="notification-badge-dot pulse-animation"></span>}
+                            </Link>
+                            <div style={{ width: '1px', height: '20px', backgroundColor: 'rgba(255,255,255,0.1)', margin: '0 5px' }}></div>
                             <Link
                                 to={`/profile?driver=${encodeURIComponent(user.nombre)}&season=2026`}
                                 style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', color: 'inherit' }}
@@ -229,6 +238,11 @@ const Navbar = () => {
                 {renderNavLinks(true)}
 
                 <div style={{ height: '5px', backgroundColor: 'var(--card-bg)' }}></div>
+
+                <Link to="/configuracion" className="nav-link" onClick={closeMenu} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span><i className="fa-solid fa-gear"></i> &nbsp;Configuración</span>
+                    {config?.hasUpdate && <i className="fa-solid fa-circle-exclamation pulse-animation" style={{ color: 'var(--danger)', fontSize: '1.2em' }}></i>}
+                </Link>
 
                 {(!user && isEnabled('login')) && <Link to="/login" className="nav-link"><i className="fa-solid fa-right-to-bracket"></i> Iniciar Sesión</Link>}
 

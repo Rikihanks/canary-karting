@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import PullToRefresh from 'react-simple-pull-to-refresh';
 import { useConfig } from '../context/ConfigContext';
 import { getLeaderboardData, submitVote, getDOTDResults } from '../services/data';
+import { useAuth } from '../context/AuthContext';
 
 const VoteDriver = () => {
     const config = useConfig();
+    const { user, logout } = useAuth();
     const [drivers, setDrivers] = useState([]);
     const [results, setResults] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -14,7 +17,7 @@ const VoteDriver = () => {
     const [votedDriver, setVotedDriver] = useState(null);
     const [showSuccess, setShowSuccess] = useState(false);
     const [hasAlreadyVoted, setHasAlreadyVoted] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submittingDriver, setSubmittingDriver] = useState(null);
 
     const [revealedDivs, setRevealedDivs] = useState([]);
 
@@ -89,12 +92,12 @@ const VoteDriver = () => {
     };
 
     const handleVote = async (driver) => {
-        setIsSubmitting(true);
+        setSubmittingDriver(driver.name);
         const today = getTodayStr();
 
         try {
             // First call backend
-            const result = await submitVote(driver.name, activeDivision);
+            const result = await submitVote(driver.name, activeDivision, user?.nombre);
 
             if (result.success) {
                 const savedVotes = JSON.parse(localStorage.getItem('ck_votes') || '{}');
@@ -119,7 +122,7 @@ const VoteDriver = () => {
             console.error(err);
             alert("Error de conexión al votar.");
         } finally {
-            setIsSubmitting(false);
+            setSubmittingDriver(null);
         }
 
         // Success modal disappears after 5 seconds
@@ -129,12 +132,22 @@ const VoteDriver = () => {
     };
 
     const handleReveal = (divId) => {
-        // Sequential check: if there is a div 2 with results, it must be revealed before div 1
+        // Find latest date results for reveal logic consistency
+        const latestDate = results.length > 0
+            ? results.reduce((max, r) => r.date > max ? r.date : max, results[0].date)
+            : null;
+        const currentResults = latestDate ? results.filter(r => r.date === latestDate) : [];
+
+        // Sequential check: 3 -> 2 -> 1
+        if (divId === 2) {
+            const hasDiv3Results = currentResults.some(r => r.division === 3);
+            if (hasDiv3Results && !revealedDivs.includes(3)) return;
+        }
         if (divId === 1) {
-            const hasDiv2Results = results.some(r => r.division === 2);
-            if (hasDiv2Results && !revealedDivs.includes(2)) {
-                return;
-            }
+            const hasDiv2Results = currentResults.some(r => r.division === 2);
+            if (hasDiv2Results && !revealedDivs.includes(2)) return;
+            const hasDiv3Results = currentResults.some(r => r.division === 3);
+            if (hasDiv3Results && !revealedDivs.includes(3) && !hasDiv2Results) return;
         }
 
         if (!revealedDivs.includes(divId)) {
@@ -189,78 +202,110 @@ const VoteDriver = () => {
                         </div>
 
                         <div className="winners-container fade-in">
-                            {[1, 2].sort((a, b) => b - a).map(divId => {
-                                const divResults = results.filter(r => r.division === divId);
-                                if (divResults.length === 0) return null;
+                            {(() => {
+                                const latestDate = results.length > 0
+                                    ? results.reduce((max, r) => r.date > max ? r.date : max, results[0].date)
+                                    : null;
+                                const currentResults = latestDate ? results.filter(r => r.date === latestDate) : [];
 
-                                const maxVotes = Math.max(...divResults.map(r => r.votes));
-                                const winners = divResults.filter(r => r.votes === maxVotes);
-                                const isTie = winners.length > 1;
+                                return [1, 2, 3].sort((a, b) => b - a).map(divId => {
+                                    const divResults = currentResults.filter(r => r.division === divId);
+                                    if (divResults.length === 0) return null;
 
-                                // In dotdState 3, everything is already revealed
-                                const isRevealed = dotdState === 3 || revealedDivs.includes(divId);
-                                const canReveal = divId === 2 || dotdState === 3 || revealedDivs.includes(2) || !results.some(r => r.division === 2);
+                                    const maxVotes = Math.max(...divResults.map(r => r.votes));
+                                    const winners = divResults.filter(r => r.votes === maxVotes);
+                                    const isTie = winners.length > 1;
 
-                                return (
-                                    <div key={divId} className={`division-results-section fade-in ${!canReveal ? 'is-locked' : ''}`}>
-                                        <h3 className="division-result-header">
-                                            {divId}ª División
-                                        </h3>
+                                    // In dotdState 3, everything is already revealed
+                                    const isRevealed = dotdState === 3 || revealedDivs.includes(divId);
 
-                                        <div className="winners-reveal-grid">
-                                            <div
-                                                className={`reveal-card-container ${isRevealed ? 'is-revealed' : ''} ${!isRevealed && !canReveal ? 'cant-tap' : ''}`}
-                                                onClick={() => !isRevealed && canReveal && handleReveal(divId)}
-                                            >
-                                                <div className="reveal-card-inner">
-                                                    {/* FRONT: SPOILER MASK */}
-                                                    <div className="reveal-card-face face-front">
-                                                        <div className="spoiler-content">
-                                                            <div className="mystery-icon">
-                                                                <i className="fa-solid fa-user-secret"></i>
-                                                            </div>
-                                                            <span className="tap-hint">
-                                                                {!canReveal ? 'REVELA 2ª DIV PRIMERO' : 'TOCAR PARA REVELAR'}
-                                                            </span>
-                                                        </div>
-                                                    </div>
+                                    // Sequential Reveal Logic: 3 -> 2 -> 1
+                                    let canReveal = dotdState === 3 || revealsPrevious(divId, currentResults, revealedDivs);
 
-                                                    {/* BACK: ACTUAL WINNERS (LIST) */}
-                                                    <div className="reveal-card-face face-back">
-                                                        <div className="winners-list-back">
-                                                            {isTie && (
-                                                                <div className="tie-indicator-mini">
-                                                                    <i className="fa-solid fa-scale-balanced"></i>
-                                                                    <span>¡EMPATE!</span>
+                                    function revealsPrevious(id, res, reveals) {
+                                        if (id === 3) return true;
+                                        if (id === 2) {
+                                            const has3 = res.some(r => r.division === 3);
+                                            return !has3 || reveals.includes(3);
+                                        }
+                                        if (id === 1) {
+                                            const has2 = res.some(r => r.division === 2);
+                                            const has3 = res.some(r => r.division === 3);
+                                            if (has2) return reveals.includes(2);
+                                            if (has3) return reveals.includes(3);
+                                            return true;
+                                        }
+                                        return true;
+                                    }
+
+                                    const lockMessage = divId === 2 ? 'REVELA 3ª DIV PRIMERO' : 'REVELA DIV ANTERIOR';
+
+                                    return (
+                                        <div key={divId} className={`division-results-section fade-in ${!canReveal ? 'is-locked' : ''}`}>
+                                            <h3 className="division-result-header">
+                                                {divId}ª División
+                                            </h3>
+
+                                            <div className="winners-reveal-grid">
+                                                <div
+                                                    className={`reveal-card-container ${isRevealed ? 'is-revealed' : ''} ${!isRevealed && !canReveal ? 'cant-tap' : ''}`}
+                                                    onClick={() => !isRevealed && canReveal && handleReveal(divId)}
+                                                >
+                                                    <div className="reveal-card-inner">
+                                                        {/* FRONT: SPOILER MASK */}
+                                                        <div className="reveal-card-face face-front">
+                                                            <div className="spoiler-content">
+                                                                <div className="mystery-icon">
+                                                                    <i className="fa-solid fa-user-secret"></i>
                                                                 </div>
-                                                            )}
-                                                            {winners.map((winner, idx) => {
-                                                                const driverInfo = drivers.find(d => d.name === winner.driver);
-                                                                return (
-                                                                    <div key={winner.driver} className="winner-card-mini fade-in" style={{ animationDelay: `${idx * 0.2}s` }}>
-                                                                        <div className="winner-img-container">
-                                                                            <img src={driverInfo?.photo || 'https://www.w3schools.com/howto/img_avatar.png'} alt={winner.driver} />
-                                                                            <div className="winner-trophy"><i className="fa-solid fa-trophy"></i></div>
-                                                                        </div>
-                                                                        <div className="winner-info">
-                                                                            <div className="winner-name">{winner.driver}</div>
-                                                                            <div className="winner-team">{driverInfo?.team || 'INDEPENDIENTE'}</div>
-                                                                            <div className="winner-votes">{winner.votes} votos</div>
-                                                                        </div>
+                                                                <span className="tap-hint">
+                                                                    {!canReveal ? lockMessage : 'TOCAR PARA REVELAR'}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* BACK: ACTUAL WINNERS (LIST) */}
+                                                        <div className="reveal-card-face face-back">
+                                                            <div className="winners-list-back">
+                                                                {isTie && (
+                                                                    <div className="tie-indicator-mini">
+                                                                        <i className="fa-solid fa-scale-balanced"></i>
+                                                                        <span>¡EMPATE!</span>
                                                                     </div>
-                                                                );
-                                                            })}
+                                                                )}
+                                                                {winners.map((winner, idx) => {
+                                                                    const driverInfo = drivers.find(d => d.name === winner.driver);
+                                                                    return (
+                                                                        <Link
+                                                                            key={winner.driver}
+                                                                            to={`/profile?driver=${encodeURIComponent(winner.driver)}&season=${activeSeason}`}
+                                                                            className="winner-card-mini-link fade-in"
+                                                                            style={{ animationDelay: `${idx * 0.2}s` }}
+                                                                        >
+                                                                            <div className="winner-img-container">
+                                                                                <img src={driverInfo?.photo || 'https://www.w3schools.com/howto/img_avatar.png'} alt={winner.driver} />
+                                                                                <div className="winner-trophy"><i className="fa-solid fa-trophy"></i></div>
+                                                                            </div>
+                                                                            <div className="winner-info">
+                                                                                <div className="winner-name">{winner.driver}</div>
+                                                                                <div className="winner-team">{driverInfo?.team || 'INDEPENDIENTE'}</div>
+                                                                                <div className="winner-votes">{winner.votes} votos</div>
+                                                                            </div>
+                                                                        </Link>
+                                                                    );
+                                                                })}
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                );
-                            })}
+                                    );
+                                })
+                            })()}
 
                             {results.length === 0 && (
-                                <p className="no-data-msg">No hay votos registrados para hoy.</p>
+                                <p className="no-data-msg">No hay votos registrados.</p>
                             )}
                         </div>
                     </>
@@ -281,7 +326,7 @@ const VoteDriver = () => {
 
                         {hasAlreadyVoted && (
                             <div className="already-voted-msg">
-                                <i className="fa-solid fa-circle-info"></i> Ya has emitido tu voto para esta división hoy.
+                                <i className="fa-solid fa-circle-info"></i> Tu voto para esta división ha sido para {votedDriver?.name}
                             </div>
                         )}
 
@@ -303,9 +348,9 @@ const VoteDriver = () => {
                                         <button
                                             className={`vote-btn ${votedDriver?.name === driver.name ? 'voted' : ''}`}
                                             onClick={() => handleVote(driver)}
-                                            disabled={showSuccess || hasAlreadyVoted || isSubmitting || votedDriver !== null}
+                                            disabled={showSuccess || hasAlreadyVoted || !!submittingDriver || votedDriver !== null}
                                         >
-                                            {isSubmitting ? (
+                                            {submittingDriver === driver.name ? (
                                                 <><i className="fa-solid fa-spinner fa-spin"></i> Enviando...</>
                                             ) : votedDriver?.name === driver.name ? (
                                                 <><i className="fa-solid fa-check"></i> Votado</>
@@ -331,7 +376,7 @@ const VoteDriver = () => {
                             <h2>¡Voto Registrado!</h2>
                             <p>Has votado por <strong>{votedDriver?.name}</strong> como Piloto del Día.</p>
                             <div className="driver-mini-stats">
-                                <img src={votedDriver?.photo} alt={votedDriver?.name} />
+                                <img className='driver-img' src={votedDriver?.photo} alt={votedDriver?.name} />
                                 <div>
                                     <div className="mini-name">{votedDriver?.name}</div>
                                     <div className="mini-team">{votedDriver?.team}</div>
@@ -790,6 +835,27 @@ const VoteDriver = () => {
 
                     .vote-card-inner:hover .driver-img {
                         border-color: var(--accent);
+                    }
+
+                    .winner-card-mini-link {
+                        text-decoration: none;
+                        color: inherit;
+                        background: linear-gradient(135deg, rgba(30, 41, 59, 1) 0%, rgba(15, 23, 42, 1) 100%);
+                        border: 2px solid #fbbf24;
+                        border-radius: 20px;
+                        padding: 15px;
+                        display: flex;
+                        align-items: center;
+                        gap: 15px;
+                        text-align: left;
+                        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+                        transition: transform 0.2s, box-shadow 0.2s;
+                    }
+
+                    .winner-card-mini-link:hover {
+                        transform: translateY(-3px);
+                        box-shadow: 0 8px 20px rgba(0,0,0,0.5), 0 0 15px rgba(251, 191, 36, 0.3);
+                        border-color: #fff;
                     }
 
                     .division-tag {

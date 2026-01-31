@@ -553,8 +553,8 @@
 }
 
 .announcer-photo {
-    width: 150px;
-    height: 150px;
+    width: 200px;
+    height: 200px;
     border-radius: 50%;
     object-fit: contain;
     border: 5px solid #fbbf24;
@@ -753,16 +753,41 @@
 .division-column-header {
     font-family: 'Russo One', sans-serif;
     font-size: 1.8rem;
-    color: var(--accent);
+    color: white;
+    text-shadow:
+        -2px -2px 0 #222222,
+        2px -2px 0 #222222,
+        -2px 2px 0 #222222,
+        2px 2px 0 #222222,
+        -3px 0px 0 #222222,
+        3px 0px 0 #222222,
+        0px -3px 0 #222222,
+        0px 3px 0 #222222;
     text-align: center;
     text-transform: uppercase;
     letter-spacing: 2px;
     margin: 0;
     padding: 15px;
     background: rgba(59, 130, 246, 0.1);
-    border: 2px solid var(--accent);
     border-radius: 12px;
-    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+}
+
+.first {
+    background: #cc950b;
+    box-shadow: 0 0 20px rgba(241, 216, 73, 0.39);
+    border: 2px solid #e9c569;
+}
+
+.second {
+    background: #979696;
+    box-shadow: 0 0 20px rgba(208, 210, 212, 0.452);
+    border: 2px solid #b9b5b5;
+}
+
+.third {
+    background: #bd722c;
+    box-shadow: 0 0 20px rgba(236, 167, 78, 0.397);
+    border: 2px solid #e28630;
 }
 
 /* Final Results Stripes */

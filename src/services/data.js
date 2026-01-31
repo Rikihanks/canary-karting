@@ -6,16 +6,18 @@ const RESULT_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTq8sBX
 
 const CONFIG_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRzmcWDtElCuePL4NN3FT5fyBVdLNovmMa0QcibtaeeFAqpVkdioNT14QaG81zbgjrnEtHRsLxKSi17/pub?output=csv";
 const UPDATE_CONFIG_EXEC = "https://script.google.com/macros/s/AKfycbwPsWOaN1WkF7eq5SXDWASonFNJUBW69HmdDSs8EpOZlCAQ8d_ShIQtvGaUaV0-YhZUtA/exec";
-const DRIVER_OF_THE_DAY_EXEC = "https://script.google.com/macros/s/AKfycbydiozYKvqH9hLi-p7y64JF2roL4g4PEqIq-e4Lxm_qrPwNVEw-M1LRthAyjDA-eobDdA/exec";
+const DRIVER_OF_THE_DAY_EXEC = "https://script.google.com/macros/s/AKfycbxa4ahCzg9IieNBR3y4OxPHnqeBwA10oU9XrEG9yYIWYbH82cw8Fmkes-ivheETAsFupg/exec";
 const DOTD_RESULTS_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTLNZjbf5AjIxBl659WE4OZsK1RpOpu7HSwa55-b3Dbxxp2Rrggu5lDdjXLyhvZYXpB7uYE6LaEP_G2/pub?output=csv";
-const DOTD_RESULTS_URL = `https://corsproxy.io/?url=${encodeURIComponent(DOTD_RESULTS_CSV_LINK)}`;
-const CONFIG_URL = `https://corsproxy.io/?url=${encodeURIComponent(CONFIG_CSV_LINK)}`;
 
-const SHEET_URL = `https://corsproxy.io/?url=${encodeURIComponent(GOOGLE_CSV_LINK)}`;
-const RESULTS_URL = `https://corsproxy.io/?url=${encodeURIComponent(RESULTS_CSV_LINK)}`;
-const CALENDAR_URL = `https://corsproxy.io/?url=${encodeURIComponent(CALENDAR_CSV_LINK)}`;
-const CLASI_URL = `https://corsproxy.io/?url=${encodeURIComponent(CLASI_CSV_LINK)}`;
-const RESULT_URL = `https://corsproxy.io/?url=${encodeURIComponent(RESULT_CSV_LINK)}`;
+
+// Direct URLs - Google Sheets published CSVs are already CORS-enabled
+const DOTD_RESULTS_URL = DOTD_RESULTS_CSV_LINK;
+const CONFIG_URL = CONFIG_CSV_LINK;
+const SHEET_URL = GOOGLE_CSV_LINK;
+const RESULTS_URL = RESULTS_CSV_LINK;
+const CALENDAR_URL = CALENDAR_CSV_LINK;
+const CLASI_URL = CLASI_CSV_LINK;
+const RESULT_URL = RESULT_CSV_LINK;
 
 const cache = new Map();
 const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
@@ -78,7 +80,7 @@ export function parseCSV(csvText) {
 
         const parts = line.split(',');
 
-        if (parts.length >= 9) {
+        if (parts.length >= 10) {
             drivers.push({
                 name: parts[0].trim(),
                 team: parts[1].trim(),
@@ -90,6 +92,7 @@ export function parseCSV(csvText) {
                 division: parseInt(parts[7].trim()) || 0,
                 season: parts[8] ? parts[8].trim() : "2025",
                 championship: parts[9] ? parts[9].trim() : "",
+                dotdTimes: parseInt(parts[10].trim()) || 0,
             });
         }
     }
@@ -105,7 +108,7 @@ export function parseResultsCSV(csvText) {
         if (!line) continue;
         const parts = line.split(',');
 
-        if (parts.length >= 9) {
+        if (parts.length >= 10) {
             results.push({
                 id: parts[0].trim(),
                 name: parts[1].trim(),
@@ -116,6 +119,7 @@ export function parseResultsCSV(csvText) {
                 fastest_lap: parts[6] ? parts[6].trim() : "N/A",
                 condition: parts[7].trim(),
                 points_gained: parseInt(parts[8].trim()) || 0,
+                season: parts[9] ? parts[9].trim() : "2026",
             });
         }
     }
@@ -206,7 +210,7 @@ export async function getDOTDResults() {
 }
 
 const TEAMS_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTlPsGq-SypD4WPitvnR7JcluA8_6-5ePtuzyf5zFGJ31eppN55iUIHsKo0oduOZ9AVyVTf6VkPvTyu/pub?gid=1382697089&single=true&output=csv";
-const TEAMS_URL = `https://corsproxy.io/?url=${encodeURIComponent(TEAMS_CSV_LINK)}`;
+const TEAMS_URL = TEAMS_CSV_LINK; // Direct URL - Google Sheets published CSVs are already CORS-enabled
 
 export function parseTeamsCSV(csvText) {
     const lines = csvText.split('\n');
@@ -311,7 +315,7 @@ export async function getConfigData() {
             races: true,
             inscripcion: false,
             sorteo: true,
-            login: true
+            login: true,
         };
     }
 }
@@ -342,7 +346,7 @@ export async function updateConfig(key, value, email) {
     }
 }
 
-export async function submitVote(driverName, division) {
+export async function submitVote(driverName, division, votedBy) {
     const today = new Date().toISOString().split('T')[0];
     try {
         await fetch(DRIVER_OF_THE_DAY_EXEC, {
@@ -355,7 +359,8 @@ export async function submitVote(driverName, division) {
                 action: 'submitVote',
                 driver: driverName,
                 division: division,
-                date: today
+                date: today,
+                votedBy: votedBy
             }),
         });
         return { success: true };

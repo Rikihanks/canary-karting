@@ -5,6 +5,7 @@ import html2canvas from 'html2canvas';
 import drumrollSound from '../assets/drumroll2.mp3';
 import revealSound from '../assets/TA-DA.mp3';
 import scapesSound from '../assets/silver-scapes.mp3';
+import bell from '../assets/sound-4.mp3';
 import './TeamDraw.css';
 
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'https://julian-scholar-laundry-enclosure.trycloudflare.com';
@@ -34,12 +35,14 @@ const TeamDraw = () => {
     const drumrollRef = useRef(null);
     const revealRef = useRef(null);
     const scapesRef = useRef(null);
+    const bellRef = useRef(null);
 
     useEffect(() => {
         // Initialize audio elements with proper sources
         drumrollRef.current = new Audio(drumrollSound);
         revealRef.current = new Audio(revealSound);
         scapesRef.current = new Audio(scapesSound);
+        bellRef.current = new Audio(bell);
 
         // Configure sounds
         drumrollRef.current.loop = true;
@@ -48,17 +51,20 @@ const TeamDraw = () => {
 
         revealRef.current.preload = 'auto';
         scapesRef.current.preload = 'auto';
+        bellRef.current.preload = 'auto';
+        bellRef.current.volume = 0.7;
         scapesRef.current.volume = 0.7;
 
         console.log("Audio elements initialized:", {
             drum: drumrollRef.current.src,
-            bell: revealRef.current.src,
-            scapes: scapesRef.current.src
+            reveal: revealRef.current.src,
+            scapes: scapesRef.current.src,
+            bell: bellRef.current.src,
         });
 
         return () => {
             // Cleanup audio on unmount
-            [drumrollRef, revealRef, scapesRef].forEach(ref => {
+            [drumrollRef, revealRef, scapesRef, bellRef].forEach(ref => {
                 if (ref.current) {
                     ref.current.pause();
                     ref.current.src = '';
@@ -69,6 +75,7 @@ const TeamDraw = () => {
 
     useEffect(() => {
         socketRef.current = io(SOCKET_URL);
+        const bell = bellRef.current;
 
         socketRef.current.on('name_number_data', ({ name, number }) => {
             console.log('Received number picked:', { name, number });
@@ -80,6 +87,8 @@ const TeamDraw = () => {
                 ...prev,
                 [name]: number
             }));
+            bell.currentTime = 0;
+            bell.play().catch(e => console.error("Bell failed to play:", e));
         });
 
         return () => {
@@ -490,6 +499,7 @@ const TeamDraw = () => {
                                         {hasNumber && phase === 'individual-draw' && (
                                             <div className="p-assigned-number highlight-yellow">
                                                 <div className="assigned-label">NUMERO SELECCIONADO</div>
+                                                <div className="assigned-val"> <i class="fa-solid fa-circle-question"></i></div>
                                             </div>
                                         )}
                                         {hasNumber && phase !== 'individual-draw' && (
@@ -529,11 +539,11 @@ const TeamDraw = () => {
             {/* FINAL TEAMS - Only show when fully finished after Div 1 celebration */}
             {phase === 'finished' && division === 1 && savedDiv3Teams.length > 0 && savedDiv2Teams.length > 0 && teams.length > 0 && (
                 <div className="divisions-grid" ref={resultsRef}>
-                    {/* Division 3 Column */}
+                    {/* Division 1 Column */}
                     <div className="division-column">
-                        <h2 className="division-column-header">3ª DIVISIÓN</h2>
+                        <h2 className="division-column-header first">1ª DIVISIÓN</h2>
                         <div className="final-teams-layout">
-                            {savedDiv3Teams.map((team) => (
+                            {teams.map((team) => (
                                 <div key={team.id} className="team-stripe animate-entry">
                                     <div className="stripe-header">EQUIPO {team.id}</div>
                                     <div className="stripe-members">
@@ -554,7 +564,7 @@ const TeamDraw = () => {
 
                     {/* Division 2 Column */}
                     <div className="division-column">
-                        <h2 className="division-column-header">2ª DIVISIÓN</h2>
+                        <h2 className="division-column-header second">2ª DIVISIÓN</h2>
                         <div className="final-teams-layout">
                             {savedDiv2Teams.map((team) => (
                                 <div key={team.id} className="team-stripe animate-entry">
@@ -575,11 +585,12 @@ const TeamDraw = () => {
                         </div>
                     </div>
 
-                    {/* Division 1 Column */}
+
+                    {/* Division 3 Column */}
                     <div className="division-column">
-                        <h2 className="division-column-header">1ª DIVISIÓN</h2>
+                        <h2 className="division-column-header third">3ª DIVISIÓN</h2>
                         <div className="final-teams-layout">
-                            {teams.map((team) => (
+                            {savedDiv3Teams.map((team) => (
                                 <div key={team.id} className="team-stripe animate-entry">
                                     <div className="stripe-header">EQUIPO {team.id}</div>
                                     <div className="stripe-members">
@@ -597,6 +608,7 @@ const TeamDraw = () => {
                             ))}
                         </div>
                     </div>
+
                 </div>
             )}
         </div>

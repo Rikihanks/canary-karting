@@ -10,7 +10,7 @@ const MessageBanner = () => {
     useEffect(() => {
         if (config && config.motd && config.motd.length > 0) {
             setMessage(config.motd);
-            const isCollapsed = localStorage.getItem(`motd_collapsed_${config.motd}`);
+            const isCollapsed = localStorage.getItem(`motd_collapsed`);
 
             // Initial animation delay
             setTimeout(() => {
@@ -30,7 +30,7 @@ const MessageBanner = () => {
 
         setIsExpanded(newState);
         if (message) {
-            const storageKey = config?.motd ? `motd_collapsed_${message}` : `motd_collapsed_test_v1`;
+            const storageKey = config?.motd ? `motd_collapsed` : `motd_collapsed_test_v1`;
             if (!newState) {
                 localStorage.setItem(storageKey, 'true');
             } else {
@@ -39,7 +39,9 @@ const MessageBanner = () => {
         }
     };
 
-    if (!message) return null;
+    const isMotdDisabled = localStorage.getItem('motd_disabled') === 'true';
+
+    if (!message || isMotdDisabled) return null;
 
     return (
         <div className={`message-banner-container ${isLoaded ? 'loaded' : ''}`}>

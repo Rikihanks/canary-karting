@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import PullToRefresh from 'react-simple-pull-to-refresh';
 import { getLeaderboardData } from '../services/data';
 import { requestPermission } from '../services/firebase';
+import NotificationModal from '../components/NotificationModal';
 
 const Home = () => {
     const [drivers, setDrivers] = useState([]);
@@ -10,8 +11,9 @@ const Home = () => {
     const [error, setError] = useState(null);
     const [activeDivision, setActiveDivision] = useState(1);
     const [showNotificationButton, setShowNotificationButton] = useState(false);
+    const [isNotifModalOpen, setIsNotifModalOpen] = useState(false);
     const [searchParams] = useSearchParams();
-    const season = searchParams.get('season') || '2025';
+    const season = searchParams.get('season') || '2026';
 
     useEffect(() => {
         const fetchData = async () => {
@@ -32,8 +34,10 @@ const Home = () => {
         const checkNotificationPermission = () => {
             const isAPIGranted = ('Notification' in window && Notification.permission === 'granted');
             const isLocalStorageGranted = localStorage.getItem('notifications_granted') === 'true';
+            const isDismissed = localStorage.getItem('notifications_dismissed') === 'true';
+            const isAppDisabled = localStorage.getItem('app_notifications_disabled') === 'true';
 
-            if (!isAPIGranted && !isLocalStorageGranted) {
+            if (!isAPIGranted && !isLocalStorageGranted && !isDismissed && !isAppDisabled) {
                 setShowNotificationButton(true);
             }
         };
@@ -41,7 +45,12 @@ const Home = () => {
         checkNotificationPermission();
     }, []);
 
-    const handleSubscribe = async () => {
+    const handleSubscribeClick = () => {
+        setIsNotifModalOpen(true);
+    };
+
+    const handleConfirmSubscription = async () => {
+        setIsNotifModalOpen(false);
         const granted = await requestPermission();
         if (granted) {
             setShowNotificationButton(false);
@@ -103,7 +112,7 @@ const Home = () => {
                         <button
                             id="subscribe-button"
                             className="btn-subscribe"
-                            onClick={handleSubscribe}
+                            onClick={handleSubscribeClick}
                             style={{
                                 backgroundColor: '#ef4444',
                                 color: 'white',
@@ -191,6 +200,11 @@ const Home = () => {
                     </>
                 )}
             </div>
+            <NotificationModal
+                isOpen={isNotifModalOpen}
+                onClose={() => setIsNotifModalOpen(false)}
+                onConfirm={handleConfirmSubscription}
+            />
         </PullToRefresh>
     );
 };

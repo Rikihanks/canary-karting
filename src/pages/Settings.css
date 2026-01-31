@@ -1,0 +1,212 @@
+.settings-section {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.settings-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.settings-header-row h2 {
+    margin: 0;
+}
+
+/* Switch Styles */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 28px;
+    flex-shrink: 0;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.1);
+    transition: .4s;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 4px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+}
+
+input:checked+.slider {
+    background-color: var(--accent);
+    border-color: var(--accent);
+}
+
+input:focus+.slider {
+    box-shadow: 0 0 1px var(--accent);
+}
+
+input:checked+.slider:before {
+    transform: translateX(22px);
+}
+
+.slider.round {
+    border-radius: 34px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+.switch.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.status-card {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.status-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.status-label {
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.status-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.status-badge.granted {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--success);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.status-badge.denied {
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--danger);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.status-badge.default {
+    background: rgba(148, 163, 184, 0.15);
+    color: var(--text-muted);
+    border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+.status-desc {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: var(--text-main);
+}
+
+.status-desc.danger {
+    color: var(--danger);
+    font-weight: 600;
+}
+
+.btn-primary-settings {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-primary-settings:hover {
+    background: var(--accent-hover);
+}
+
+.btn-secondary-settings {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-main);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.update-btn {
+    margin-top: 10px;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.instructions-card {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    padding: 15px;
+    margin-top: 10px;
+}
+
+.instructions-card h3 {
+    font-size: 1rem;
+    margin-bottom: 12px;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.instructions-card ol {
+    padding-left: 20px;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.instructions-card li {
+    margin-bottom: 8px;
+}
+
+.info-card {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+}
+
+.settings-option {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: 20px;
+    padding-top: 15px;
+}
+
+.settings-option p {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+}

@@ -12,14 +12,18 @@ const PWAInstallModal = () => {
         const isIOS = /iphone|ipad|ipod/.test(userAgent);
         const isAndroid = /android/.test(userAgent);
 
+        const isInstagramInApp = /Instagram\/?\s?\d+/i.test(navigator.userAgent);
         // Detect if already installed (standalone mode)
         const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+
 
         if (isIOS) {
             const isChromeIOS = userAgent.includes('crios');
             const isSafariIOS = userAgent.includes('safari') && !isChromeIOS && !userAgent.includes('fxios');
 
-            if (isChromeIOS) {
+            if (isInstagramInApp) {
+                setPlatform('instagram-iphone');
+            } else if (isChromeIOS) {
                 setPlatform('ios-chrome');
             } else if (isSafariIOS) {
                 setPlatform('ios');
@@ -27,7 +31,13 @@ const PWAInstallModal = () => {
                 setPlatform('ios-other');
             }
         }
-        else if (isAndroid) setPlatform('android');
+        else if (isAndroid) {
+            if (isInstagramInApp) {
+                setPlatform('android-instagram');
+            } else {
+                setPlatform('android');
+            }
+        };
 
         // Only show if not installed and not seen recently
         const hasSeenModal = localStorage.getItem('pwa_modal_seen');
@@ -36,6 +46,7 @@ const PWAInstallModal = () => {
             const timer = setTimeout(() => setShowModal(true), 3000);
             return () => clearTimeout(timer);
         }
+
     }, []);
 
     const handleClose = () => {
@@ -44,12 +55,55 @@ const PWAInstallModal = () => {
     };
 
     if (!showModal) return null;
-    const styleClass = platform.includes('ios') ? 'ios' : 'android';
+    const styleClass = () => {
+        if (platform.includes('ios')) {
+            return 'ios';
+        }
+        else if (platform === 'android-instagram') {
+            return 'ios';
+        }
+        else if (platform.includes('android')) {
+            return 'android';
+        } else if (platform.includes('instagram')) {
+            return 'ios';
+        } else {
+            return 'ios';
+        }
+    };
 
     return (
-        <div className={`pwa-modal-overlay platform-${styleClass}`} onClick={handleClose}>
-            <div className={`pwa-modal-content ${styleClass}-style`} onClick={(e) => e.stopPropagation()}>
-                {platform.includes('ios') ? (
+        <div className={`pwa-modal-overlay platform-${styleClass()}`} onClick={handleClose}>
+            <div className={`pwa-modal-content ${styleClass()}-style`} onClick={(e) => e.stopPropagation()}>
+                {platform.includes('instagram') ? (
+                    /* BLOQUE INSTAGRAM (iOS y Android) */
+                    <>
+                        <div className="ios-indicator"></div>
+                        <div className="ios-header">
+                            <h2>Instalar App</h2>
+                            <p>Para instalar la app, abre este enlace en el navegador de tu sistema.</p>
+                        </div>
+                        <div className="ios-steps">
+                            <div className="step">
+                                <div className="step-icon">
+                                    <i className="fa-solid fa-ellipsis"></i>
+                                </div>
+                                <div className="step-text">
+                                    Pulsa el menú de <strong>tres puntos</strong>.
+                                </div>
+                            </div>
+                            <div className="step">
+                                <div className="step-icon">
+                                    <i class="fa-regular fa-window-maximize"></i>
+                                </div>
+                                <div className="step-text">
+                                    Selecciona <strong> abrir en navegador externo </strong>
+                                </div>
+                            </div>
+                        </div>
+                        <button className="ios-close-btn" onClick={handleClose}>Entendido</button>
+                    </>
+                ) : platform.includes('ios') ? (
+                    /* BLOQUE IOS REGULAR */
                     <>
                         <div className="ios-indicator"></div>
                         <div className="ios-header">
@@ -58,28 +112,24 @@ const PWAInstallModal = () => {
                         </div>
                         <div className="ios-steps">
                             {platform === 'ios-other' && (
-                                <>
-                                    <div className="step">
-                                        <div className="step-icon">
-                                            <i class="fa-brands fa-safari"></i>
-                                        </div>
-                                        <div className="step-text">
-                                            Abre la app en <strong>Safari</strong>
-                                        </div>
+                                <div className="step">
+                                    <div className="step-icon">
+                                        <i className="fa-brands fa-safari"></i>
                                     </div>
-                                </>
+                                    <div className="step-text">
+                                        Abre la app en <strong>Safari</strong>
+                                    </div>
+                                </div>
                             )}
                             {platform !== 'ios-chrome' && platform !== 'ios-other' && (
-                                <>
-                                    <div className="step">
-                                        <div className="step-icon">
-                                            <i class="fa-solid fa-ellipsis"></i>
-                                        </div>
-                                        <div className="step-text">
-                                            Pulsa el menú de tres puntos.
-                                        </div>
+                                <div className="step">
+                                    <div className="step-icon">
+                                        <i className="fa-solid fa-ellipsis"></i>
                                     </div>
-                                </>
+                                    <div className="step-text">
+                                        Pulsa el menú de tres puntos.
+                                    </div>
+                                </div>
                             )}
                             <div className="step">
                                 <div className="step-icon">
@@ -109,6 +159,7 @@ const PWAInstallModal = () => {
                         <button className="ios-close-btn" onClick={handleClose}>Entendido</button>
                     </>
                 ) : (
+                    /* BLOQUE ANDROID REGULAR */
                     <>
                         <div className="android-header">
                             <div className="android-app-icon">

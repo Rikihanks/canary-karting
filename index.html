@@ -76,7 +76,7 @@
     const EMAILJS_TEMPLATE_ID = "template_g81x7ri";
 
     if (EMAILJS_PUBLIC_KEY !== "YOUR_PUBLIC_KEY") {
-      //emailjs.init(EMAILJS_PUBLIC_KEY);
+      emailjs.init(EMAILJS_PUBLIC_KEY);
     }
 
     window.onerror = function (msg, url, lineNo, columnNo, error) {
@@ -109,9 +109,9 @@
     OneSignalDeferred.push(async function (OneSignal) {
       await OneSignal.init({
         appId: "3771123c-5424-4f99-9b0b-4b507cd155f7",
-        serviceWorkerPath: "canary-karting/OneSignalSDKWorker.js",
-        serviceWorkerUpdaterPath: "canary-karting/OneSignalSDKUpdaterWorker.js",
-        serviceWorkerParam: { scope: "/canary-karting/" },
+        serviceWorkerPath: "canary-karting-app/OneSignalSDKWorker.js",
+        serviceWorkerUpdaterPath: "canary-karting-app/OneSignalSDKUpdaterWorker.js",
+        serviceWorkerParam: { scope: "/canary-karting-app/" },
         notifyButton: { enable: false }, // ❌ campana
         promptOptions: {
           slidedown: { autoPrompt: false } // ❌ prompt automático

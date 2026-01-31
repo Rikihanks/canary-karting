@@ -22,10 +22,12 @@ import MessageBanner from './components/MessageBanner';
 import VoteDriver from './pages/VoteDriver';
 import TeamDraw from './pages/TeamDraw';
 import TeamDrawInput from './pages/TeamDrawInput';
+import Settings from './pages/Settings';
 import { onMessage } from 'firebase/messaging';
 import { messaging } from './services/firebase';
 import PWAInstallModal from './components/PWAInstallModal';
 import ScrollToTop from './components/ScrollToTop';
+import AppUpdater from './components/AppUpdater';
 import './App.css';
 
 function App() {
@@ -35,7 +37,8 @@ function App() {
         console.log('Mensaje en primer plano recibido:', payload);
 
         // Mostrar notificación del navegador en primer plano
-        if (Notification.permission === 'granted') {
+        const isAppDisabled = localStorage.getItem('app_notifications_disabled') === 'true';
+        if (Notification.permission === 'granted' && !isAppDisabled) {
           new Notification(payload.notification?.title || 'Canary Karting', {
             body: payload.notification?.body || 'Nuevo mensaje',
             icon: '/icons/512.png'
@@ -62,12 +65,12 @@ function App() {
                 <Route path="/clasificacion" element={<Home />} />
                 <Route path="/" element={
                   <FeatureGuard feature="inscripcion">
-                    <Inscripcion_Academia />
+                    <Home />
                   </FeatureGuard>
                 } />
-                <Route path="/inscripcion" element={
-                  <FeatureGuard feature="inscripcion">
-                    {/*<Inscripcion />*/}
+                <Route path="/inscripcion-academia" element={
+                  <FeatureGuard feature="inscripcion-academia">
+                    <Inscripcion_Academia />
                   </FeatureGuard>
                 } />
 
@@ -129,6 +132,8 @@ function App() {
                 } />
 
                 <Route path="/votar" element={<VoteDriver />} />
+
+                <Route path="/configuracion" element={<Settings />} />
 
                 <Route path="/disabled" element={<FeatureDisabled />} />
 
