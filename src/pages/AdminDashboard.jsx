@@ -99,6 +99,7 @@ const AdminDashboard = () => {
         { key: 'inscripcion', label: 'Preincripción', icon: '📝' },
         { key: 'sorteo', label: 'Sorteo', icon: '🎲' },
         { key: 'login', label: 'Inicio de Sesión', icon: '🔐' },
+        { key: 'clasi_arrows', label: 'Flechas de Clasificación', icon: '↕️' },
     ];
 
     return (

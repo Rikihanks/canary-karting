@@ -4,6 +4,7 @@ import PullToRefresh from 'react-simple-pull-to-refresh';
 import { getLeaderboardData } from '../services/data';
 import { requestPermission } from '../services/firebase';
 import NotificationModal from '../components/NotificationModal';
+import { useConfig } from '../context/ConfigContext';
 
 const Home = () => {
     const [drivers, setDrivers] = useState([]);
@@ -13,6 +14,8 @@ const Home = () => {
     const [showNotificationButton, setShowNotificationButton] = useState(false);
     const [isNotifModalOpen, setIsNotifModalOpen] = useState(false);
     const [searchParams] = useSearchParams();
+    const config = useConfig();
+    const clasi_arrows = config?.clasi_arrows;
     const season = searchParams.get('season') || '2026';
 
     useEffect(() => {
@@ -169,10 +172,22 @@ const Home = () => {
                                         className="podium-card-link"
                                     >
                                         <div className={`list-item rank-${rank}`}>
-                                            <i className="fa-solid fa-medal crown"></i>
-                                            &nbsp;<img src={driver.photo} alt={driver.name} className="mini-avatar" />
+                                            <div className="crown-wrapper">
+                                                <i className="fa-solid fa-medal crown"></i>
+                                            </div>
+                                            <div className={`rank-indicator-area ${getDivisionName(driver.division)}`}>
+                                                {(clasi_arrows == 1 || clasi_arrows === true) && activeDivision !== 1 && rank <= 2 && (
+                                                    <i className="fa-solid fa-circle-chevron-up promotion-arrow" title="Zona de ascenso"></i>
+                                                )}
+                                                {(clasi_arrows == 1 || clasi_arrows === true) && activeDivision !== 3 && rank > filteredDrivers.length - 2 && filteredDrivers.length > 2 && (
+                                                    <i className="fa-solid fa-circle-chevron-down relegation-arrow" title="Zona de descenso"></i>
+                                                )}
+                                            </div>
+                                            <img src={driver.photo} alt={driver.name} className="mini-avatar" />
                                             <div className="info">
-                                                <div className="l-name">{driver.name}</div>
+                                                <div className="l-name">
+                                                    {driver.name}
+                                                </div>
                                                 <div className="l-team">{driver.team}</div>
                                             </div>
                                             <div className="l-points">
@@ -202,9 +217,19 @@ const Home = () => {
                                     >
                                         <div className="list-item">
                                             <div className="rank-num">{rank}</div>
+                                            <div className={`rank-indicator-area ${getDivisionName(driver.division)}`}>
+                                                {(clasi_arrows == 1 || clasi_arrows === true) && activeDivision !== 1 && rank <= 2 && (
+                                                    <i className="fa-solid fa-circle-chevron-up promotion-arrow" title="Zona de ascenso"></i>
+                                                )}
+                                                {(clasi_arrows == 1 || clasi_arrows === true) && activeDivision !== 3 && rank > filteredDrivers.length - 2 && filteredDrivers.length > 2 && (
+                                                    <i className="fa-solid fa-circle-chevron-down relegation-arrow" title="Zona de descenso"></i>
+                                                )}
+                                            </div>
                                             <img src={driver.photo} alt={driver.name} className="mini-avatar" />
                                             <div className="info">
-                                                <div className="l-name">{driver.name}</div>
+                                                <div className="l-name">
+                                                    {driver.name}
+                                                </div>
                                                 <div className="l-team">{driver.team}</div>
                                             </div>
                                             <div className="l-points">

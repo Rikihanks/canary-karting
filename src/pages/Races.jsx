@@ -49,6 +49,19 @@ const Races = () => {
         }
     };
 
+    const getDivisionClass = (division) => {
+        switch (parseInt(division)) {
+            case 1:
+                return 'primera';
+            case 2:
+                return 'segunda';
+            case 3:
+                return 'tercera';
+            default:
+                return '';
+        }
+    };
+
     // Filter events by temporada 2026 and selected division
     const filteredEvents = events.filter(event => {
         const isTemporada2026 = event.temporada == 2026;
@@ -105,7 +118,7 @@ const Races = () => {
                             {filteredEvents.map((event, index) => (
                                 <li
                                     key={index}
-                                    className={`event-item ${event.activa == 0 ? 'disabled' : ''}`}
+                                    className={`event-item ${event.activa == 0 ? 'disabled' : ''} ${getDivisionClass(event.division)}`}
                                     onClick={() => event.activa != 0 && handleEventClick(event)}
                                     style={{
                                         cursor: event.activa != 0 ? 'pointer' : 'default',
@@ -113,7 +126,7 @@ const Races = () => {
                                     }}
                                 >
                                     <div className="event-info">
-                                        <span className="event-date" style={{ display: 'block', fontWeight: 'bold', color: 'var(--accent)' }}>Fecha: {event.fecha}</span>
+                                        <span className={`event-date ${getDivisionClass(event.division)}`} >Fecha: {event.fecha}</span>
                                         <span className="event-name" style={{ display: 'block', fontSize: '1.1em' }}>Circuito: {event.nombre}</span>
                                     </div>
                                     <i className="fa-solid fa-chevron-right event-icon" style={{ color: '#64748b' }}></i>
