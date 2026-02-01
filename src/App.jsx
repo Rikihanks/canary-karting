@@ -21,6 +21,7 @@ import AdminGuard from './components/AdminGuard';
 import MessageBanner from './components/MessageBanner';
 import VoteDriver from './pages/VoteDriver';
 import TeamDraw from './pages/TeamDraw';
+import InstallApp from './pages/InstallApp';
 import TeamDrawInput from './pages/TeamDrawInput';
 import Settings from './pages/Settings';
 import { onMessage } from 'firebase/messaging';
@@ -136,6 +137,7 @@ function App() {
                 <Route path="/configuracion" element={<Settings />} />
 
                 <Route path="/disabled" element={<FeatureDisabled />} />
+                <Route path="/install" element={<InstallApp />} />
 
               </Routes>
             </div>

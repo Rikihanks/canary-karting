@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { getLeaderboardData } from '../services/data';
 import { useConfig } from '../context/ConfigContext';
+import { usePWAInstallStatus } from '../hooks/usePWAInstallStatus';
 
 const Navbar = () => {
     const [isMenuVisible, setIsMenuVisible] = useState(false);
@@ -13,6 +14,7 @@ const Navbar = () => {
     const navigate = useNavigate();
     const [userPhoto, setUserPhoto] = useState(null);
     const config = useConfig(); // Consume config context
+    const isInstalled = usePWAInstallStatus();
 
     useEffect(() => {
         const fetchUserPhoto = async () => {
@@ -91,6 +93,8 @@ const Navbar = () => {
         { to: "/sorteo", label: <span><i className="fa-solid fa-ticket"></i> &nbsp;Sorteo Karts</span>, feature: "sorteo" },
         { to: "/races", label: "🏎️ Calendario Carreras", feature: "races" },
         { to: "/inscripcion-academia", label: "📝 Academia", feature: "inscripcion-academia" },
+        { to: "https://drive.google.com/file/d/1dsxBpYSdYimvLtnnlaab-4KDTN9g1-z5/view?usp=sharing", label: "📃 Reglamento 2026", external: true },
+        { to: "/install", label: "📱 Instalar App", hidden: isInstalled, className: "flash-animation" },
     ];
 
     const toggleSubmenu = (index) => {
@@ -100,6 +104,7 @@ const Navbar = () => {
     const renderNavLinks = (isMobile = false) => {
         return navItems.map((item, index) => {
             if (item.feature && !isEnabled(item.feature)) return null;
+            if (item.hidden) return null;
 
             if (item.subItems) {
                 return (
@@ -143,11 +148,25 @@ const Navbar = () => {
                 );
             }
 
+            if (item.external) {
+                return (
+                    <a
+                        key={index}
+                        href={item.to}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={isMobile ? "nav-link" : "nav-link-desktop"}
+                    >
+                        {item.label}
+                    </a>
+                );
+            }
+
             return (
                 <Link
                     key={index}
                     to={item.to}
-                    className={isMobile ? "nav-link" : "nav-link-desktop"}
+                    className={(isMobile ? "nav-link" : "nav-link-desktop") + (item.className ? ` ${item.className}` : "")}
                 >
                     {item.label}
                 </Link>

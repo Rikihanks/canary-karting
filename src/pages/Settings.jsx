@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { requestPermission } from '../services/firebase';
 import { useConfig } from '../context/ConfigContext';
 import { useEffect, useState } from 'react';
@@ -5,12 +6,19 @@ import './Settings.css';
 
 const Settings = () => {
     const config = useConfig();
-    const [permissionStatus, setPermissionStatus] = useState(Notification.permission);
+    const [permissionStatus, setPermissionStatus] = useState(() => {
+        if ('Notification' in window) {
+            return Notification.permission;
+        }
+        return 'default';
+    });
     const [isAppDisabled, setIsAppDisabled] = useState(localStorage.getItem('app_notifications_disabled') === 'true');
     const [isDismissed, setIsDismissed] = useState(localStorage.getItem('notifications_dismissed') === 'true');
     const [isMotdDisabled, setIsMotdDisabled] = useState(localStorage.getItem('motd_disabled') === 'true');
     const [platform, setPlatform] = useState('android');
     const [version, setVersion] = useState(localStorage.getItem('update_ver'));
+
+    const supportsNotifications = 'Notification' in window;
 
     useEffect(() => {
         const userAgent = window.navigator.userAgent.toLowerCase();
@@ -21,7 +29,7 @@ const Settings = () => {
         }
 
         const interval = setInterval(() => {
-            if (Notification.permission !== permissionStatus) {
+            if (supportsNotifications && Notification.permission !== permissionStatus) {
                 setPermissionStatus(Notification.permission);
             }
         }, 1000);
@@ -30,6 +38,8 @@ const Settings = () => {
     }, [permissionStatus]);
 
     const handleToggleNotifications = async () => {
+        if (!supportsNotifications) return;
+
         if (permissionStatus === 'default' || permissionStatus === 'prompt') {
             const granted = await requestPermission();
             setPermissionStatus(Notification.permission);
@@ -111,6 +121,19 @@ const Settings = () => {
 
     const isToggleOn = permissionStatus === 'granted' && !isAppDisabled;
     const isToggleDisabled = permissionStatus === 'denied';
+
+    if (!supportsNotifications) {
+        return (
+            <div className="container fade-in" style={{ textAlign: 'center', marginTop: '50px', padding: '20px' }}>
+                <i className="fa-solid fa-download" style={{ fontSize: '3rem', marginBottom: '20px', color: '#666' }}></i>
+                <h2>Instala la App</h2>
+                <p style={{ marginBottom: '20px' }}>La configuración solo está disponible si instalas la aplicación.</p>
+                <Link to="/install" className="btn-primary-settings" style={{ display: 'inline-block', textDecoration: 'none' }}>
+                    Ver instrucciones de instalación
+                </Link>
+            </div>
+        );
+    }
 
     return (
         <div className="container fade-in">

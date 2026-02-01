@@ -28,11 +28,11 @@ export function clearCache() {
 }
 
 
-export async function fetchWithRetry(url, maxRetries = 3) {
+export async function fetchWithRetry(url, maxRetries = 3, skipCache = false) {
     const now = new Date().getTime();
 
     // Check cache first
-    if (cache.has(url)) {
+    if (!skipCache && cache.has(url)) {
         const { data, timestamp } = cache.get(url);
         if (now - timestamp < CACHE_DURATION) {
             console.log(`Serving from cache: ${url}`);
@@ -304,7 +304,7 @@ export function parseConfigCSV(csvText) {
 
 export async function getConfigData() {
     try {
-        const response = await fetchWithRetry(CONFIG_URL); // Use fetchWithRetry if you want caching, or direct fetch if you want instant updates (maybe with lower cache duration)
+        const response = await fetchWithRetry(CONFIG_URL, 3, true); // Use fetchWithRetry if you want caching, or direct fetch if you want instant updates (maybe with lower cache duration)
         const data = await response.text();
         return parseConfigCSV(data);
     } catch (error) {

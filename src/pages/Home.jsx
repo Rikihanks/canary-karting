@@ -32,12 +32,13 @@ const Home = () => {
 
     useEffect(() => {
         const checkNotificationPermission = () => {
-            const isAPIGranted = ('Notification' in window && Notification.permission === 'granted');
+            const supportsNotifications = 'Notification' in window;
+            const isAPIGranted = (supportsNotifications && Notification.permission === 'granted');
             const isLocalStorageGranted = localStorage.getItem('notifications_granted') === 'true';
             const isDismissed = localStorage.getItem('notifications_dismissed') === 'true';
             const isAppDisabled = localStorage.getItem('app_notifications_disabled') === 'true';
 
-            if (!isAPIGranted && !isLocalStorageGranted && !isDismissed && !isAppDisabled) {
+            if (supportsNotifications && !isAPIGranted && !isLocalStorageGranted && !isDismissed && !isAppDisabled) {
                 setShowNotificationButton(true);
             }
         };

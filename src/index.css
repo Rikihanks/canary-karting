@@ -945,3 +945,19 @@ h2 {
     border-radius: 50%;
     /* Ensure round pulse for icons */
 }
+
+@keyframes subtle-flash {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.3;
+    }
+}
+
+.flash-animation {
+    animation: subtle-flash 1.3s infinite ease-in-out;
+}
