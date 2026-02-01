@@ -549,7 +549,23 @@ h2 {
 .l-points span {
     font-size: 0.8rem;
     color: #64748b;
+    color: #64748b;
     font-family: 'Montserrat';
+}
+
+.investigation-icon {
+    color: var(--color-secondary-accent);
+    font-size: 1.2rem;
+    margin-left: 8px;
+    cursor: pointer;
+    vertical-align: middle;
+    padding: 5px;
+    /* Increase hit target */
+    animation: pulse-danger 3s infinite;
+
+    &.profile {
+        animation: none
+    }
 }
 
 /* Rank Glow Animations */
@@ -928,7 +944,7 @@ h2 {
 
 @keyframes pulse-danger {
     0% {
-        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+        box-shadow: 0 0 0 0 rgba(238, 241, 59, 0.4);
     }
 
     70% {

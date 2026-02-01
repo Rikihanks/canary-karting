@@ -243,6 +243,12 @@ const Profile = () => {
                     <div className="total-points-hero">
                         <span className="points-val">{driverStats.points}</span>
                         <span className="points-label">PUNTOS</span>
+                        {driverStats.investigating === 1 && (
+                            <i
+                                className="fa-solid fa-triangle-exclamation investigation-icon profile"
+                                title="Bajo investigación"
+                            ></i>
+                        )}
                     </div>
                 </div>
 

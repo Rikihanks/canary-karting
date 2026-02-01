@@ -80,7 +80,7 @@ export function parseCSV(csvText) {
 
         const parts = line.split(',');
 
-        if (parts.length >= 10) {
+        if (parts.length >= 11) {
             drivers.push({
                 name: parts[0].trim(),
                 team: parts[1].trim(),
@@ -93,6 +93,7 @@ export function parseCSV(csvText) {
                 season: parts[8] ? parts[8].trim() : "2025",
                 championship: parts[9] ? parts[9].trim() : "",
                 dotdTimes: parseInt(parts[10].trim()) || 0,
+                investigating: parseInt(parts[11].trim()) || 0,
             });
         }
     }

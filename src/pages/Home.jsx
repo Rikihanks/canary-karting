@@ -91,6 +91,12 @@ const Home = () => {
         );
     }
 
+    const handleInvestigationClick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        alert("⚠️ Los puntos están sujetos a cambio porque este piloto es parte de una investigación en curso.");
+    };
+
     const handleRefresh = async () => {
         const { clearCache } = await import('../services/data');
         clearCache();
@@ -169,7 +175,16 @@ const Home = () => {
                                                 <div className="l-name">{driver.name}</div>
                                                 <div className="l-team">{driver.team}</div>
                                             </div>
-                                            <div className="l-points">{driver.points} <span>PTS</span></div>
+                                            <div className="l-points">
+                                                {driver.points} <span>PTS</span>
+                                                {driver.investigating === 1 && (
+                                                    <i
+                                                        className="fa-solid fa-triangle-exclamation investigation-icon"
+                                                        onClick={handleInvestigationClick}
+                                                        title="Bajo investigación"
+                                                    ></i>
+                                                )}
+                                            </div>
                                         </div>
                                     </Link>
                                 );
@@ -192,7 +207,16 @@ const Home = () => {
                                                 <div className="l-name">{driver.name}</div>
                                                 <div className="l-team">{driver.team}</div>
                                             </div>
-                                            <div className="l-points">{driver.points} <span>PTS</span></div>
+                                            <div className="l-points">
+                                                {driver.points} <span>PTS</span>
+                                                {driver.investigating === 1 && (
+                                                    <i
+                                                        className="fa-solid fa-triangle-exclamation investigation-icon"
+                                                        onClick={handleInvestigationClick}
+                                                        title="Bajo investigación"
+                                                    ></i>
+                                                )}
+                                            </div>
                                         </div>
                                     </Link>
                                 );
