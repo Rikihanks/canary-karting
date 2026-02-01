@@ -58,32 +58,15 @@ const Sorteo = () => {
 
         let perfectMapping;
 
-        // --- RICHARD RULE: Check for Richard and Kart 37 ---
-        const richardIndex = nombres.findIndex(n => n.toLowerCase() === 'richard');
-        const kart37Index = kartsList.indexOf('37');
-        let richardForced = false;
-        let nombresAnalysis = [...nombres];
-        let kartsAnalysis = [...kartsList];
 
-        if (richardIndex !== -1 && kart37Index !== -1) {
-            console.log(" Rule Activated: ");
-            richardForced = true;
-            // Remove Richard and 37 from the analysis arrays passed to findPerfectMatching
-            nombresAnalysis.splice(richardIndex, 1);
-            kartsAnalysis.splice(kart37Index, 1);
-        }
 
         // Run matching on the (potentially filtered) lists
-        const subMapping = findPerfectMatching(nombresAnalysis, kartsAnalysis, history);
+        const subMapping = findPerfectMatching(nombres, kartsList, history);
 
         if (subMapping) {
             perfectMapping = { ...subMapping };
             // If we forced Richard, add him back to the "perfect" result
-            if (richardForced) {
-                // Check if original name was "richard" or "Richard"
-                const originalRichardName = nombres[richardIndex];
-                perfectMapping[originalRichardName] = '37';
-            }
+
         } else {
             perfectMapping = null;
         }
@@ -111,11 +94,7 @@ const Sorteo = () => {
         setIsSorting(true);
         let availableKarts = shuffle(kartsList.slice());
 
-        // If Richard is forced, ensure 37 is NOT in the available pool for others
-        if (richardForced) {
-            const idx37 = availableKarts.indexOf('37');
-            if (idx37 !== -1) availableKarts.splice(idx37, 1);
-        }
+
 
         const fadeUpDelayPerItem = 100;
 
@@ -125,9 +104,7 @@ const Sorteo = () => {
         nombres.forEach((nombre, i) => {
             let kartAsignado = null;
 
-            if (richardForced && nombre.toLowerCase() === 'richard') {
-                kartAsignado = '37';
-            } else if (perfectMapping && perfectMapping.hasOwnProperty(nombre)) {
+            if (perfectMapping && perfectMapping.hasOwnProperty(nombre)) {
                 kartAsignado = perfectMapping[nombre];
                 const idx = availableKarts.indexOf(kartAsignado);
                 if (idx !== -1) availableKarts.splice(idx, 1);

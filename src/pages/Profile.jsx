@@ -257,15 +257,54 @@ const Profile = () => {
                     <h2 className="section-title">ESTADÍSTICAS</h2>
 
                     {/* Championships Section (Most Important) */}
-                    <div className={`championship-section ${driverStats.championship > 0 ? 'gold-tier' : 'gray-tier'}`}>
-                        <div className="champ-icon-wrapper">
-                            <i className="fa-solid fa-trophy champ-icon"></i>
-                        </div>
-                        <div className="champ-info">
-                            <span className="champ-count">{driverStats.championship}</span>
-                            <span className="champ-label">CAMPEONATOS GANADOS</span>
-                        </div>
-                    </div>
+                    {(() => {
+                        const champStr = String(driverStats.championship || "0");
+                        let champCount = 0;
+                        let champDetails = [];
+
+                        if (champStr.includes(':')) {
+                            // Detailed format: "2024:1|2023:2"
+                            champDetails = champStr.split('|').map(item => {
+                                const [year, div] = item.split(':');
+                                return { year, div };
+                            });
+                            champCount = champDetails.length;
+                        } else {
+                            // Simple count format
+                            champCount = parseInt(champStr) || 0;
+                        }
+
+                        return (
+                            <div className={`championship-section ${champCount > 0 ? 'gold-tier' : 'gray-tier'}`}
+                                style={{ flexDirection: 'column', textAlign: 'center', gap: '5px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                                    <div className="champ-icon-wrapper">
+                                        <i className="fa-solid fa-trophy champ-icon"></i>
+                                    </div>
+                                    <div className="champ-info">
+                                        <span className="champ-count">{champCount}</span>
+                                        <span className="champ-label">CAMPEONATOS GANADOS</span>
+                                    </div>
+                                </div>
+                                {champDetails.length > 0 && (
+                                    <div className="champ-details-list" style={{ marginTop: '10px', display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                                        {champDetails.map((detail, idx) => (
+                                            <span key={idx} className="champ-badge" style={{
+                                                background: 'rgba(255,255,255,0.2)',
+                                                padding: '4px 8px',
+                                                borderRadius: '4px',
+                                                fontSize: '0.8rem',
+                                                fontWeight: 'bold',
+                                                color: '#fff'
+                                            }}>
+                                                {detail.year} ({detail.div}ª División)
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })()}
 
                     {/* Stats Row */}
                     <div className="stats-row">

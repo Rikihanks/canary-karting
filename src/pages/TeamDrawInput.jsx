@@ -82,58 +82,10 @@ const TeamDrawInput = () => {
         let drawnNumber;
         let newAvailable = [...availableNumbers];
 
-        // -- REGLA ESPECIAL DIVISIÓN 1 --
-        if (division === 1) {
-            const reservedMap = {
-                'WILL REVERÓN': 2,
-                'ADÁN DÍAZ': 7,
-                'JOSEP BORRAS': 3,
-                'RAYCO HERNÁNDEZ': 8
-            };
 
-            const upperName = pilotName.toUpperCase().trim();
-            let reservedNum = null;
 
-            // Check if THIS pilot has a reserved number
-            for (const [key, val] of Object.entries(reservedMap)) {
-                if (upperName.includes(key)) {
-                    reservedNum = val;
-                    break;
-                }
-            }
-
-            if (reservedNum && availableNumbers.includes(reservedNum)) {
-                drawnNumber = reservedNum;
-            } else {
-                // If not reserved (or reserved already taken somehow), pick random
-                // BUT skip numbers reserved for pilots who haven't spun yet
-                const idlePilots = pilots.filter(p => drawStatus[p.name]?.state === 'idle' && p.name !== pilotName);
-                const numbersToReserve = [];
-
-                idlePilots.forEach(p => {
-                    const pUpper = p.name.toUpperCase();
-                    for (const [key, val] of Object.entries(reservedMap)) {
-                        if (pUpper.includes(key)) {
-                            numbersToReserve.push(val);
-                        }
-                    }
-                });
-
-                const eligibleNumbers = availableNumbers.filter(n => !numbersToReserve.includes(n));
-
-                if (eligibleNumbers.length > 0) {
-                    const randomIndex = Math.floor(Math.random() * eligibleNumbers.length);
-                    drawnNumber = eligibleNumbers[randomIndex];
-                } else {
-                    // Fallback if somehow no numbers are left (shouldn't happen)
-                    drawnNumber = availableNumbers[Math.floor(Math.random() * availableNumbers.length)];
-                }
-            }
-        } else {
-            // Normal random behavior for other divisions
-            const numIndex = Math.floor(Math.random() * availableNumbers.length);
-            drawnNumber = availableNumbers[numIndex];
-        }
+        const numIndex = Math.floor(Math.random() * availableNumbers.length);
+        drawnNumber = availableNumbers[numIndex];
 
         const finalIndex = newAvailable.indexOf(drawnNumber);
         if (finalIndex !== -1) {

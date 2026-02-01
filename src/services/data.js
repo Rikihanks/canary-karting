@@ -91,7 +91,7 @@ export function parseCSV(csvText) {
                 wins: parseInt(parts[6].trim()) || 0,
                 division: parseInt(parts[7].trim()) || 0,
                 season: parts[8] ? parts[8].trim() : "2025",
-                championship: parts[9] ? parts[9].trim() : "",
+                championship: parts[9] ? parts[9].trim() : "0",
                 dotdTimes: parseInt(parts[10].trim()) || 0,
                 investigating: parseInt(parts[11].trim()) || 0,
             });
