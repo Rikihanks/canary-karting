@@ -1,16 +1,15 @@
 import { useState, useEffect } from 'react';
 
 export const usePWAInstallStatus = () => {
-    const [isInstalled, setIsInstalled] = useState(false);
+    const [isInstalled, setIsInstalled] = useState(() => {
+        if (typeof window !== 'undefined') {
+            return window.matchMedia('(display-mode: standalone)').matches ||
+                window.navigator.standalone === true;
+        }
+        return false;
+    });
 
     useEffect(() => {
-        const checkInstallStatus = () => {
-            const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
-                window.navigator.standalone === true;
-            setIsInstalled(isStandalone);
-        };
-
-        checkInstallStatus();
 
         const mediaQuery = window.matchMedia('(display-mode: standalone)');
 

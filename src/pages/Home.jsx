@@ -94,7 +94,7 @@ const Home = () => {
     const handleInvestigationClick = (e) => {
         e.preventDefault();
         e.stopPropagation();
-        alert("⚠️ Los puntos están sujetos a cambio porque este piloto es parte de una investigación en curso.");
+        alert("⚠️ Piloto bajo investigación por parte de los comisarios.");
     };
 
     const handleRefresh = async () => {

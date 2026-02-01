@@ -29,7 +29,22 @@ import { messaging } from './services/firebase';
 import PWAInstallModal from './components/PWAInstallModal';
 import ScrollToTop from './components/ScrollToTop';
 import AppUpdater from './components/AppUpdater';
+import { usePWAInstallStatus } from './hooks/usePWAInstallStatus';
 import './App.css';
+
+const RootRoute = () => {
+  const isInstalled = usePWAInstallStatus();
+
+  if (!isInstalled) {
+    return <InstallApp />;
+  }
+
+  return (
+    <FeatureGuard feature="inscripcion">
+      <Home />
+    </FeatureGuard>
+  );
+};
 
 function App() {
   React.useEffect(() => {
@@ -64,11 +79,7 @@ function App() {
             <div className="app-content">
               <Routes>
                 <Route path="/clasificacion" element={<Home />} />
-                <Route path="/" element={
-                  <FeatureGuard feature="inscripcion">
-                    <Home />
-                  </FeatureGuard>
-                } />
+                <Route path="/" element={<RootRoute />} />
                 <Route path="/inscripcion-academia" element={
                   <FeatureGuard feature="inscripcion-academia">
                     <Inscripcion_Academia />
