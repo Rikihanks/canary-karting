@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { shuffle, parseHistory, findPerfectMatching, crearListaAnimada } from '../utils/sorteoLogic';
 import html2canvas from 'html2canvas';
+import { logEvent } from '../services/telemetry';
 
 const Sorteo = () => {
     const resultadoRef = useRef(null);
@@ -141,6 +142,12 @@ const Sorteo = () => {
 
         setLastAssignments(assignments);
         setResults(newResults);
+
+        logEvent('sorteo_karts', {
+            pilotos_count: nombres.length,
+            karts_count: kartsList.length,
+            has_history: !!historial.trim()
+        });
 
         // Reset sorting state after animation
         const totalDuration = (nombres.length * fadeUpDelayPerItem) + 3500; // rough estimate

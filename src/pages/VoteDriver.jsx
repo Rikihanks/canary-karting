@@ -4,6 +4,7 @@ import PullToRefresh from 'react-simple-pull-to-refresh';
 import { useConfig } from '../context/ConfigContext';
 import { getLeaderboardData, submitVote, getDOTDResults } from '../services/data';
 import { useAuth } from '../context/AuthContext';
+import { logEvent } from '../services/telemetry';
 
 const VoteDriver = () => {
     const config = useConfig();
@@ -115,6 +116,11 @@ const VoteDriver = () => {
                 setVotedDriver(driver);
                 setHasAlreadyVoted(true);
                 setShowSuccess(true);
+                logEvent('vote_submitted', {
+                    driver: driver.name,
+                    division: activeDivision,
+                    voted_by: user?.nombre || 'anonymous'
+                });
             } else {
                 alert("Hubo un problema al registrar tu voto. Por favor, inténtalo de nuevo.");
             }

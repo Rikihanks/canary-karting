@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import PullToRefresh from 'react-simple-pull-to-refresh';
-import { getLeaderboardData, getDriverResults } from '../services/data';
+import { getLeaderboardData, getDriverResults, clearCache } from '../services/data';
+import { logEvent } from '../services/telemetry';
 
 const Profile = () => {
     const [searchParams] = useSearchParams();
@@ -50,7 +51,8 @@ const Profile = () => {
         };
 
         fetchData();
-    }, [driverName]);
+        logEvent('profile_view', { pilot: driverName, season: season });
+    }, [driverName, season]);
 
     const openModal = (type) => {
         let title = '';

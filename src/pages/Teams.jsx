@@ -101,7 +101,9 @@ const Teams = () => {
                                 return (
                                     <Link key={team.name} to={`/team-profile?team=${encodeURIComponent(team.name)}&season=${season}`} className="podium-card-link">
                                         <div className={`list-item rank-${rank} team-item`} style={{ '--item-bg': `url(${team.logo || 'https://www.w3schools.com/howto/img_avatar.png'})` }}>
-                                            <i className="fa-solid fa-medal crown"></i>
+                                            <div className="crown-wrapper">
+                                                <i className="fa-solid fa-medal crown"></i>
+                                            </div>
                                             <div className="info">
                                                 <div className="l-name">&nbsp;{team.name}</div>
                                             </div>

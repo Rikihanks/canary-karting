@@ -15,6 +15,7 @@ export const ConfigProvider = ({ children }) => {
         sorteo: true,
         login: true,
         clasi_arrows: true,
+        mantenimiento: false,
         loading: true,
         hasUpdate: false,
         remoteVersion: null

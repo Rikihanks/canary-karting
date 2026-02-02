@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 import { getLeaderboardData } from '../services/data';
 import html2canvas from 'html2canvas';
+import { logEvent } from '../services/telemetry';
 import drumrollSound from '../assets/drumroll2.mp3';
 import revealSound from '../assets/TA-DA.mp3';
 import scapesSound from '../assets/silver-scapes.mp3';
@@ -222,6 +223,8 @@ const TeamDraw = () => {
     const runEpicSorteo = async () => {
         if (pilots.length < 2) return;
 
+        logEvent('team_draw_start', { division: division });
+
         // Use local variable to avoid stale state issues in this long async function
         let currentPilots = [...pilots];
 
@@ -303,6 +306,8 @@ const TeamDraw = () => {
         setPhase('finished');
         setActiveTeamId(null);
         setPairingPilots([]);
+
+        logEvent('team_draw_finished', { division: division });
 
         // Save division results for side-by-side display later
         if (division === 3) {

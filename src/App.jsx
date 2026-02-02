@@ -24,11 +24,13 @@ import TeamDraw from './pages/TeamDraw';
 import InstallApp from './pages/InstallApp';
 import TeamDrawInput from './pages/TeamDrawInput';
 import Settings from './pages/Settings';
+import MaintenanceGuard from './components/MaintenanceGuard';
 import { onMessage } from 'firebase/messaging';
 import { messaging } from './services/firebase';
 import PWAInstallModal from './components/PWAInstallModal';
 import ScrollToTop from './components/ScrollToTop';
 import AppUpdater from './components/AppUpdater';
+import TelemetryTracker from './components/TelemetryTracker';
 import { usePWAInstallStatus } from './hooks/usePWAInstallStatus';
 import './App.css';
 
@@ -45,6 +47,7 @@ const RootRoute = () => {
     </FeatureGuard>
   );
 };
+
 
 function App() {
   React.useEffect(() => {
@@ -68,92 +71,95 @@ function App() {
   return (
     <ConfigProvider>
       <AuthProvider>
-        <HashRouter>
-          <ScrollToTop />
-          <header className="app-header">
-            <Navbar />
-            <MessageBanner />
-          </header>
-          <PWAInstallModal />
-          <div className="app-main-wrapper">
-            <div className="app-content">
-              <Routes>
-                <Route path="/clasificacion" element={<Home />} />
-                <Route path="/" element={<RootRoute />} />
-                <Route path="/inscripcion-academia" element={
-                  <FeatureGuard feature="inscripcion-academia">
-                    <Inscripcion_Academia />
-                  </FeatureGuard>
-                } />
+        <MaintenanceGuard>
+          <HashRouter>
+            <TelemetryTracker />
+            <ScrollToTop />
+            <header className="app-header">
+              <Navbar />
+              <MessageBanner />
+            </header>
+            <PWAInstallModal />
+            <div className="app-main-wrapper">
+              <div className="app-content">
+                <Routes>
+                  <Route path="/clasificacion" element={<Home />} />
+                  <Route path="/" element={<RootRoute />} />
+                  <Route path="/inscripcion-academia" element={
+                    <FeatureGuard feature="inscripcion-academia">
+                      <Inscripcion_Academia />
+                    </FeatureGuard>
+                  } />
 
-                <Route path="/teams" element={
-                  <FeatureGuard feature="teams">
-                    <Teams />
-                  </FeatureGuard>
-                } />
+                  <Route path="/teams" element={
+                    <FeatureGuard feature="teams">
+                      <Teams />
+                    </FeatureGuard>
+                  } />
 
-                <Route path="/team-profile" element={
-                  <FeatureGuard feature="teams">
-                    <TeamProfile />
-                  </FeatureGuard>
-                } />
-                <Route path="/profile" element={<Profile />} />
+                  <Route path="/team-profile" element={
+                    <FeatureGuard feature="teams">
+                      <TeamProfile />
+                    </FeatureGuard>
+                  } />
+                  <Route path="/profile" element={<Profile />} />
 
-                <Route path="/races" element={
-                  <FeatureGuard feature="races">
-                    <Races />
-                  </FeatureGuard>
-                } />
+                  <Route path="/races" element={
+                    <FeatureGuard feature="races">
+                      <Races />
+                    </FeatureGuard>
+                  } />
 
-                <Route path="/race-detail" element={
-                  <FeatureGuard feature="races">
-                    <RaceDetail />
-                  </FeatureGuard>
-                } />
+                  <Route path="/race-detail" element={
+                    <FeatureGuard feature="races">
+                      <RaceDetail />
+                    </FeatureGuard>
+                  } />
 
-                <Route path="/assistance-confirmation" element={<AssistanceConfirmation />} />
+                  <Route path="/assistance-confirmation" element={<AssistanceConfirmation />} />
 
-                <Route path="/sorteo" element={
-                  <FeatureGuard feature="sorteo">
-                    <Sorteo />
-                  </FeatureGuard>
-                } />
+                  <Route path="/sorteo" element={
+                    <FeatureGuard feature="sorteo">
+                      <Sorteo />
+                    </FeatureGuard>
+                  } />
 
-                <Route path="/sorteo-equipo" element={
-                  <FeatureGuard feature="sorteo">
-                    <TeamDraw />
-                  </FeatureGuard>
-                } />
+                  <Route path="/sorteo-equipo" element={
+                    <FeatureGuard feature="sorteo">
+                      <TeamDraw />
+                    </FeatureGuard>
+                  } />
 
-                <Route path="/team-draw-input" element={
-                  <FeatureGuard feature="sorteo">
-                    <TeamDrawInput />
-                  </FeatureGuard>
-                } />
+                  <Route path="/team-draw-input" element={
+                    <FeatureGuard feature="sorteo">
+                      <TeamDrawInput />
+                    </FeatureGuard>
+                  } />
 
-                <Route path="/login" element={
-                  <FeatureGuard feature="login">
-                    <Login />
-                  </FeatureGuard>
-                } />
+                  <Route path="/login" element={
+                    <FeatureGuard feature="login">
+                      <Login />
+                    </FeatureGuard>
+                  } />
 
-                <Route path="/admin" element={
-                  <AdminGuard>
-                    <AdminDashboard />
-                  </AdminGuard>
-                } />
+                  <Route path="/admin" element={
+                    <AdminGuard>
+                      <AdminDashboard />
+                    </AdminGuard>
+                  } />
 
-                <Route path="/votar" element={<VoteDriver />} />
+                  <Route path="/votar" element={<VoteDriver />} />
 
-                <Route path="/configuracion" element={<Settings />} />
+                  <Route path="/configuracion" element={<Settings />} />
 
-                <Route path="/disabled" element={<FeatureDisabled />} />
-                <Route path="/install" element={<InstallApp />} />
+                  <Route path="/disabled" element={<FeatureDisabled />} />
+                  <Route path="/install" element={<InstallApp />} />
 
-              </Routes>
+                </Routes>
+              </div>
             </div>
-          </div>
-        </HashRouter>
+          </HashRouter>
+        </MaintenanceGuard>
       </AuthProvider>
     </ConfigProvider>
   );

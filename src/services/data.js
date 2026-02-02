@@ -317,6 +317,7 @@ export async function getConfigData() {
             inscripcion: false,
             sorteo: true,
             login: true,
+            mantenimiento: false,
         };
     }
 }

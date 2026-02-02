@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import PullToRefresh from 'react-simple-pull-to-refresh';
 import { getTeamsData, getLeaderboardData } from '../services/data';
+import { logEvent } from '../services/telemetry';
 
 const TeamProfile = () => {
     const [searchParams] = useSearchParams();
@@ -51,7 +52,8 @@ const TeamProfile = () => {
         };
 
         fetchData();
-    }, [teamName]);
+        logEvent('team_view', { team: teamName, season: season });
+    }, [teamName, season]);
 
     if (loading) return <div className="container" style={{ textAlign: 'center', color: '#94a3b8', paddingTop: '50px' }}><i className="fa-solid fa-spinner fa-spin"></i> Cargando perfil de equipo...</div>;
     if (error) return <div className="container"><div className="profile-card"><h1 style={{ color: '#ef4444' }}>{error}</h1></div></div>;
