@@ -105,8 +105,19 @@ const RaceDetail = () => {
     return (
         <PullToRefresh onRefresh={handleRefresh} pullingContent={''}>
             <div className="container">
-                <div id="race-info" style={{ backgroundColor: '#1a233a', padding: '10px', borderRadius: '8px', marginBottom: '20px', textAlign: 'center', color: '#93c5fd' }}>
-                    <p className="race-info-date">Fecha: <strong>{date}</strong> <br /> Circuito: {circuitName}</p>
+                <div id="race-info" className="glass-header">
+                    <div className="header-chips">
+                        {(clasiData[0]?.temporada || resultData[0]?.temporada) && (
+                            <span className="chip chip-season">Temporada {clasiData[0]?.temporada || resultData[0]?.temporada}</span>
+                        )}
+                        {(clasiData[0]?.division || resultData[0]?.division) && (
+                            <span className="chip chip-division"> {clasiData[0]?.division || resultData[0]?.division} División</span>
+                        )}
+                    </div>
+                    <h1 className="header-title">{circuitName}</h1>
+                    <p className="header-date">
+                        <i className="fa-regular fa-calendar-days"></i> {date}
+                    </p>
                 </div>
 
                 <section id="clasificacion-section">
@@ -152,6 +163,64 @@ const RaceDetail = () => {
                 </section>
 
                 <style>{`
+                    /* GLASS HEADER */
+                    .glass-header {
+                        background: rgba(30, 41, 59, 0.7);
+                        backdrop-filter: blur(10px);
+                        -webkit-backdrop-filter: blur(10px);
+                        padding: 24px 20px;
+                        border-radius: 20px;
+                        margin-bottom: 24px;
+                        text-align: center;
+                        position: relative;
+                        overflow: hidden;
+                        border: 1px solid rgba(255, 255, 255, 0.08);
+                        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+                    }
+
+                    .header-chips {
+                        display: flex;
+                        justify-content: center;
+                        gap: 10px;
+                        margin-bottom: 12px;
+                    }
+
+                    .chip {
+                        padding: 4px 12px;
+                        border-radius: 99px;
+                        font-size: 0.7rem;
+                        font-weight: 700;
+                        text-transform: uppercase;
+                        letter-spacing: 0.05em;
+                        border: 1px solid rgba(255, 255, 255, 0.1);
+                    }
+
+                    .chip-season { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+                    .chip-division { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+
+                    .header-title {
+                        font-size: 1.75rem;
+                        font-weight: 900;
+                        color: #f8fafc;
+                        margin: 0 0 10px 0;
+                        letter-spacing: -0.02em;
+                        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                    }
+
+                    .header-date {
+                        display: flex;
+                        justify-content: center;
+                        gap: 16px;
+                        color: #94a3b8;
+                        font-size: 0.85rem;
+                        margin: 0;
+                    }
+
+                    .header-date i {
+                        margin-right: 6px;
+                        color: #3b82f6;
+                    }
+
                     .collapsible-content {
                         max-height: 0;
                         overflow: hidden;

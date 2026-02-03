@@ -91,7 +91,7 @@ const Teams = () => {
 
                 {filteredTeams.length === 0 ? (
                     <div style={{ textAlign: 'center', color: '#94a3b8', paddingTop: '30px' }}>
-                        No hay equipos registrados o datos disponibles en la {divisionName} División.
+                        No hay equipos registrados o datos disponibles en la {divisionName} División
                     </div>
                 ) : (
                     <>
