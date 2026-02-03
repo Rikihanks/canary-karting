@@ -1,5 +1,9 @@
 const GOOGLE_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTlPsGq-SypD4WPitvnR7JcluA8_6-5ePtuzyf5zFGJ31eppN55iUIHsKo0oduOZ9AVyVTf6VkPvTyu/pub?output=csv";
 const RESULTS_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQP2AF0yixedvzkQcGkkLxnAP4fKl26f46dCFHdL6f11_QbeZP6NHLDshKqBkKtZdYLkyH8Rqrtedp5/pub?output=csv";
+
+// Flag to use mock data for development
+const USE_MOCK_DATA = false;
+
 const CALENDAR_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTq8sBXfzKkBmGEUxaqB57exxTbF_0yYsHVaRsQ2F7HzCXoMVK8zW8630R4vtSvRn590pj-N65vFQek/pub?output=csv";
 const CLASI_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTq8sBXfzKkBmGEUxaqB57exxTbF_0yYsHVaRsQ2F7HzCXoMVK8zW8630R4vtSvRn590pj-N65vFQek/pub?gid=25895170&single=true&output=csv";
 const RESULT_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTq8sBXfzKkBmGEUxaqB57exxTbF_0yYsHVaRsQ2F7HzCXoMVK8zW8630R4vtSvRn590pj-N65vFQek/pub?gid=1225782575&single=true&output=csv";
@@ -156,12 +160,15 @@ export function parseRaceDetailCSV(csvText) {
     for (let i = 1; i < lines.length; i++) {
         const parts = lines[i].split(',');
 
-        if (parts.length >= 4) {
+        if (parts.length >= 7) {
             results.push({
                 piloto: parts[0] ? parts[0].trim() : 'Desconocido',
                 posicion: parseInt(parts[1].trim()) || 99,
                 id_circuito: parts[2] ? parts[2].trim() : '',
                 fecha: parts[3] ? parts[3].trim() : '',
+                division: parts[4] ? parts[4].trim() : '1',
+                temporada: parts[5] ? parts[5].trim() : '2026',
+                vuelta_rapida: parts[6] ? parts[6].trim() : '',
             });
         }
     }
@@ -181,6 +188,10 @@ export async function getDriverResults() {
 }
 
 export async function getCalendarData() {
+    if (USE_MOCK_DATA) {
+        const { mockCalendarData } = await import('./mockRaceData');
+        return mockCalendarData;
+    }
     const response = await fetchWithRetry(CALENDAR_CSV_LINK);
     const data = await response.text();
     return parseCalendarCSV(data);
@@ -256,14 +267,30 @@ export async function getTeamsData() {
     return parseTeamsCSV(data);
 }
 
-export async function getRaceDetails() {
-    const [clasiData, resultData] = await Promise.all([
+export async function getRaceDetails(id, date) {
+    if (USE_MOCK_DATA) {
+        console.log('Using mock race data');
+        const { mockClasiData, mockResultData, mockCalendarData } = await import('./mockRaceData');
+        const raceInfo = mockCalendarData.find(r => r.id_circuito === id && r.fecha === date);
+        return {
+            clasi: mockClasiData,
+            results: mockResultData,
+            raceInfo: raceInfo
+        };
+    }
+
+    const [clasiData, resultData, calendarData] = await Promise.all([
         fetchWithRetry(CLASI_URL).then(r => r.text()),
-        fetchWithRetry(RESULT_URL).then(r => r.text())
+        fetchWithRetry(RESULT_URL).then(r => r.text()),
+        getCalendarData()
     ]);
+
+    const raceInfo = calendarData.find(r => r.id_circuito === id && r.fecha === date);
+
     return {
         clasi: parseRaceDetailCSV(clasiData),
-        results: parseRaceDetailCSV(resultData)
+        results: parseRaceDetailCSV(resultData),
+        raceInfo: raceInfo
     };
 }
 
@@ -398,7 +425,7 @@ export async function updateRaceStatus(raceName, raceDate, field, value, email) 
     }
 }
 
-const ASSISTANCE_WEB_APP_URL_RAW = 'https://script.google.com/macros/s/AKfycbzWCMtDW3DUlbEPqTAqjO4ra7YHT_LMPdShAnhAFL7E7ZwkdDH0-m4smmv74QvnPDTBfw/exec';
+const ASSISTANCE_WEB_APP_URL_RAW = 'https://script.google.com/macros/s/AKfycbwsVhj9xs6Lb3JmAHzYc_18fTsxJ_n8rHoZ7z4IvprYnIxVyT7p2UnUsctPvf88sYrOaw/exec';
 
 /**
  * Confirms race assistance by sending data to Google Apps Script
@@ -427,6 +454,7 @@ export async function confirmAssistance(assistanceData) {
         return result;
     } catch (error) {
         console.error(`Error confirming assistance:`, error);
+        return { success: false, message: error.message };
     }
 }
 

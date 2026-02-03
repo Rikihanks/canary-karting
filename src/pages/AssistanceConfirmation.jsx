@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { confirmAssistance } from '../services/data';
 
 const AssistanceConfirmation = () => {
+    const location = useLocation();
+    const { raceName, raceDate } = location.state || {};
+
     const [selectedRace, setSelectedRace] = useState('');
     const [selectedDivision, setSelectedDivision] = useState('');
     const [email, setEmail] = useState('');
@@ -34,11 +37,16 @@ const AssistanceConfirmation = () => {
         return <Navigate to="/" replace />;
     }
 
-    const race = { id: 1, name: 'Carrera 1 - 15 Diciembre 2024', date: '11/09/2025' };
+    const race = {
+        id: 1,
+        name: raceName || 'Carrera 1 - 15 Diciembre 2024',
+        date: raceDate || '11/09/2025'
+    };
 
     const divisions = [
         { id: '1', name: 'Primera' },
-        { id: '2', name: 'Segunda' }
+        { id: '2', name: 'Segunda' },
+        { id: '3', name: 'Tercera' }
     ];
 
     const handleOpenModal = (e) => {
@@ -63,100 +71,140 @@ const AssistanceConfirmation = () => {
         try {
             const result = await confirmAssistance(payload);
 
-            if (result.success) {
+            if (result && result.success) {
                 setStatus('success');
                 setMessage(result.message || '¡Te hemos enviado un correo con la confirmación de tu asistencia, nos vemos en el circuito!');
-                setShowModal(false);
                 setSelectedRace('');
                 setSelectedDivision('');
-                setEmail('');
                 setCodigo('');
             } else {
                 setStatus('error');
-                setMessage(result.message || 'Error al confirmar la asistencia. Verifica tu código.');
+                setMessage(result?.message || 'Error al confirmar la asistencia. Verifica tu código.');
             }
         } catch (error) {
             setStatus('error');
             setMessage(error.message || 'Error al conectar con el servidor.');
+        } finally {
+            setShowModal(false);
+            //scroll down
+            window.scrollTo({
+                top: document.body.scrollHeight,
+                behavior: 'smooth'
+            });
         }
     };
 
     const selectedDivisionName = divisions.find(d => d.id === selectedDivision)?.name;
     const isFormValid = selectedDivision && email && codigo.trim();
 
+    const circuitImages = {
+        '1': 'https://iili.io/ftKPX2e.png',
+        '2': 'https://iili.io/ftKPwpj.png'
+    };
+    // Finding circuit ID for background if possible, or using default
+    const headerBackgroundImage = 'https://wikikarting.com/wp-content/uploads/2021/03/Instalaciones-Karting-Canarias.webp';
+
     return (
         <div className="main-wrapper">
             <div className="container">
-                <div className="card">
-                    <h1><i className="fa-solid fa-check-circle"></i> Confirmar Asistencia</h1>
+                <div
+                    id="race-info"
+                    className="glass-header"
+                    style={{ '--header-bg': `url(${headerBackgroundImage})` }}
+                >
+                    <div className="header-chips">
+                        <span className="chip chip-assistance">
+                            <i className="fa-solid fa-check-to-slot"></i> Asistencia
+                        </span>
+                    </div>
+                    <h1 className="header-title">{race.name}</h1>
+                    <p className="header-date">
+                        <i className="fa-regular fa-calendar-days"></i> {race.date}
+                    </p>
+                </div>
 
-                    <div className="form-group">
-                        <div className="centered-text" style={{ marginBottom: '20px' }}>
-                            <div id="race-info" style={{ backgroundColor: '#1a233a', padding: '10px', borderRadius: '8px', marginBottom: '20px', textAlign: 'center', color: '#93c5fd' }}>
-                                <p className="race-info-date">Carrera: <strong>{race.name}</strong></p>
-                            </div>
-                            <p style={{ color: 'var(--text-muted)' }}>Selecciona la división en la que participarás.
-                                <br /> <small style={{ color: 'var(--danger)' }}>Si corres en dos divisiones deberás confirmar ambas</small>
-                            </p>
-                        </div>
+                <div className="assistance-glass-card fade-in">
+                    <div className="card-header-premium">
+                        <h2>Confirmar Participación</h2>
+                        <p>Completa tus datos para asegurar tu plaza</p>
                     </div>
 
-                    <form onSubmit={handleOpenModal}>
-                        <div className="form-group">
-                            <label htmlFor="division">División <i className="fa-solid fa-users"></i></label>
-                            <select
-                                id="division"
-                                name="division"
-                                className="division-dropdown"
-                                value={selectedDivision}
-                                onChange={(e) => setSelectedDivision(e.target.value)}
-                                required
-                            >
-                                <option value="">Selecciona una división</option>
-                                {divisions.map(division => (
-                                    <option key={division.id} value={division.id}>{division.name}</option>
-                                ))}
-                            </select>
+                    <div className="division-warning">
+                        <i className="fa-solid fa-circle-info"></i>
+                        <span>Si corres en dos divisiones deberás confirmar ambas por separado.</span>
+                    </div>
+
+                    <form onSubmit={handleOpenModal} className="assistance-form">
+                        <div className="form-group-premium">
+                            <label htmlFor="division">
+                                <i className="fa-solid fa-users"></i> División
+                            </label>
+                            <div className="select-wrapper">
+                                <select
+                                    id="division"
+                                    name="division"
+                                    className="premium-select"
+                                    value={selectedDivision}
+                                    onChange={(e) => setSelectedDivision(e.target.value)}
+                                    required
+                                >
+                                    <option value="">Selecciona tu división</option>
+                                    {divisions.map(division => (
+                                        <option key={division.id} value={division.id}>{division.name}</option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
 
-                        <div className="form-group">
-                            <label htmlFor="email">Email <i className="fa-solid fa-envelope"></i></label>
+                        <div className="form-group-premium">
+                            <label htmlFor="email">
+                                <i className="fa-solid fa-envelope"></i> Email
+                            </label>
                             <input
                                 type="email"
                                 id="email"
                                 name="email"
+                                className="premium-input"
                                 required
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 placeholder="tu@email.com"
                                 disabled={!!user}
-                                style={user ? { opacity: 0.7, cursor: 'not-allowed' } : {}}
                             />
                         </div>
 
-                        <div className="form-group">
-                            <label htmlFor="codigo">Código de Verificación <i className="fa-solid fa-key"></i></label>
+                        <div className="form-group-premium">
+                            <label htmlFor="codigo">
+                                <i className="fa-solid fa-key"></i> Código de Verificación
+                            </label>
                             <input
                                 type="text"
                                 id="codigo"
                                 name="codigo"
+                                className="premium-input"
                                 required
                                 value={codigo}
                                 onChange={(e) => setCodigo(e.target.value)}
-                                placeholder="Ingresa tu código"
+                                placeholder="Introduce tu código"
                             />
-                            <small style={{ marginTop: '8px', color: 'var(--text-muted)' }}>
-                                Si has perdido tu código, contacta con la administración de Canary Karting.
-                            </small>
+                            <div className="input-tip">
+                                ¿Has perdido tu código? Contacta con la organización.
+                            </div>
                         </div>
 
-                        <button type="submit" disabled={!isFormValid || status === 'submitting'}>
-                            Confirmar Asistencia
+                        <button
+                            type="submit"
+                            className="btn-confirm-premium"
+                            disabled={!isFormValid || status === 'submitting'}
+                        >
+                            <span>Registrar Asistencia</span>
+                            <i className="fa-solid fa-paper-plane"></i>
                         </button>
 
                         {message && (
-                            <div id="form-message" className={status === 'success' ? 'success' : 'error'}>
-                                {message}
+                            <div id="form-message" className={`message-banner-premium ${status === 'success' ? 'success' : 'error'}`}>
+                                <i className={`fa-solid ${status === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation'}`}></i>
+                                <span>{message}</span>
                             </div>
                         )}
                     </form>
@@ -166,27 +214,35 @@ const AssistanceConfirmation = () => {
             {/* Confirmation Modal */}
             {showModal && (
                 <div className="modal-overlay" onClick={handleCloseModal}>
-                    <div className="modal-container" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h2><i className="fa-solid fa-triangle-exclamation"></i> Confirmar Asistencia</h2>
+                    <div className="modal-container-premium" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header-premium">
+                            <h2>Confirmar Datos</h2>
                         </div>
-                        <div className="modal-body">
-                            <p>¿Confirmar tu asistencia con los siguientes datos?</p>
-                            <div className="confirmation-details">
-                                <p><strong>Carrera:</strong> {race.name}</p>
-                                <p><strong>División:</strong> {selectedDivisionName}</p>
-                                <p><strong>Email:</strong> {email}</p>
+                        <div className="modal-body-premium">
+                            <p>¿Tus datos de participación son correctos?</p>
+                            <div className="confirmation-summary">
+                                <div className="summary-item">
+                                    <span className="label">Evento:</span>
+                                    <span className="value">{race.name}</span>
+                                </div>
+                                <div className="summary-item">
+                                    <span className="label">División:</span>
+                                    <span className="value">{selectedDivisionName}</span>
+                                </div>
+                                <div className="summary-item">
+                                    <span className="label">Email:</span>
+                                    <span className="value">{email}</span>
+                                </div>
                             </div>
-                            <p style={{ color: 'var(--text-muted)', fontSize: '0.8em', marginTop: '15px' }}>
-                                <i className="fa-solid fa-info-circle"></i> Esta acción no se puede deshacer fácilmente.
-                            </p>
                         </div>
-                        <div className="modal-footer">
-                            <button type="button" className="btn-cancel" onClick={handleCloseModal}>
-                                Cancelar
-                            </button>
-                            <button type="button" className="btn-confirm" onClick={handleConfirm} disabled={status === 'submitting'}>
-                                {status === 'submitting' ? 'Confirmando...' : 'Confirmar'}
+                        <div className="modal-footer-premium">
+                            <button className="btn-modal-cancel" onClick={handleCloseModal}>Cancelar</button>
+                            <button
+                                className="btn-modal-confirm"
+                                onClick={handleConfirm}
+                                disabled={status === 'submitting'}
+                            >
+                                {status === 'submitting' ? 'Enviando...' : 'Confirmar'}
                             </button>
                         </div>
                     </div>
@@ -194,227 +250,357 @@ const AssistanceConfirmation = () => {
             )}
 
             <style>{`
-                /* Inscripcion Specific Styles */
                 .main-wrapper {
-                    padding-top: 20px;
                     padding-bottom: 50px;
                 }
-                
-                .form-group {
+
+                /* GLASS HEADER */
+                .glass-header {
+                    position: relative;
+                    background-image: var(--header-bg);
+                    background-size: cover;
+                    background-position: center;
+                    border-radius: 20px;
+                    padding: 40px 25px;
+                    margin: 10px 10px 12px;
+                    overflow: hidden;
+                    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+                }
+
+                .glass-header::before {
+                    content: '';
+                    position: absolute;
+                    inset: 0;
+                    background: linear-gradient(135deg, rgba(15, 23, 42, 0.85), rgba(30, 41, 59, 0.7));
+                    backdrop-filter: blur(4px);
+                    -webkit-backdrop-filter: blur(4px);
+                    z-index: 1;
+                }
+
+                .header-chips, .header-title, .header-date {
+                    position: relative;
+                    z-index: 2;
+                }
+
+                .header-chips {
+                    display: flex;
+                    gap: 10px;
+                    margin-bottom: 15px;
+                    flex-direction: column
+                }
+
+                .chip {
+                    padding: 4px 12px;
+                    text-align: center;
+                    border-radius: 50px;
+                    font-size: 0.7rem;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    backdrop-filter: blur(10px);
+                    -webkit-backdrop-filter: blur(10px);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                }
+
+                .chip-assistance {
+                    background: rgba(16, 185, 129, 0.2);
+                    color: #10b981;
+                }
+
+                .header-title {
+                    font-family: 'Russo One', sans-serif;
+                    font-size: 1.8rem;
+                    color: white;
+                    margin: 0 0 10px 0;
+                    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+                    line-height: 1.2;
+                }
+
+                .header-date {
+                    flex-direction: column;
+                    color: #94a3b8;
+                    margin: 0;
+                    font-size: 0.95rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                }
+
+                .header-date i {
+                    color: #3b82f6;
+                }
+
+                /* GLASS CARD */
+                .assistance-glass-card {
+                    margin: 0 10px;
+                    background: rgba(30, 41, 59, 0.4);
+                    backdrop-filter: blur(12px);
+                    -webkit-backdrop-filter: blur(12px);
+                    border-radius: 24px;
+                    padding: 25px;
+                    border: 1px solid rgba(255, 255, 255, 0.05);
+                    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+                }
+
+                .card-header-premium {
+                    margin-bottom: 12px;
+                    text-align: center;
+                }
+
+                .card-header-premium h2 {
+                    font-family: 'Russo One', sans-serif;
+                    color: white;
+                    font-size: 1.4rem;
+                    margin: 0 0 5px 0;
+                }
+
+                .card-header-premium p {
+                    color: #94a3b8;
+                    font-size: 0.9rem;
+                    margin: 0;
+                }
+
+                .division-warning {
+                    background: rgba(245, 158, 11, 0.1);
+                    border: 1px solid rgba(245, 158, 11, 0.2);
+                    border-radius: 12px;
+                    padding: 12px 15px;
+                    display: flex;
+                    gap: 12px;
+                    align-items: center;
+                    margin-bottom: 25px;
+                    font-size: 0.85rem;
+                    color: #fcd34d;
+                }
+
+                /* FORM PREMIUM */
+                .form-group-premium {
                     margin-bottom: 20px;
                 }
 
-                label {
-                    display: block;
-                    margin-bottom: 8px;
+                .form-group-premium label {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    color: white;
                     font-weight: 600;
-                    color: var(--text-main);
+                    font-size: 0.9rem;
+                    margin-bottom: 10px;
                 }
 
-                .centered-text {
-                    text-align: center;
-                    font-weight: 400;
-                    line-height: 1.6;
+                .form-group-premium label i {
+                    color: #3b82f6;
+                    font-size: 0.8rem;
                 }
 
-                input[type="text"],
-                input[type="email"],
-                input[type="tel"] {
+                .premium-input, .premium-select {
                     width: 100%;
-                    padding: 12px;
-                    border-radius: 8px;
-                    border: 1px solid #334155;
-                    background-color: #1e293b;
+                    background: rgba(15, 23, 42, 0.5);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    border-radius: 12px;
+                    padding: 14px 16px;
                     color: white;
                     font-size: 1rem;
-                    transition: border-color 0.3s;
+                    transition: all 0.3s ease;
                 }
 
-                input:focus {
+                .premium-input:focus, .premium-select:focus {
                     outline: none;
-                    border-color: var(--accent);
+                    border-color: #3b82f6;
+                    background: rgba(15, 23, 42, 0.8);
+                    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
                 }
 
-                button[type="submit"] {
-                    width: 100%;
-                    padding: 15px;
-                    background-color: var(--accent);
-                    color: white;
-                    border: none;
-                    border-radius: 8px;
-                    font-size: 1.1rem;
-                    font-weight: 800;
-                    cursor: pointer;
-                    transition: background-color 0.3s;
-                    text-transform: uppercase;
-                }
-
-                button[type="submit"]:hover {
-                    background-color: var(--accent-hover);
-                }
-                
-                button[type="submit"]:disabled {
-                    background-color: #64748b;
+                .premium-input:disabled {
+                    opacity: 0.5;
                     cursor: not-allowed;
                 }
 
-                .neon-link {
-                    display: block;
-                    text-align: center;
-                    padding: 15px;
-                    border: 2px solid var(--accent);
-                    color: var(--accent);
-                    text-decoration: none;
-                    border-radius: 8px;
-                    font-weight: 700;
-                    text-transform: uppercase;
-                    transition: all 0.3s;
-                    box-shadow: 0 0 10px rgba(59, 130, 246, 0.2);
+                .input-tip {
+                    font-size: 0.75rem;
+                    color: #64748b;
+                    margin-top: 8px;
                 }
 
-                .neon-link:hover {
-                    background-color: var(--accent);
+                .btn-confirm-premium {
+                    width: 100%;
+                    margin-top: 10px;
+                    padding: 16px;
+                    background: linear-gradient(135deg, #3b82f6, #2563eb);
+                    border: none;
+                    border-radius: 14px;
                     color: white;
-                    box-shadow: 0 0 20px rgba(59, 130, 246, 0.6);
+                    font-family: 'Russo One', sans-serif;
+                    font-size: 1rem;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 12px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2);
                 }
 
-                #form-message {
+                .btn-confirm-premium:hover:not(:disabled) {
+                    transform: translateY(-2px);
+                    box-shadow: 0 15px 30px rgba(37, 99, 235, 0.4);
+                }
+
+                .btn-confirm-premium:active:not(:disabled) {
+                    transform: translateY(0);
+                }
+
+                .btn-confirm-premium:disabled {
+                    background: #334155;
+                    color: #64748b;
+                    cursor: not-allowed;
+                    box-shadow: none;
+                }
+
+                .message-banner-premium {
                     margin-top: 20px;
                     padding: 15px;
-                    border-radius: 8px;
-                    text-align: center;
-                    font-weight: 600;
+                    border-radius: 12px;
+                    display: flex;
+                    gap: 12px;
+                    align-items: center;
+                    font-size: 0.9rem;
+                    font-weight: 500;
+                    animation: fadeIn 0.3s ease-out;
                 }
 
-                .success {
-                    background-color: rgba(16, 185, 129, 0.2);
+                .message-banner-premium.success {
+                    background: rgba(16, 185, 129, 0.15);
                     color: #10b981;
-                    border: 1px solid #10b981;
+                    border: 1px solid rgba(16, 185, 129, 0.3);
                 }
 
-                .error {
-                    background-color: rgba(239, 68, 68, 0.2);
-                    color: #ef4444;
-                    border: 1px solid #ef4444;
-                }
-                
-                small {
-                    display: block;
-                    margin-bottom: 5px;
-                    color: #94a3b8;
-                    font-size: 0.85rem;
+                .message-banner-premium.error {
+                    background: rgba(239, 68, 68, 0.15);
+                    color: #f87171;
+                    border: 1px solid rgba(239, 68, 68, 0.3);
                 }
 
-                /* Modal Styles */
+                /* MODAL PREMIUM */
                 .modal-overlay {
                     position: fixed;
-                    top: 0;
-                    left: 0;
-                    right: 0;
-                    bottom: 0;
-                    background-color: rgba(0, 0, 0, 0.75);
+                    inset: 0;
+                    background: rgba(2, 6, 23, 0.85);
+                    backdrop-filter: blur(8px);
                     display: flex;
                     align-items: center;
                     justify-content: center;
                     z-index: 1000;
-                    animation: fadeIn 0.3s ease-out;
-                }
-
-                .modal-container {
-                    background-color: var(--color-medium);
-                    border: 1px solid rgba(255, 255, 255, 0.1);
-                    border-radius: 16px;
-                    max-width: 500px;
-                    width: 90%;
-                    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-                    animation: slideUp 0.3s ease-out;
-                }
-
-                @keyframes slideUp {
-                    from {
-                        opacity: 0;
-                        transform: translateY(30px);
-                    }
-                    to {
-                        opacity: 1;
-                        transform: translateY(0);
-                    }
-                }
-
-                .modal-header {
                     padding: 20px;
-                    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
                 }
 
-                .modal-header h2 {
+                .modal-container-premium {
+                    background: #1e293b;
+                    border: 1px solid rgba(255,255,255,0.1);
+                    border-radius: 24px;
+                    width: 100%;
+                    max-width: 400px;
+                    overflow: hidden;
+                    box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+                }
+
+                .modal-header-premium {
+                    padding: 20px;
+                    background: rgba(255,255,255,0.03);
+                    border-bottom: 1px solid rgba(255,255,255,0.05);
+                }
+
+                .modal-header-premium h2 {
+                    font-family: 'Russo One', sans-serif;
                     margin: 0;
-                    font-size: 1.4em;
-                    color: var(--color-accent);
-                }
-
-                .modal-body {
-                    padding: 20px;
-                }
-
-                .modal-body p {
-                    margin: 0 0 15px 0;
-                    line-height: 1.6;
-                }
-
-                .confirmation-details {
-                    background-color: rgba(59, 130, 246, 0.1);
-                    border-left: 3px solid var(--color-accent);
-                    padding: 15px;
-                    border-radius: 8px;
-                    margin: 15px 0;
-                }
-
-                .confirmation-details p {
-                    margin: 8px 0;
-                }
-
-                .modal-footer {
-                    padding: 20px;
-                    border-top: 1px solid rgba(255, 255, 255, 0.1);
-                    display: flex;
-                    gap: 10px;
-                    justify-content: flex-end;
-                }
-
-                .btn-cancel, .btn-confirm {
-                    padding: 12px 24px;
-                    border: none;
-                    border-radius: 8px;
-                    font-weight: 700;
-                    cursor: pointer;
-                    transition: all 0.3s;
-                    text-transform: uppercase;
-                    font-size: 0.9rem;
-                }
-
-                .btn-cancel {
-                    background-color: transparent;
-                    color: var(--text-muted);
-                    border: 1px solid var(--text-muted);
-                }
-
-                .btn-cancel:hover {
-                    background-color: rgba(148, 163, 184, 0.1);
-                    color: var(--text-main);
-                }
-
-                .btn-confirm {
-                    background-color: var(--accent);
+                    font-size: 1.2rem;
                     color: white;
                 }
 
-                .btn-confirm:hover {
-                    background-color: var(--accent-hover);
+                .modal-body-premium {
+                    padding: 20px;
                 }
 
-                .btn-confirm:disabled {
-                    background-color: #64748b;
-                    cursor: not-allowed;
+                .modal-body-premium p {
+                    color: #94a3b8;
+                    margin: 0 0 15px 0;
+                }
+
+                .confirmation-summary {
+                    background: rgba(15, 23, 42, 0.5);
+                    border-radius: 16px;
+                    padding: 15px;
+                }
+
+                .summary-item {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 4px;
+                    margin-bottom: 12px;
+                }
+
+                .summary-item:last-child {
+                    margin-bottom: 0;
+                }
+
+                .summary-item .label {
+                    font-size: 0.75rem;
+                    text-transform: uppercase;
+                    color: #64748b;
+                    font-weight: 700;
+                }
+
+                .summary-item .value {
+                    color: #f1f5f9;
+                    font-weight: 500;
+                }
+
+                .modal-footer-premium {
+                    padding: 20px;
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 12px;
+                }
+
+                .btn-modal-cancel {
+                    padding: 12px;
+                    background: transparent;
+                    border: 1px solid #334155;
+                    color: #94a3b8;
+                    border-radius: 12px;
+                    cursor: pointer;
+                    font-weight: 600;
+                }
+
+                .btn-modal-confirm {
+                    padding: 12px;
+                    background: #3b82f6;
+                    border: none;
+                    color: white;
+                    border-radius: 12px;
+                    cursor: pointer;
+                    font-weight: 700;
+                }
+
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: translateY(10px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+
+                .fade-in {
+                    animation: fadeIn 0.5s ease-out forwards;
+                }
+
+                /* Mobile Optimization */
+                @media (max-width: 480px) {
+                    .glass-header {
+                        padding: 30px 20px;
+                    }
+                    .header-title {
+                        font-size: 1.5rem;
+                    }
+                    .assistance-glass-card {
+                        padding: 20px;
+                    }
                 }
             `}</style>
         </div>
