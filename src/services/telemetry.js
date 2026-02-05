@@ -1,7 +1,6 @@
 const TELEMETRY_EXEC = "https://script.google.com/macros/s/AKfycbz_We0Ar00LX9rvYVzz0Fb9qEtyKOOTAebrkYYOCKdTXz-ZMCLPKOMeX_8j_ZAaqXw/exec"; // PLACEHOLDER
 
 export const logEvent = async (eventName, details = {}) => {
-    return;
     try {
         const userEmail = localStorage.getItem('user') || 'anonymous';
 

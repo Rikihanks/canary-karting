@@ -3,6 +3,7 @@ import { useSearchParams, Link } from 'react-router-dom';
 import PullToRefresh from 'react-simple-pull-to-refresh';
 import { getTeamsData, getLeaderboardData } from '../services/data';
 import { logEvent } from '../services/telemetry';
+import CountUp from '../components/CountUp';
 
 const TeamProfile = () => {
     const [searchParams] = useSearchParams();
@@ -113,7 +114,9 @@ const TeamProfile = () => {
                         </div>
                         <div className="hero-stats">
                             <div className="hero-stat-item">
-                                <span className="h-val">{teamStats.points}</span>
+                                <span className="h-val">
+                                    <CountUp end={teamStats.points} />
+                                </span>
                                 <span className="h-lbl">PUNTOS</span>
                             </div>
                             <div className="hero-stat-item">
@@ -246,11 +249,6 @@ const TeamProfile = () => {
                         /* Neon Glow Shadow */
                         object-fit: contain; /* Full logo visibility */
                         transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-                    }
-                    
-                    .team-hero:hover .team-logo-hero {
-                         transform: scale(1.1) rotate(2deg);
-                         box-shadow: 0 0 50px rgba(59, 130, 246, 0.6);
                     }
 
                     .team-logo-placeholder {

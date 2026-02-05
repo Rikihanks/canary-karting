@@ -551,7 +551,6 @@ h2 {
 .l-points {
     font-family: 'Russo One';
     font-size: 1.4rem;
-    color: var(--accent);
     flex-shrink: 0;
     text-align: right;
     min-width: 80px;
@@ -561,8 +560,6 @@ h2 {
 
 .l-points span {
     font-size: 0.8rem;
-    color: #64748b;
-    color: #64748b;
     font-family: 'Montserrat';
 }
 

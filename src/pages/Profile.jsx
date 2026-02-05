@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import PullToRefresh from 'react-simple-pull-to-refresh';
 import { getLeaderboardData, getDriverResults, clearCache } from '../services/data';
 import { logEvent } from '../services/telemetry';
+import CountUp from '../components/CountUp';
 
 const Profile = () => {
     const [searchParams] = useSearchParams();
@@ -243,7 +244,9 @@ const Profile = () => {
                         </div>
                     </div>
                     <div className="total-points-hero">
-                        <span className="points-val">{driverStats.points}</span>
+                        <span className="points-val">
+                            <CountUp end={driverStats.points} />
+                        </span>
                         <span className="points-label">PUNTOS</span>
                         {driverStats.investigating === 1 && (
                             <i
