@@ -10,7 +10,10 @@ const Home = () => {
     const [drivers, setDrivers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [activeDivision, setActiveDivision] = useState(1);
+    const [activeDivision, setActiveDivision] = useState(() => {
+        const savedDivision = localStorage.getItem('active_division_leaderboard');
+        return savedDivision ? parseInt(savedDivision) : 1;
+    });
     const [showNotificationButton, setShowNotificationButton] = useState(false);
     const [isNotifModalOpen, setIsNotifModalOpen] = useState(false);
     const [searchParams] = useSearchParams();
@@ -144,7 +147,11 @@ const Home = () => {
                         id="division-select"
                         className="division-dropdown"
                         value={activeDivision}
-                        onChange={(e) => setActiveDivision(parseInt(e.target.value))}
+                        onChange={(e) => {
+                            const newDivision = parseInt(e.target.value);
+                            setActiveDivision(newDivision);
+                            localStorage.setItem('active_division_leaderboard', newDivision);
+                        }}
                     >
                         <option value="1">1ª Division</option>
                         <option value="2">2ª Division</option>

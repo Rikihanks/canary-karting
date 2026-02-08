@@ -8,6 +8,7 @@
     --accent-hover: #2563eb;
     --gold: #fbbf24;
     --silver: #94a3b8;
+    --silver_2: #b0bed1;
     --bronze: #d97706;
     --danger: #ef4444;
     --success: #10b981;
@@ -502,7 +503,7 @@ h2 {
 .rank-num {
     font-family: 'Russo One', sans-serif;
     font-size: 1.5rem;
-    color: #64748b;
+    text-shadow: 2px 2px 3px #000000;
 }
 
 .crown {
@@ -556,6 +557,7 @@ h2 {
     min-width: 80px;
     position: relative;
     z-index: 1;
+    text-shadow: 2px 2px 3px #000000;
 }
 
 .l-points span {
@@ -632,21 +634,22 @@ h2 {
     width: 40px;
     text-align: center;
     display: block;
+
 }
 
 .rank-1 .crown {
     color: var(--gold);
-    text-shadow: 0 0 10px var(--gold);
+    text-shadow: 2px 2px 3px #000000;
 }
 
 .rank-2 .crown {
-    color: var(--silver);
-    text-shadow: 0 0 10px var(--silver);
+    color: var(--silver_2);
+    text-shadow: 2px 2px 3px #000000;
 }
 
 .rank-3 .crown {
     color: var(--bronze);
-    text-shadow: 0 0 10px var(--bronze);
+    text-shadow: 2px 2px 3px #000000;
 }
 
 .rank-1 .mini-avatar {
@@ -665,12 +668,14 @@ h2 {
     color: var(--success);
     font-size: 1.1rem;
     filter: drop-shadow(0 0 5px rgba(16, 185, 129, 0.4));
+    text-shadow: 2px 2px 3px #000000;
 }
 
 .relegation-arrow {
     color: var(--danger);
     font-size: 1.1rem;
     filter: drop-shadow(0 0 5px rgba(239, 68, 68, 0.4));
+    text-shadow: 2px 2px 3px #000000;
 }
 
 

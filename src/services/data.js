@@ -12,6 +12,7 @@ const CONFIG_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRzmcWD
 const UPDATE_CONFIG_EXEC = "https://script.google.com/macros/s/AKfycbwPsWOaN1WkF7eq5SXDWASonFNJUBW69HmdDSs8EpOZlCAQ8d_ShIQtvGaUaV0-YhZUtA/exec";
 const DRIVER_OF_THE_DAY_EXEC = "https://script.google.com/macros/s/AKfycbxa4ahCzg9IieNBR3y4OxPHnqeBwA10oU9XrEG9yYIWYbH82cw8Fmkes-ivheETAsFupg/exec";
 const DOTD_RESULTS_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTLNZjbf5AjIxBl659WE4OZsK1RpOpu7HSwa55-b3Dbxxp2Rrggu5lDdjXLyhvZYXpB7uYE6LaEP_G2/pub?output=csv";
+const NEWS_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRguh21pKudFW_SOQW1wyjW-D95dzJ_Rn8LK-tHeaes0zKbRPVQbzRcKy_4xJ1l-tXRyTff4nfkbOLm/pub?output=csv";
 
 
 // Direct URLs - Google Sheets published CSVs are already CORS-enabled
@@ -503,5 +504,60 @@ export async function sendEmailVerification(name, email, code) {
     } catch (error) {
         console.error(`Error sending login request:`, error);
         throw error;
+    }
+}
+
+const parseCSVLine = (line) => {
+    const result = [];
+    let cur = '';
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        if (char === '"') {
+            inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+            result.push(cur.trim());
+            cur = '';
+        } else {
+            cur += char;
+        }
+    }
+    result.push(cur.trim());
+    return result;
+};
+
+export function parseNewsCSV(csvText) {
+    const lines = csvText.split('\n').filter(line => line.trim() !== '');
+    const news = [];
+
+    for (let i = 1; i < lines.length; i++) {
+        const parts = parseCSVLine(lines[i]);
+
+        if (parts.length >= 7) {
+            const title = parts[1] || '';
+            if (!title) continue;
+
+            news.push({
+                id: parts[0] || '',
+                title: title,
+                date: parts[2] || '',
+                category: parts[3] || '',
+                image: parts[4] || '',
+                summary: parts[5] || '',
+                content: parts[6] || '',
+            });
+        }
+    }
+    return news;
+}
+
+export async function getNewsData() {
+    try {
+        const response = await fetchWithRetry(NEWS_CSV_LINK, 3, true);
+        const data = await response.text();
+        return parseNewsCSV(data);
+    } catch (error) {
+        console.error("Error fetching news:", error);
+        return [];
     }
 }

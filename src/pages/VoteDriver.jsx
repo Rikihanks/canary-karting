@@ -196,9 +196,13 @@ const VoteDriver = () => {
 
                 {dotdState === 0 ? (
                     <div className="disabled-state fade-in">
-                        <i className="fa-solid fa-lock" style={{ fontSize: '3rem', marginBottom: '20px', color: '#94a3b8' }}></i>
-                        <h2>Votaciones Cerradas</h2>
-                        <p>Las votaciones para el Piloto del Día no están activas en este momento.</p>
+                        <div className="disabled-icon-wrapper">
+                            <i className="fa-solid fa-lock-open-slash lock-bg-icon"></i>
+                            <i className="fa-solid fa-lock main-lock-icon"></i>
+                        </div>
+                        <h2 className="disabled-title">Votaciones Cerradas</h2>
+                        <div className="disabled-divider"></div>
+                        <p className="disabled-text">Las votaciones para el Piloto del Día no están activas en este momento. Vuelve tras la carrera para apoyar a tu piloto favorito.</p>
                     </div>
                 ) : (dotdState === 2 || dotdState === 3) ? (
                     <>
@@ -214,10 +218,11 @@ const VoteDriver = () => {
                                     : null;
                                 const currentResults = latestDate ? results.filter(r => r.date === latestDate) : [];
 
-                                return [1, 2, 3].sort((a, b) => b - a).map(divId => {
+                                return (dotdState === 3 ? [1, 2, 3] : [3, 2, 1]).map(divId => {
                                     const divResults = currentResults.filter(r => r.division === divId);
                                     if (divResults.length === 0) return null;
 
+                                    const totalVotes = divResults.reduce((acc, curr) => acc + curr.votes, 0);
                                     const maxVotes = Math.max(...divResults.map(r => r.votes));
                                     const winners = divResults.filter(r => r.votes === maxVotes);
                                     const isTie = winners.length > 1;
@@ -295,7 +300,9 @@ const VoteDriver = () => {
                                                                             <div className="winner-info">
                                                                                 <div className="winner-name">{winner.driver}</div>
                                                                                 <div className="winner-team">{driverInfo?.team || 'INDEPENDIENTE'}</div>
-                                                                                <div className="winner-votes">{winner.votes} votos</div>
+                                                                                <div className="winner-votes">
+                                                                                    {totalVotes > 0 ? ((winner.votes / totalVotes) * 100).toFixed(0) : 0}% de los votos
+                                                                                </div>
                                                                             </div>
                                                                         </Link>
                                                                     );
@@ -344,28 +351,32 @@ const VoteDriver = () => {
                                     style={{ animationDelay: `${0.1 + index * 0.05}s` }}
                                 >
                                     <div className="vote-card-inner">
+                                        <div className="card-bg-glow"></div>
                                         <div className="driver-img-wrapper">
+                                            <div className="image-ring"></div>
                                             <img src={driver.photo} alt={driver.name} className="driver-img" />
                                         </div>
                                         <div className="driver-info">
                                             <h3 className="driver-name">{driver.name}</h3>
                                             <span className="team-name">{driver.team}</span>
                                         </div>
-                                        <button
-                                            className={`vote-btn ${votedDriver?.name === driver.name ? 'voted' : ''}`}
-                                            onClick={() => handleVote(driver)}
-                                            disabled={showSuccess || hasAlreadyVoted || !!submittingDriver || votedDriver !== null}
-                                        >
-                                            {submittingDriver === driver.name ? (
-                                                <><i className="fa-solid fa-spinner fa-spin"></i> Enviando...</>
-                                            ) : votedDriver?.name === driver.name ? (
-                                                <><i className="fa-solid fa-check"></i> Votado</>
-                                            ) : hasAlreadyVoted ? (
-                                                <><i className="fa-solid fa-xmark"></i> </>
-                                            ) : (
-                                                <><i className="fa-solid fa-thumbs-up"></i> Votar</>
-                                            )}
-                                        </button>
+                                        <div className="card-action">
+                                            <button
+                                                className={`vote-btn ${votedDriver?.name === driver.name ? 'voted' : ''}`}
+                                                onClick={() => handleVote(driver)}
+                                                disabled={showSuccess || hasAlreadyVoted || !!submittingDriver || votedDriver !== null}
+                                            >
+                                                {submittingDriver === driver.name ? (
+                                                    <><i className="fa-solid fa-spinner fa-spin"></i></>
+                                                ) : votedDriver?.name === driver.name ? (
+                                                    <><i className="fa-solid fa-check"></i> Votado</>
+                                                ) : hasAlreadyVoted ? (
+                                                    <><i className="fa-solid fa-lock"></i></>
+                                                ) : (
+                                                    <><i className="fa-solid fa-thumbs-up"></i> Votar</>
+                                                )}
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             ))}
@@ -401,16 +412,84 @@ const VoteDriver = () => {
                     }
                     .disabled-state {
                         text-align: center;
-                        padding: 60px 20px;
-                        background: var(--card-bg);
-                        border-radius: 30px;
-                        border: 1px solid rgba(255,255,255,0.05);
-                        margin-top: 20px;
+                        padding: 60px 30px;
+                        background: linear-gradient(135deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.6) 100%);
+                        backdrop-filter: blur(10px);
+                        -webkit-backdrop-filter: blur(10px);
+                        border-radius: 35px;
+                        border: 1px solid rgba(255, 255, 255, 0.1);
+                        margin: 40px auto;
+                        max-width: 500px;
+                        box-shadow: 
+                            0 20px 40px rgba(0, 0, 0, 0.4),
+                            inset 0 0 20px rgba(255, 255, 255, 0.05);
+                        position: relative;
+                        overflow: hidden;
+                    }
+
+                    .disabled-icon-wrapper {
+                        position: relative;
+                        height: 100px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        margin-bottom: 25px;
+                    }
+
+                    .main-lock-icon {
+                        font-size: 3.5rem;
+                        color: #94a3b8;
+                        z-index: 2;
+                        filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.5));
+                        animation: lockShake 4s ease-in-out infinite;
+                    }
+
+                    .lock-bg-icon {
+                        position: absolute;
+                        font-size: 8rem;
+                        color: rgba(255, 255, 255, 0.03);
+                        z-index: 1;
+                        transform: rotate(-15deg);
+                    }
+
+                    @keyframes lockShake {
+                        0%, 90%, 100% { transform: rotate(0); }
+                        92% { transform: rotate(-5deg); }
+                        94% { transform: rotate(5deg); }
+                        96% { transform: rotate(-5deg); }
+                        98% { transform: rotate(5deg); }
+                    }
+
+                    .disabled-title {
+                        font-family: 'Russo One', sans-serif !important;
+                        font-size: 1.8rem !important;
+                        margin-bottom: 15px !important;
+                        background: linear-gradient(180deg, #fff 0%, #94a3b8 100%);
+                        -webkit-background-clip: text;
+                        -webkit-text-fill-color: transparent;
+                        text-transform: uppercase;
+                        letter-spacing: 1px;
+                    }
+
+                    .disabled-divider {
+                        width: 50px;
+                        height: 3px;
+                        background: var(--accent);
+                        margin: 0 auto 20px;
+                        border-radius: 2px;
+                        box-shadow: 0 0 10px var(--accent);
+                    }
+
+                    .disabled-text {
+                        color: #94a3b8;
+                        font-size: 1.05rem;
+                        line-height: 1.6;
+                        margin: 0;
                     }
 
                     .winners-container {
                         text-align: center;
-                        padding: 20px 0;
+                        padding: 20px 0 80px;
                         flex-grow: 1;
                         display: flex;
                         flex-direction: column;
@@ -653,6 +732,9 @@ const VoteDriver = () => {
                         width: 100%;
                         transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
                         transform-style: preserve-3d;
+                        display: grid;
+                        grid-template-columns: 1fr;
+                        align-items: stretch;
                     }
 
                     .reveal-card-container.is-revealed .reveal-card-inner {
@@ -660,24 +742,21 @@ const VoteDriver = () => {
                     }
 
                     .reveal-card-face {
-                        position: relative;
-                        width: 100%;
+                        grid-area: 1 / 1 / 2 / 2;
                         backface-visibility: hidden;
+                        -webkit-backface-visibility: hidden;
                         border-radius: 25px;
                         display: flex;
                         flex-direction: column;
                         align-items: center;
                         justify-content: center;
-                        min-height: 120px;
+                        width: 100%;
                     }
 
                     .face-back {
-                        position: absolute;
-                        top: 0;
-                        left: 0;
                         transform: rotateY(180deg);
                         justify-content: flex-start;
-                        min-height: 180px;
+                        height: 100%;
                     }
 
                     /* Spoiler Face Styling */
@@ -689,7 +768,7 @@ const VoteDriver = () => {
                         transition: all 0.3s;
                     }
 
-                    .reveal-card-container:hover .face-front:not(.is-locked .face-front) {
+                    .reveal-card-container:active .face-front:not(.is-locked .face-front) {
                         border-color: #fbbf24;
                         background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
                         box-shadow: 0 0 20px rgba(251, 191, 36, 0.2);
@@ -803,30 +882,67 @@ const VoteDriver = () => {
                     }
 
                     .vote-card-inner {
-                        background: var(--card-bg);
-                        border: 1px solid rgba(255, 255, 255, 0.05);
-                        border-radius: 20px;
-                        padding: 15px;
+                        background: linear-gradient(135deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.6) 100%);
+                        backdrop-filter: blur(8px);
+                        -webkit-backdrop-filter: blur(8px);
+                        border: 1px solid rgba(255, 255, 255, 0.08);
+                        border-radius: 24px;
+                        padding: 20px;
                         text-align: center;
-                        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
                         position: relative;
                         overflow: hidden;
                         display: flex;
                         flex-direction: column;
                         height: 100%;
+                        z-index: 1;
                     }
 
-                    .vote-card-inner:hover {
-                        transform: translateY(-8px);
-                        border-color: var(--accent);
-                        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4), 0 0 15px rgba(59, 130, 246, 0.2);
+                    .card-bg-glow {
+                        position: absolute;
+                        top: 0; left: 0; right: 0; bottom: 0;
+                        background: radial-gradient(circle at center, var(--accent) 0%, transparent 70%);
+                        opacity: 0;
+                        transition: opacity 0.4s;
+                        z-index: -1;
+                        pointer-events: none;
+                    }
+
+                    .vote-card:active .card-bg-glow {
+                        opacity: 0.1;
+                    }
+
+                    .vote-card-inner:active {
+                        transform: translateY(-8px) scale(1.02);
+                        border-color: rgba(59, 130, 246, 0.4);
+                        box-shadow: 
+                            0 20px 40px rgba(0, 0, 0, 0.4),
+                            inset 0 0 15px rgba(59, 130, 246, 0.1);
                     }
 
                     .driver-img-wrapper {
                         position: relative;
-                        width: 100px;
-                        height: 100px;
+                        width: 90px;
+                        height: 90px;
                         margin: 0 auto 15px;
+                        padding: 4px;
+                        border-radius: 50%;
+                        background: rgba(255, 255, 255, 0.05);
+                    }
+
+                    .image-ring {
+                        position: absolute;
+                        top: 0; left: 0; right: 0; bottom: 0;
+                        border-radius: 50%;
+                        border: 2px solid transparent;
+                        border-top-color: var(--accent);
+                        border-bottom-color: var(--accent);
+                        transition: transform 0.8s ease;
+                    }
+
+                    .vote-card:active .image-ring {
+                        transform: rotate(180deg);
+                        border-color: var(--accent);
                     }
 
                     .driver-img {
@@ -835,96 +951,223 @@ const VoteDriver = () => {
                         border-radius: 50%;
                         object-fit: cover;
                         object-position: top;
-                        border: 3px solid #334155;
-                        transition: border-color 0.3s;
+                        border: 2px solid rgba(255, 255, 255, 0.1);
+                        transition: all 0.3s;
+                        background: #0f172a;
                     }
 
-                    .vote-card-inner:hover .driver-img {
+                    .vote-card:active .driver-img {
                         border-color: var(--accent);
+                        transform: scale(1.05);
                     }
 
                     .winner-card-mini-link {
                         text-decoration: none;
                         color: inherit;
-                        background: linear-gradient(135deg, rgba(30, 41, 59, 1) 0%, rgba(15, 23, 42, 1) 100%);
-                        border: 2px solid #fbbf24;
-                        border-radius: 20px;
-                        padding: 15px;
+                        background: linear-gradient(135deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.6) 100%);
+                        backdrop-filter: blur(10px);
+                        -webkit-backdrop-filter: blur(10px);
+                        border: 1px solid rgba(251, 191, 36, 0.3);
+                        border-radius: 30px;
+                        padding: 30px 20px 25px;
                         display: flex;
+                        flex-direction: column;
                         align-items: center;
-                        gap: 15px;
-                        text-align: left;
-                        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-                        transition: transform 0.2s, box-shadow 0.2s;
+                        gap: 20px;
+                        text-align: center;
+                        box-shadow: 
+                            0 12px 30px rgba(0, 0, 0, 0.4),
+                            inset 0 0 20px rgba(255, 255, 255, 0.03);
+                        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                        position: relative;
+                        overflow: hidden;
+                        width: 100%;
+                        max-width: 280px;
+                        margin: 0 auto;
                     }
 
-                    .winner-card-mini-link:hover {
-                        transform: translateY(-3px);
-                        box-shadow: 0 8px 20px rgba(0,0,0,0.5), 0 0 15px rgba(251, 191, 36, 0.3);
-                        border-color: #fff;
+                    .winner-card-mini-link:active {
+                        transform: scale(0.97) translateY(-3px);
+                        border-color: #fbbf24;
+                        box-shadow: 
+                            0 15px 35px rgba(0, 0, 0, 0.5),
+                            0 0 20px rgba(251, 191, 36, 0.2);
+                    }
+
+                    /* Spotlight effect */
+                    .winner-card-mini-link::before {
+                        content: '';
+                        position: absolute;
+                        top: 0; left: 50%;
+                        transform: translateX(-50%);
+                        width: 150px;
+                        height: 150px;
+                        background: radial-gradient(circle at center, rgba(251, 191, 36, 0.1) 0%, transparent 70%);
+                        pointer-events: none;
+                        z-index: 0;
+                    }
+
+                    .winner-card-mini-link .winner-img-container {
+                        width: 110px;
+                        height: 110px;
+                        border-radius: 50%;
+                        padding: 5px;
+                        background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), transparent);
+                        border: 2px solid rgba(251, 191, 36, 0.3);
+                        flex-shrink: 0;
+                        position: relative;
+                        z-index: 1;
+                        box-shadow: 
+                            0 8px 20px rgba(0,0,0,0.4),
+                            0 0 15px rgba(251, 191, 36, 0.1);
+                        transition: transform 0.4s;
+                    }
+
+                    .winner-card-mini-link:active .winner-img-container {
+                        transform: scale(1.05);
+                        border-color: #fbbf24;
+                        box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+                    }
+
+                    .winner-card-mini-link .winner-img-container img {
+                        width: 100%;
+                        height: 100%;
+                        border-radius: 50%;
+                        object-fit: cover;
+                        border: 2px solid rgba(251, 191, 36, 0.5);
+                    }
+
+                    .winner-card-mini-link .winner-trophy {
+                        position: absolute;
+                        bottom: 0;
+                        right: 0;
+                        background: #fbbf24;
+                        color: #0f172a;
+                        width: 34px;
+                        height: 34px;
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 1rem;
+                        border: 3px solid #0f172a;
+                        box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+                    }
+
+                    .winner-card-mini-link .winner-info {
+                        position: relative;
+                        z-index: 1;
+                        width: 100%;
+                    }
+
+                    .winner-card-mini-link .winner-name {
+                        font-family: 'Russo One', sans-serif;
+                        font-size: 1.5rem;
+                        line-height: 1.2;
+                        color: #fbbf24;
+                        margin-bottom: 6px;
+                        text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+                        text-transform: uppercase;
+                        letter-spacing: 0.5px;
+                    }
+
+                    .winner-card-mini-link .winner-team {
+                        font-weight: 600;
+                        font-size: 0.85rem;
+                        color: var(--text-muted);
+                        text-transform: uppercase;
+                        letter-spacing: 1.5px;
+                        margin-bottom: 12px;
+                        opacity: 0.9;
+                    }
+
+                    .winner-card-mini-link .winner-votes {
+                        display: inline-block;
+                        background: rgba(251, 191, 36, 0.1);
+                        border: 1px solid rgba(251, 191, 36, 0.2);
+                        padding: 5px 14px;
+                        border-radius: 10px;
+                        font-weight: 800;
+                        font-size: 1rem;
+                        color: #fff;
                     }
 
                     .division-tag {
                         position: absolute;
-                        bottom: -5px;
-                        right: -5px;
+                        top: 12px;
+                        left: 15px;
                         background: var(--accent);
                         color: white;
                         font-family: 'Russo One', sans-serif;
-                        font-size: 0.8rem;
-                        padding: 2px 8px;
+                        font-size: 0.7rem;
+                        padding: 3px 10px;
                         border-radius: 10px;
-                        box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+                        box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+                        z-index: 2;
                     }
 
                     .driver-info {
                         flex-grow: 1;
-                        margin-bottom: 15px;
+                        margin-bottom: 20px;
                     }
 
                     .driver-name {
-                        font-size: 1.1rem;
-                        font-weight: 700;
+                        font-family: 'Montserrat', sans-serif;
+                        font-size: 1rem;
+                        font-weight: 800;
                         margin-bottom: 4px;
-                        color: var(--text-main);
-                        white-space: nowrap;
-                        overflow: hidden;
-                        text-overflow: ellipsis;
+                        color: white;
+                        letter-spacing: -0.5px;
                     }
 
                     .team-name {
-                        font-size: 0.8rem;
+                        font-size: 0.7rem;
+                        font-weight: 600;
                         color: var(--text-muted);
                         text-transform: uppercase;
-                        letter-spacing: 0.5px;
+                        letter-spacing: 1px;
+                        opacity: 0.8;
+                    }
+
+                    .card-action {
+                        margin-top: auto;
                     }
 
                     .vote-btn {
                         width: 100%;
                         padding: 10px;
-                        border: 1px solid var(--accent);
-                        background: transparent;
-                        color: var(--accent);
-                        border-radius: 12px;
+                        background: rgba(255, 255, 255, 0.05);
+                        border: 1px solid rgba(255, 255, 255, 0.1);
+                        color: white;
+                        border-radius: 14px;
                         font-weight: 700;
+                        font-size: 0.9rem;
                         cursor: pointer;
-                        transition: all 0.2s;
+                        transition: all 0.3s;
                         display: flex;
                         align-items: center;
                         justify-content: center;
                         gap: 8px;
+                        overflow: hidden;
+                        position: relative;
                     }
 
-                    .vote-btn:hover:not(:disabled) {
+                    .vote-btn:active:not(:disabled) {
                         background: var(--accent);
-                        color: white;
-                        box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
+                        border-color: var(--accent);
+                        transform: translateY(-2px);
+                        box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
                     }
 
                     .vote-btn.voted {
-                        background: var(--success);
+                        background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
                         border-color: var(--success);
-                        color: white;
+                        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+                    }
+
+                    .vote-btn:disabled {
+                        opacity: 0.5;
+                        cursor: not-allowed;
                     }
 
                     /* Success Overlay */

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useConfig } from '../context/ConfigContext';
+import { useAuth } from '../context/AuthContext';
 
 const MessageBanner = () => {
     const config = useConfig();
+    const { user, isLoading } = useAuth(); // Destructure isLoading
     const [message, setMessage] = useState('');
     const [isExpanded, setIsExpanded] = useState(false);
     const [isLoaded, setIsLoaded] = useState(false);
@@ -41,7 +43,8 @@ const MessageBanner = () => {
 
     const isMotdDisabled = localStorage.getItem('motd_disabled') === 'true';
 
-    if (!message || isMotdDisabled) return null;
+
+    if (!message || isMotdDisabled || !user) return null;
 
     return (
         <div className={`message-banner-container ${isLoaded ? 'loaded' : ''}`}>

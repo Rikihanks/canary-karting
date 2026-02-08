@@ -88,6 +88,7 @@ const Navbar = () => {
                 { to: "/teams?season=2025", label: "Temporada 2025" }
             ]
         },
+        { to: "/news", label: "📰 Noticias" },
         // { to: "/inscripcion", label: "📝 Preinscripción", feature: "inscripcion" },
         { to: "/votar", label: "🗳️ Piloto del día" },
         { to: "/sorteo", label: <span><i className="fa-solid fa-ticket"></i> &nbsp;Sorteo Karts</span>, feature: "sorteo" },
@@ -169,6 +170,13 @@ const Navbar = () => {
                     className={(isMobile ? "nav-link" : "nav-link-desktop") + (item.className ? ` ${item.className}` : "")}
                 >
                     {item.label}
+                    {item.to === "/news" && config?.hasNewNews && (
+                        isMobile ? (
+                            <i className="fa-solid fa-circle-exclamation pulse-animation" style={{ color: 'var(--danger)', marginLeft: '10px' }}></i>
+                        ) : (
+                            <span className="notification-badge-dot pulse-animation"></span>
+                        )
+                    )}
                 </Link>
             );
         });

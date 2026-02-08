@@ -32,6 +32,8 @@ import ScrollToTop from './components/ScrollToTop';
 import AppUpdater from './components/AppUpdater';
 import TelemetryTracker from './components/TelemetryTracker';
 import { usePWAInstallStatus } from './hooks/usePWAInstallStatus';
+import SwipeNavigation from './components/SwipeNavigation';
+import News from './pages/News';
 import './App.css';
 
 const RootRoute = () => {
@@ -73,6 +75,7 @@ function App() {
       <AuthProvider>
         <MaintenanceGuard>
           <HashRouter>
+            <SwipeNavigation />
             <TelemetryTracker />
             <ScrollToTop />
             <header className="app-header">
@@ -149,7 +152,7 @@ function App() {
                   } />
 
                   <Route path="/votar" element={<VoteDriver />} />
-
+                  <Route path="/news" element={<News />} />
                   <Route path="/configuracion" element={<Settings />} />
 
                   <Route path="/disabled" element={<FeatureDisabled />} />

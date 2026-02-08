@@ -7,7 +7,10 @@ const Teams = () => {
     const [teams, setTeams] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [activeDivision, setActiveDivision] = useState(1);
+    const [activeDivision, setActiveDivision] = useState(() => {
+        const savedDivision = localStorage.getItem('active_division_teams');
+        return savedDivision ? parseInt(savedDivision) : 1;
+    });
     const [searchParams] = useSearchParams();
     const season = searchParams.get('season') || '2025';
 
@@ -78,7 +81,11 @@ const Teams = () => {
                         id="division-select"
                         className="division-dropdown"
                         value={activeDivision}
-                        onChange={(e) => setActiveDivision(parseInt(e.target.value))}
+                        onChange={(e) => {
+                            const newDivision = parseInt(e.target.value);
+                            setActiveDivision(newDivision);
+                            localStorage.setItem('active_division_teams', newDivision);
+                        }}
                     >
                         <option value="1">1ª Division</option>
                         <option value="2">2ª Division</option>

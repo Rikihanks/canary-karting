@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { getConfigData } from '../services/data';
+import { getConfigData, getNewsData } from '../services/data';
 
 const ConfigContext = createContext();
 
@@ -18,7 +18,8 @@ export const ConfigProvider = ({ children }) => {
         mantenimiento: false,
         loading: true,
         hasUpdate: false,
-        remoteVersion: null
+        remoteVersion: null,
+        hasNewNews: false
     });
 
     const acknowledgeUpdate = () => {
@@ -28,45 +29,60 @@ export const ConfigProvider = ({ children }) => {
         }
     };
 
-    useEffect(() => {
-        const fetchConfig = async () => {
-            console.log("Fetching config...");
+    const markNewsAsRead = (count) => {
+        console.log("Marking news as read:", count);
+        localStorage.setItem('last_news_count', count.toString());
+        setConfig(prev => ({ ...prev, hasNewNews: false }));
+    };
 
-            try {
-                const data = await getConfigData();
-                const remoteVer = data.update_ver || '1.0.0';
-                const localVer = localStorage.getItem('update_ver');
+    const fetchConfigAndNews = async () => {
+        console.log("Fetching config & news...");
+        try {
+            const [configData, newsData] = await Promise.all([
+                getConfigData(),
+                getNewsData()
+            ]);
 
-                let hasUpdate = false;
-                if (!localVer) {
-                    // First time, save it
-                    localStorage.setItem('update_ver', remoteVer);
-                } else if (localVer !== remoteVer) {
-                    hasUpdate = true;
-                }
+            const remoteVer = configData.update_ver || '1.0.0';
+            const localVer = localStorage.getItem('update_ver');
+            let hasUpdate = false;
 
-                setConfig({
-                    ...data,
-                    loading: false,
-                    hasUpdate,
-                    remoteVersion: remoteVer,
-                    acknowledgeUpdate // Expose it in the context if needed, but better as a separate value
-                });
-            } catch (error) {
-                console.error("Failed to load config, using defaults", error);
-                setConfig(prev => ({ ...prev, loading: false }));
+            if (!localVer) {
+                localStorage.setItem('update_ver', remoteVer);
+            } else if (localVer !== remoteVer) {
+                hasUpdate = true;
             }
-        };
 
-        fetchConfig();
+            const today = new Date();
+            today.setHours(23, 59, 59, 999);
+            const publishedNews = newsData.filter(item => new Date(item.date) <= today);
 
-        // Check for updates every 5 minutes
-        const interval = setInterval(fetchConfig, 60000);
+            const lastNewsCount = parseInt(localStorage.getItem('last_news_count') || '0');
+            const currentNewsCount = publishedNews.length;
+            const hasNewNews = currentNewsCount > lastNewsCount;
+
+            setConfig(prev => ({
+                ...prev,
+                ...configData,
+                loading: false,
+                hasUpdate,
+                remoteVersion: remoteVer,
+                hasNewNews
+            }));
+        } catch (error) {
+            console.error("Failed to load generic data:", error);
+            setConfig(prev => ({ ...prev, loading: false }));
+        }
+    };
+
+    useEffect(() => {
+        fetchConfigAndNews();
+        const interval = setInterval(fetchConfigAndNews, 60000);
         return () => clearInterval(interval);
     }, []);
 
     return (
-        <ConfigContext.Provider value={{ ...config, acknowledgeUpdate }}>
+        <ConfigContext.Provider value={{ ...config, acknowledgeUpdate, markNewsAsRead }}>
             {children}
         </ConfigContext.Provider>
     );
