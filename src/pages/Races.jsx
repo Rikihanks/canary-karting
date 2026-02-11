@@ -5,8 +5,11 @@ import { getCalendarData } from '../services/data';
 import { useAuth } from '../context/AuthContext';
 
 const Races = () => {
-    const [events, setEvents] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [events, setEvents] = useState(() => {
+        const savedEvents = localStorage.getItem('races_calendar_cache');
+        return savedEvents ? JSON.parse(savedEvents) : [];
+    });
+    const [loading, setLoading] = useState(events.length === 0);
     const [selectedDivision, setSelectedDivision] = useState(null);
     const { user } = useAuth();
     const navigate = useNavigate();
@@ -14,12 +17,16 @@ const Races = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const data = await getCalendarData();
+                // Background revalidation: always fetch fresh data after initial mount
+                const data = await getCalendarData(true);
                 setEvents(data);
+                localStorage.setItem('races_calendar_cache', JSON.stringify(data));
+                setLoading(false);
             } catch (error) {
                 console.error(error);
-            } finally {
-                setLoading(false);
+                if (events.length === 0) {
+                    setLoading(false);
+                }
             }
         };
         fetchData();
@@ -74,10 +81,10 @@ const Races = () => {
         const { clearCache } = await import('../services/data');
         clearCache();
         try {
-            const data = await getCalendarData();
+            // Force network request
+            const data = await getCalendarData(true);
             setEvents(data);
-            console.log(data);
-
+            localStorage.setItem('races_calendar_cache', JSON.stringify(data));
         } catch (error) {
             console.error(error);
         }

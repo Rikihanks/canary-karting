@@ -7,8 +7,11 @@ import NotificationModal from '../components/NotificationModal';
 import { useConfig } from '../context/ConfigContext';
 
 const Home = () => {
-    const [drivers, setDrivers] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [drivers, setDrivers] = useState(() => {
+        const savedDrivers = localStorage.getItem('leaderboard_cache');
+        return savedDrivers ? JSON.parse(savedDrivers) : [];
+    });
+    const [loading, setLoading] = useState(drivers.length === 0);
     const [error, setError] = useState(null);
     const [activeDivision, setActiveDivision] = useState(() => {
         const savedDivision = localStorage.getItem('active_division_leaderboard');
@@ -24,11 +27,16 @@ const Home = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const data = await getLeaderboardData();
+                // Background revalidation: always fetch fresh data after initial mount
+                // Even if we already have drivers from the initial localStorage state
+                const data = await getLeaderboardData(true); // Always force fresh on background fetch
                 setDrivers(data);
+                localStorage.setItem('leaderboard_cache', JSON.stringify(data));
                 setLoading(false);
             } catch (err) {
-                setError("Error al obtener los datos de la clasificación, recarga la web.");
+                if (drivers.length === 0) {
+                    setError("Error al obtener los datos de la clasificación, recarga la web.");
+                }
                 setLoading(false);
             }
         };
@@ -64,6 +72,21 @@ const Home = () => {
         }
     };
 
+    const handleRefresh = async () => {
+        // Clear memory cache
+        const { clearCache } = await import('../services/data');
+        clearCache();
+
+        try {
+            // Force network request
+            const data = await getLeaderboardData(true);
+            setDrivers(data);
+            localStorage.setItem('leaderboard_cache', JSON.stringify(data));
+        } catch (err) {
+            setError("Error al actualizar la clasificación.");
+        }
+    };
+
     const filteredDrivers = drivers
         .filter(driver => driver.division === activeDivision && (driver.season === season))
         .sort((a, b) => b.points - a.points);
@@ -80,7 +103,13 @@ const Home = () => {
 
     const divisionName = getDivisionName(activeDivision);
 
-    if (loading) {
+    const handleInvestigationClick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        alert("⚠️ Piloto bajo investigación por parte de los comisarios.");
+    };
+
+    if (loading && drivers.length === 0) {
         return (
             <div className="container" style={{ textAlign: 'center', color: '#94a3b8', paddingTop: '50px' }}>
                 <i className="fa-solid fa-spinner fa-spin" style={{ fontSize: '2em' }}></i>
@@ -89,33 +118,13 @@ const Home = () => {
         );
     }
 
-    if (error) {
+    if (error && drivers.length === 0) {
         return (
             <div className="container" style={{ textAlign: 'center', color: '#ef4444', paddingTop: '50px' }}>
                 {error}
             </div>
         );
     }
-
-    const handleInvestigationClick = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        alert("⚠️ Piloto bajo investigación por parte de los comisarios.");
-    };
-
-    const handleRefresh = async () => {
-        const { clearCache } = await import('../services/data');
-        clearCache();
-        // Re-fetch data
-        try {
-            const data = await getLeaderboardData();
-            setDrivers(data);
-            setLoading(false);
-        } catch (err) {
-            setError("Error al obtener los datos de la clasificación, recarga la web.");
-            setLoading(false);
-        }
-    };
 
     return (
         <PullToRefresh onRefresh={handleRefresh} pullingContent={''}>

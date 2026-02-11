@@ -7,8 +7,8 @@ export const useConfig = () => {
     return useContext(ConfigContext);
 };
 
-export const ConfigProvider = ({ children }) => {
-    const [config, setConfig] = useState({
+const getInitialConfig = () => {
+    return {
         teams: true,
         races: true,
         inscripcion: true,
@@ -20,7 +20,11 @@ export const ConfigProvider = ({ children }) => {
         hasUpdate: false,
         remoteVersion: null,
         hasNewNews: false
-    });
+    };
+};
+
+export const ConfigProvider = ({ children }) => {
+    const [config, setConfig] = useState(getInitialConfig);
 
     const acknowledgeUpdate = () => {
         if (config.remoteVersion) {
@@ -36,11 +40,11 @@ export const ConfigProvider = ({ children }) => {
     };
 
     const fetchConfigAndNews = async () => {
-        console.log("Fetching config & news...");
+        console.log(`Fetching config (Strict Live) & news...`);
         try {
             const [configData, newsData] = await Promise.all([
-                getConfigData(),
-                getNewsData()
+                getConfigData(), // getConfigData now forces skipCache and no persistence
+                getNewsData(false) // News can still be cached
             ]);
 
             const remoteVer = configData.update_ver || '1.0.0';
@@ -61,14 +65,17 @@ export const ConfigProvider = ({ children }) => {
             const currentNewsCount = publishedNews.length;
             const hasNewNews = currentNewsCount > lastNewsCount;
 
-            setConfig(prev => ({
-                ...prev,
+            const newConfig = {
+                ...config,
                 ...configData,
                 loading: false,
                 hasUpdate,
                 remoteVersion: remoteVer,
                 hasNewNews
-            }));
+            };
+
+            setConfig(newConfig);
+
         } catch (error) {
             console.error("Failed to load generic data:", error);
             setConfig(prev => ({ ...prev, loading: false }));
@@ -76,7 +83,9 @@ export const ConfigProvider = ({ children }) => {
     };
 
     useEffect(() => {
+        // Initial fetch
         fetchConfigAndNews();
+
         const interval = setInterval(fetchConfigAndNews, 60000);
         return () => clearInterval(interval);
     }, []);

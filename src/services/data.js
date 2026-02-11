@@ -33,41 +33,64 @@ export function clearCache() {
 }
 
 
-export async function fetchWithRetry(url, maxRetries = 3, skipCache = false) {
+export async function fetchWithRetry(url, maxRetries = 3, skipCache = false, persistent = false, customCacheDuration = null) {
     const now = new Date().getTime();
+    const currentCacheDuration = customCacheDuration || CACHE_DURATION;
 
-    // Check cache first
+    // Check memory cache first - ONLY if not skipCache
     if (!skipCache && cache.has(url)) {
         const { data, timestamp } = cache.get(url);
-        if (now - timestamp < CACHE_DURATION) {
-            console.log(`Serving from cache: ${url}`);
-            return data.clone(); // Return a clone so the body can be read multiple times if needed
+        if (now - timestamp < currentCacheDuration) {
+            console.log(`Serving from memory cache: ${url}`);
+            return data.clone();
         } else {
             cache.delete(url);
         }
     }
 
+    // Check localStorage - ONLY if persistent AND not skipCache
+    if (persistent && !skipCache) {
+        const saved = localStorage.getItem(`cache_${url}`);
+        if (saved) {
+            try {
+                const { text, timestamp } = JSON.parse(saved);
+                // Persistent cache can last longer (6x memory cache or custom duration)
+                const persistentDuration = customCacheDuration ? customCacheDuration * 2 : CACHE_DURATION * 6;
+                if (now - timestamp < persistentDuration) {
+                    console.log(`Serving from localStorage: ${url}`);
+                    return new Response(text);
+                }
+            } catch (e) {
+                localStorage.removeItem(`cache_${url}`);
+            }
+        }
+    }
+
     const timestamp = new Date().getTime();
-    // Keep the timestamp for cache busting the ACTUAL network request, 
-    // but we use the base URL as the key for OUR cache.
     const cacheBusterUrl = `${url}&_t=${timestamp}`;
 
     for (let i = 0; i < maxRetries; i++) {
         try {
             const response = await fetch(cacheBusterUrl);
             if (response.ok) {
-                // Clone the response to store in cache and return
-                const clonedResponse = response.clone();
+                const text = await response.text();
+
+                // Update memory cache
                 cache.set(url, {
-                    data: clonedResponse,
+                    data: new Response(text),
                     timestamp: now
                 });
-                return response;
+
+                // Update localStorage if persistent
+                if (persistent) {
+                    localStorage.setItem(`cache_${url}`, JSON.stringify({ text, timestamp: now }));
+                }
+
+                return new Response(text);
             }
         } catch (error) {
             if (i < maxRetries - 1) {
-                console.log('trying again');
-
+                console.log('Network request failed, retrying...', error);
                 await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
             }
         }
@@ -176,8 +199,8 @@ export function parseRaceDetailCSV(csvText) {
     return results;
 }
 
-export async function getLeaderboardData() {
-    const response = await fetchWithRetry(SHEET_URL);
+export async function getLeaderboardData(skipCache = false) {
+    const response = await fetchWithRetry(SHEET_URL, 3, skipCache, true);
     const data = await response.text();
     return parseCSV(data);
 }
@@ -188,18 +211,18 @@ export async function getDriverResults() {
     return parseResultsCSV(data);
 }
 
-export async function getCalendarData() {
+export async function getCalendarData(skipCache = false) {
     if (USE_MOCK_DATA) {
         const { mockCalendarData } = await import('./mockRaceData');
         return mockCalendarData;
     }
-    const response = await fetchWithRetry(CALENDAR_CSV_LINK);
+    const response = await fetchWithRetry(CALENDAR_CSV_LINK, 3, skipCache, true);
     const data = await response.text();
     return parseCalendarCSV(data);
 }
 
-export async function getDOTDResults() {
-    const response = await fetchWithRetry(DOTD_RESULTS_URL);
+export async function getDOTDResults(skipCache = false) {
+    const response = await fetchWithRetry(DOTD_RESULTS_URL, 3, skipCache, true);
     const csvText = await response.text();
     const lines = csvText.split('\n');
     const results = [];
@@ -262,8 +285,8 @@ export function parseTeamsCSV(csvText) {
     return Array.from(teamsMap.values());
 }
 
-export async function getTeamsData() {
-    const response = await fetchWithRetry(TEAMS_URL);
+export async function getTeamsData(skipCache = false) {
+    const response = await fetchWithRetry(TEAMS_URL, 3, skipCache, true);
     const data = await response.text();
     return parseTeamsCSV(data);
 }
@@ -333,7 +356,8 @@ export function parseConfigCSV(csvText) {
 
 export async function getConfigData() {
     try {
-        const response = await fetchWithRetry(CONFIG_URL, 3, true); // Use fetchWithRetry if you want caching, or direct fetch if you want instant updates (maybe with lower cache duration)
+        // ALWAYS skip cache and disable persistence for config
+        const response = await fetchWithRetry(CONFIG_URL, 3, true, false);
         const data = await response.text();
         return parseConfigCSV(data);
     } catch (error) {
@@ -551,9 +575,9 @@ export function parseNewsCSV(csvText) {
     return news;
 }
 
-export async function getNewsData() {
+export async function getNewsData(skipCache = false) {
     try {
-        const response = await fetchWithRetry(NEWS_CSV_LINK, 3, true);
+        const response = await fetchWithRetry(NEWS_CSV_LINK, 3, skipCache, true);
         const data = await response.text();
         return parseNewsCSV(data);
     } catch (error) {

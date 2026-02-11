@@ -9,9 +9,15 @@ import { logEvent } from '../services/telemetry';
 const VoteDriver = () => {
     const config = useConfig();
     const { user, logout } = useAuth();
-    const [drivers, setDrivers] = useState([]);
-    const [results, setResults] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [drivers, setDrivers] = useState(() => {
+        const saved = localStorage.getItem('leaderboard_cache');
+        return saved ? JSON.parse(saved) : [];
+    });
+    const [results, setResults] = useState(() => {
+        const saved = localStorage.getItem('dotd_results_cache');
+        return saved ? JSON.parse(saved) : [];
+    });
+    const [loading, setLoading] = useState(drivers.length === 0);
     const [error, setError] = useState(null);
     const [activeDivision, setActiveDivision] = useState(1);
     const [activeSeason, setActiveSeason] = useState("2026");
@@ -61,15 +67,25 @@ const VoteDriver = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
+                // Background revalidation: always force fresh data on mount
                 const [driversData, resultsData] = await Promise.all([
-                    getLeaderboardData(),
-                    [2, 3].includes(dotdState) ? getDOTDResults() : Promise.resolve([])
+                    getLeaderboardData(true),
+                    [2, 3].includes(dotdState) ? getDOTDResults(true) : Promise.resolve([])
                 ]);
                 setDrivers(driversData);
                 setResults(resultsData);
+
+                // Persist for next boot
+                localStorage.setItem('leaderboard_cache', JSON.stringify(driversData));
+                if ([2, 3].includes(dotdState)) {
+                    localStorage.setItem('dotd_results_cache', JSON.stringify(resultsData));
+                }
+
                 setLoading(false);
             } catch (err) {
-                setError("No se pudieron cargar los datos de la votación.");
+                if (drivers.length === 0) {
+                    setError("No se pudieron cargar los datos de la votación.");
+                }
                 setLoading(false);
             }
         };
@@ -81,12 +97,19 @@ const VoteDriver = () => {
         const { clearCache } = await import('../services/data');
         clearCache();
         try {
+            // Explicitly force network fetch
             const [driversData, resultsData] = await Promise.all([
-                getLeaderboardData(),
-                [2, 3].includes(dotdState) ? getDOTDResults() : Promise.resolve([])
+                getLeaderboardData(true),
+                [2, 3].includes(dotdState) ? getDOTDResults(true) : Promise.resolve([])
             ]);
             setDrivers(driversData);
             setResults(resultsData);
+
+            // Persist
+            localStorage.setItem('leaderboard_cache', JSON.stringify(driversData));
+            if ([2, 3].includes(dotdState)) {
+                localStorage.setItem('dotd_results_cache', JSON.stringify(resultsData));
+            }
         } catch (err) {
             setError("Error al refrescar la lista.");
         }

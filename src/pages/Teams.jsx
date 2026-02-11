@@ -4,8 +4,11 @@ import PullToRefresh from 'react-simple-pull-to-refresh';
 import { getTeamsData } from '../services/data';
 
 const Teams = () => {
-    const [teams, setTeams] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [teams, setTeams] = useState(() => {
+        const savedTeams = localStorage.getItem('teams_leaderboard_cache');
+        return savedTeams ? JSON.parse(savedTeams) : [];
+    });
+    const [loading, setLoading] = useState(teams.length === 0);
     const [error, setError] = useState(null);
     const [activeDivision, setActiveDivision] = useState(() => {
         const savedDivision = localStorage.getItem('active_division_teams');
@@ -17,11 +20,15 @@ const Teams = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const data = await getTeamsData();
+                // Background revalidation: always fetch fresh data after initial mount
+                const data = await getTeamsData(true);
                 setTeams(data);
+                localStorage.setItem('teams_leaderboard_cache', JSON.stringify(data));
                 setLoading(false);
             } catch (err) {
-                setError("Error al obtener los datos de la clasificación de equipos, recarga la web.");
+                if (teams.length === 0) {
+                    setError("Error al obtener los datos de la clasificación de equipos, recarga la web.");
+                }
                 setLoading(false);
             }
         };
@@ -65,10 +72,12 @@ const Teams = () => {
         const { clearCache } = await import('../services/data');
         clearCache();
         try {
-            const data = await getTeamsData();
+            // Force network request
+            const data = await getTeamsData(true);
             setTeams(data);
+            localStorage.setItem('teams_leaderboard_cache', JSON.stringify(data));
         } catch (err) {
-            setError("Error al obtener los datos de la clasificación de equipos, recarga la web.");
+            setError("Error al actualizar la clasificación de equipos.");
         }
     };
 
