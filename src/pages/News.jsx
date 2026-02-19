@@ -3,12 +3,15 @@ import { getNewsData } from '../services/data';
 import PullToRefresh from 'react-simple-pull-to-refresh';
 import { useConfig } from '../context/ConfigContext';
 import { Link } from 'react-router-dom';
+import StoryShare from '../components/StoryShare';
 import './News.css';
 
 const News = () => {
     const [news, setNews] = useState([]);
     const [loading, setLoading] = useState(true);
     const [expandedNews, setExpandedNews] = useState(null);
+    const [sharingItem, setSharingItem] = useState(null);
+    const [isPreviewing, setIsPreviewing] = useState(false);
     const { markNewsAsRead } = useConfig();
 
     const renderContentWithLinks = (text) => {
@@ -99,6 +102,18 @@ const News = () => {
         }
     };
 
+    const handleShare = (e, item) => {
+        e.stopPropagation();
+        setIsPreviewing(false);
+        setSharingItem(item);
+    };
+
+    const handlePreview = (e, item) => {
+        e.stopPropagation();
+        setIsPreviewing(true);
+        setSharingItem(item);
+    };
+
     if (loading) {
         return (
             <div className="container" style={{ textAlign: 'center', color: '#94a3b8', paddingTop: '50px' }}>
@@ -137,6 +152,26 @@ const News = () => {
                                     </div>
                                 )}
                                 <div className="news-footer">
+                                    <div className="news-card-actions">
+                                        <button
+                                            className="share-story-btn"
+                                            onClick={(e) => handleShare(e, item)}
+                                            title="Compartir noticia"
+                                        >
+                                            <i className="fa-solid fa-share"></i>
+                                            <span>Compartir</span>
+                                        </button>
+
+                                        {import.meta.env.DEV && (
+                                            <button
+                                                className="preview-story-btn"
+                                                onClick={(e) => handlePreview(e, item)}
+                                                title="Previsualizar local"
+                                            >
+                                                <i className="fa-solid fa-eye"></i>
+                                            </button>
+                                        )}
+                                    </div>
                                     <button className="read-more-btn">
                                         {expandedNews === item.id ? 'Leer menos' : 'Leer más'}
                                         <i className={`fa-solid fa-chevron-${expandedNews === item.id ? 'up' : 'down'}`}></i>
@@ -147,6 +182,19 @@ const News = () => {
                     ))}
                 </div>
             </div>
+            <StoryShare
+                newsItem={sharingItem}
+                debug={isPreviewing}
+                onShareComplete={() => {
+                    setSharingItem(null);
+                    setIsPreviewing(false);
+                }}
+                onShareError={(msg) => {
+                    alert(msg);
+                    setSharingItem(null);
+                    setIsPreviewing(false);
+                }}
+            />
         </PullToRefresh>
     );
 };

@@ -140,7 +140,8 @@
 
 .news-footer {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
+    align-items: center;
     margin-top: 10px;
 }
 
@@ -162,7 +163,63 @@
 .read-more-btn:hover {
     background: rgba(59, 130, 246, 0.15);
     border-color: rgba(59, 130, 246, 0.4);
-    transform: translateX(3px);
+    transform: translateY(-2px);
+}
+
+.share-story-btn {
+    background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+    border: none;
+    color: white;
+    font-weight: 700;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 8px 14px;
+    border-radius: 12px;
+    transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+    box-shadow: 0 4px 15px rgba(220, 39, 67, 0.3);
+}
+
+.share-story-btn i {
+    font-size: 1.1rem;
+}
+
+.share-story-btn:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(220, 39, 67, 0.5);
+    filter: brightness(1.1);
+}
+
+.share-story-btn:active {
+    transform: translateY(-1px) scale(0.98);
+}
+
+.news-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.preview-story-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #94a3b8;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.preview-story-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    transform: translateY(-2px);
 }
 
 @keyframes slideDownFade {
