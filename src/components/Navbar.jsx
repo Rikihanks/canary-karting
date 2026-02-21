@@ -91,7 +91,6 @@ const Navbar = () => {
         { to: "/news", label: "📰 Noticias" },
         // { to: "/inscripcion", label: "📝 Preinscripción", feature: "inscripcion" },
         { to: "/votar", label: "🗳️ Piloto del día" },
-        { to: "/sorteo", label: <span><i className="fa-solid fa-ticket"></i> &nbsp;Sorteo Karts</span>, feature: "sorteo" },
         { to: "/races", label: "🏎️ Calendario Carreras", feature: "races" },
         { to: "/inscripcion-academia", label: "📝 Academia", feature: "inscripcion-academia" },
         { to: "https://drive.google.com/file/d/1dsxBpYSdYimvLtnnlaab-4KDTN9g1-z5/view?usp=sharing", label: "📃 Reglamento 2026", external: true },

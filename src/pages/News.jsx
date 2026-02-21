@@ -48,12 +48,13 @@ const News = () => {
     useEffect(() => {
         const fetchNews = async () => {
             try {
-                const data = await getNewsData();
+                const data = await getNewsData(true);
                 const today = new Date();
                 today.setHours(23, 59, 59, 999); // Set to end of day to include all of today
 
                 const filteredAndSortedNews = data
                     .filter(item => {
+                        if (window.location.hostname === 'localhost') return true;
                         const newsDate = new Date(item.date);
                         return newsDate <= today;
                     })
@@ -83,6 +84,7 @@ const News = () => {
 
             const filteredAndSortedNews = data
                 .filter(item => {
+                    if (window.location.hostname === 'localhost') return true;
                     const newsDate = new Date(item.date);
                     return newsDate <= today;
                 })

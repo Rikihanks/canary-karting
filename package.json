@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://canarykarting.github.io/canary-karting-app",
+  "homepage": "https://rikihanks.github.io/canary-karting",
   "scripts": {
     "dev": "vite --host",
     "build": "vite build",

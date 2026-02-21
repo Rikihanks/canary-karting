@@ -122,10 +122,10 @@ const Races = () => {
                                 <li
                                     key={index}
                                     className={`event-item ${event.activa == 0 ? 'disabled' : ''} ${getDivisionClass(event.division)}`}
-                                    onClick={() => event.activa != 0 && handleEventClick(event)}
+                                    onClick={() => (event.activa != 0 || window.location.hostname === 'localhost') && handleEventClick(event)}
                                     style={{
-                                        cursor: event.activa != 0 ? 'pointer' : 'default',
-                                        opacity: event.activa != 0 ? 1 : 0.6
+                                        cursor: (event.activa != 0 || window.location.hostname === 'localhost') ? 'pointer' : 'default',
+                                        opacity: (event.activa != 0 || window.location.hostname === 'localhost') ? 1 : 0.6
                                     }}
                                 >
                                     <div className="event-info">

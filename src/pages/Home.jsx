@@ -22,6 +22,14 @@ const Home = () => {
     const [searchParams] = useSearchParams();
     const config = useConfig();
     const clasi_arrows = config?.clasi_arrows;
+
+    const isPromotionRelegationActive = (division) => {
+        if (!Array.isArray(clasi_arrows)) return false; // Fallback if data is malformed
+        const arrowConfig = clasi_arrows.find(d => d.división === division);
+        return arrowConfig ? arrowConfig.active : false;
+    };
+
+    const arrowsActive = isPromotionRelegationActive(activeDivision);
     const season = searchParams.get('season') || '2026';
 
     useEffect(() => {
@@ -192,10 +200,10 @@ const Home = () => {
                                                 <i className="fa-solid fa-medal crown"></i>
                                             </div>
                                             <div className={`rank-indicator-area ${getDivisionName(driver.division)}`}>
-                                                {(clasi_arrows == 1 || clasi_arrows === true) && activeDivision !== 1 && rank <= 2 && (
+                                                {arrowsActive && activeDivision !== 1 && rank <= 2 && (
                                                     <i className="fa-solid fa-circle-chevron-up promotion-arrow" title="Zona de ascenso"></i>
                                                 )}
-                                                {(clasi_arrows == 1 || clasi_arrows === true) && activeDivision !== 3 && rank > filteredDrivers.length - 2 && filteredDrivers.length > 2 && (
+                                                {arrowsActive && activeDivision !== 3 && rank > filteredDrivers.length - 2 && filteredDrivers.length > 2 && (
                                                     <i className="fa-solid fa-circle-chevron-down relegation-arrow" title="Zona de descenso"></i>
                                                 )}
                                             </div>
@@ -234,10 +242,10 @@ const Home = () => {
                                         <div className="list-item">
                                             <div className="rank-num">{rank}</div>
                                             <div className={`rank-indicator-area ${getDivisionName(driver.division)}`}>
-                                                {(clasi_arrows == 1 || clasi_arrows === true) && activeDivision !== 1 && rank <= 2 && (
+                                                {arrowsActive && activeDivision !== 1 && rank <= 2 && (
                                                     <i className="fa-solid fa-circle-chevron-up promotion-arrow" title="Zona de ascenso"></i>
                                                 )}
-                                                {(clasi_arrows == 1 || clasi_arrows === true) && activeDivision !== 3 && rank > filteredDrivers.length - 2 && filteredDrivers.length > 2 && (
+                                                {arrowsActive && activeDivision !== 3 && rank > filteredDrivers.length - 2 && filteredDrivers.length > 2 && (
                                                     <i className="fa-solid fa-circle-chevron-down relegation-arrow" title="Zona de descenso"></i>
                                                 )}
                                             </div>

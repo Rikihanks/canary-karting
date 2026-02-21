@@ -33,7 +33,7 @@ const RaceDetail = () => {
 
     // Animate Qualy open when data finishes loading
     useEffect(() => {
-        if (!loading && raceStatus === '1') {
+        if (!loading && (raceStatus === '1' || window.location.hostname === 'localhost')) {
             const timer = setTimeout(() => {
                 setIsQualyOpen(true);
             }, 300); // Slight delay to allow render before animating
@@ -71,6 +71,8 @@ const RaceDetail = () => {
     }, [id, date]);
 
     const renderGrid = (data, type) => {
+        console.log(data);
+
         if (data.length === 0) return <p className="empty-message" style={{ textAlign: 'center', color: '#94a3b8' }}>No hay datos de {type} para esta carrera.</p>;
 
         const sortedData = [...data].sort((a, b) => a.posicion - b.posicion);
@@ -146,7 +148,7 @@ const RaceDetail = () => {
                     </p>
                 </div>
 
-                {raceStatus === '1' ? (
+                {raceStatus === '1' || window.location.hostname === 'localhost' ? (
                     <>
                         <section id="clasificacion-section">
                             <h2

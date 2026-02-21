@@ -184,7 +184,7 @@ export function parseRaceDetailCSV(csvText) {
     for (let i = 1; i < lines.length; i++) {
         const parts = lines[i].split(',');
 
-        if (parts.length >= 7) {
+        if (parts.length >= 6) {
             results.push({
                 piloto: parts[0] ? parts[0].trim() : 'Desconocido',
                 posicion: parseInt(parts[1].trim()) || 99,
@@ -319,7 +319,27 @@ export async function getRaceDetails(id, date) {
 }
 
 export function parseConfigCSV(csvText) {
-    const lines = csvText.split('\n');
+    const rawLines = csvText.split('\n');
+    const lines = [];
+    let currentLine = '';
+    let inQuotes = false;
+
+    for (const rawLine of rawLines) {
+        const quoteCount = (rawLine.match(/"/g) || []).length;
+        if (inQuotes) {
+            currentLine += '\n' + rawLine;
+        } else {
+            currentLine = rawLine;
+        }
+
+        inQuotes = (inQuotes !== (quoteCount % 2 !== 0));
+
+        if (!inQuotes) {
+            lines.push(currentLine);
+            currentLine = '';
+        }
+    }
+
     const config = {};
 
     lines.forEach(line => {
@@ -343,6 +363,38 @@ export function parseConfigCSV(csvText) {
                     config[trimmedKey] = true;
                 } else if (upperValue === 'FALSE') {
                     config[trimmedKey] = false;
+                } else if (trimmedKey === 'clasi_arrows') {
+                    // Try to parse clasi_arrows as JSON
+                    try {
+                        let jsonStr = trimmedValue;
+                        // Replace single quotes from spreadsheet formatting with double quotes
+                        if (jsonStr.startsWith("'")) jsonStr = jsonStr.substring(1);
+                        if (jsonStr.endsWith("'")) jsonStr = jsonStr.slice(0, -1);
+                        config[trimmedKey] = JSON.parse(jsonStr);
+                    } catch (e) {
+                        console.error("Error parsing clasi_arrows JSON. Fallback to default false.", e);
+                        config[trimmedKey] = [
+                            { división: 1, active: false },
+                            { división: 2, active: false },
+                            { división: 3, active: false }
+                        ];
+                    }
+                } else if (trimmedKey === 'dotd') {
+                    // Try to parse dotd as JSON
+                    try {
+                        let jsonStr = trimmedValue;
+                        // Replace single quotes from spreadsheet formatting with double quotes
+                        if (jsonStr.startsWith("'")) jsonStr = jsonStr.substring(1);
+                        if (jsonStr.endsWith("'")) jsonStr = jsonStr.slice(0, -1);
+                        config[trimmedKey] = JSON.parse(jsonStr);
+                    } catch (e) {
+                        console.error("Error parsing dotd JSON. Fallback to default false.", e);
+                        config[trimmedKey] = [
+                            { división: 1, active: 0 },
+                            { división: 2, active: 0 },
+                            { división: 3, active: 0 }
+                        ];
+                    }
                 } else {
                     // Keep as string for things like messages/MOTD
                     config[trimmedKey] = trimmedValue;

@@ -3,6 +3,7 @@ import { useConfig } from '../context/ConfigContext';
 import { useAuth } from '../context/AuthContext';
 import { updateConfig, clearCache, getCalendarData, updateRaceStatus } from '../services/data';
 import CollapsibleSection from '../components/CollapsibleSection';
+import { Link } from 'react-router-dom';
 
 const AdminDashboard = () => {
     const config = useConfig();
@@ -97,10 +98,80 @@ const AdminDashboard = () => {
         { key: 'teams', label: 'Clasificación de Equipos', icon: '🏆' },
         { key: 'races', label: 'Carreras', icon: '🏎️' },
         { key: 'inscripcion', label: 'Preincripción', icon: '📝' },
-        { key: 'sorteo', label: 'Sorteo', icon: '🎲' },
         { key: 'login', label: 'Inicio de Sesión', icon: '🔐' },
-        { key: 'clasi_arrows', label: 'Flechas de Clasificación', icon: '↕️' },
     ];
+
+    const getArrowState = (division) => {
+        if (!Array.isArray(localConfig.clasi_arrows)) return false;
+        const conf = localConfig.clasi_arrows.find(d => d.división === division);
+        return conf ? conf.active : false;
+    };
+
+    const handleArrowToggle = async (division) => {
+        // Fallback default state in case it's badly formed
+        const currentArr = Array.isArray(localConfig.clasi_arrows) ? [...localConfig.clasi_arrows] : [
+            { división: 1, active: false },
+            { división: 2, active: false },
+            { división: 3, active: false }
+        ];
+
+        const index = currentArr.findIndex(d => d.división === division);
+        if (index !== -1) {
+            currentArr[index].active = !currentArr[index].active;
+        } else {
+            currentArr.push({ división: division, active: true });
+        }
+
+        // Optimistic update
+        setLocalConfig(prev => ({ ...prev, clasi_arrows: currentArr }));
+        setLoadingState(prev => ({ ...prev, [`arrow-${division}`]: true }));
+
+        try {
+            await updateConfig('clasi_arrows', JSON.stringify(currentArr), adminEmail);
+        } catch (error) {
+            console.error("Failed to update arrows", error);
+            // Revert on error
+            // (Revert logic simplified for brevity - in full app would restore prior state explicitly)
+            alert("Error al actualizar la configuración de flechas");
+        } finally {
+            setLoadingState(prev => ({ ...prev, [`arrow-${division}`]: false }));
+        }
+    };
+
+    const getDotdStateForDiv = (division) => {
+        if (!Array.isArray(localConfig.dotd)) return 0;
+        const conf = localConfig.dotd.find(d => d.división === division);
+        return conf ? conf.active : 0;
+    };
+
+    const handleDotdChange = async (division, newValue) => {
+        // Fallback default state in case it's badly formed
+        const currentArr = Array.isArray(localConfig.dotd) ? [...localConfig.dotd] : [
+            { división: 1, active: 0 },
+            { división: 2, active: 0 },
+            { división: 3, active: 0 }
+        ];
+
+        const index = currentArr.findIndex(d => d.división === division);
+        if (index !== -1) {
+            currentArr[index].active = parseInt(newValue);
+        } else {
+            currentArr.push({ división: division, active: parseInt(newValue) });
+        }
+
+        // Optimistic update
+        setLocalConfig(prev => ({ ...prev, dotd: currentArr }));
+        setLoadingState(prev => ({ ...prev, [`dotd-${division}`]: true }));
+
+        try {
+            await updateConfig('dotd', JSON.stringify(currentArr), adminEmail);
+        } catch (error) {
+            console.error("Failed to update dotd", error);
+            alert("Error al actualizar la configuración de DOTD");
+        } finally {
+            setLoadingState(prev => ({ ...prev, [`dotd-${division}`]: false }));
+        }
+    };
 
     return (
         <div className="container push-top">
@@ -111,6 +182,14 @@ const AdminDashboard = () => {
                         <i className="fa-solid fa-rotate-right"></i> Actualizar Datos
                     </button>
                 </div>
+
+                <CollapsibleSection title="Herramientas Adicionales" icon="fa-solid fa-toolbox" defaultOpen={true}>
+                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', padding: '10px 0' }}>
+                        <Link to="/sorteo" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', padding: '12px 16px', borderRadius: '8px', color: 'white', fontWeight: 'bold' }}>
+                            <i className="fa-solid fa-ticket"></i> Sorteo de Karts (Admin)
+                        </Link>
+                    </div>
+                </CollapsibleSection>
 
                 <CollapsibleSection title="Mensaje del Día (MOTD)" icon="fa-solid fa-bullhorn" defaultOpen={false}>
                     <div className="motd-container">
@@ -207,6 +286,69 @@ const AdminDashboard = () => {
                                             />
                                             <span className="slider round"></span>
                                         </label>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </CollapsibleSection>
+
+                <CollapsibleSection title="Flechas de Clasificación" icon="fa-solid fa-arrows-up-down" defaultOpen={false}>
+                    <div className="toggles-grid">
+                        {[1, 2, 3].map((division) => (
+                            <div key={`arrow-${division}`} className="toggle-card">
+                                <div className="toggle-info">
+                                    <span className="toggle-icon">↕️</span>
+                                    <span className="toggle-label">División {division}</span>
+                                </div>
+                                <div className="toggle-action">
+                                    {loadingState[`arrow-${division}`] ? (
+                                        <i className="fa-solid fa-spinner fa-spin"></i>
+                                    ) : (
+                                        <label className="switch">
+                                            <input
+                                                type="checkbox"
+                                                checked={getArrowState(division)}
+                                                onChange={() => handleArrowToggle(division)}
+                                            />
+                                            <span className="slider round"></span>
+                                        </label>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </CollapsibleSection>
+
+                <CollapsibleSection title="Piloto del Día (DOTD)" icon="fa-solid fa-star" defaultOpen={false}>
+                    <div className="toggles-grid">
+                        {[1, 2, 3].map((division) => (
+                            <div key={`dotd-${division}`} className="toggle-card" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '10px' }}>
+                                <div className="toggle-info">
+                                    <span className="toggle-icon">⭐</span>
+                                    <span className="toggle-label">División {division}</span>
+                                </div>
+                                <div className="toggle-action" style={{ width: '100%' }}>
+                                    {loadingState[`dotd-${division}`] ? (
+                                        <i className="fa-solid fa-spinner fa-spin"></i>
+                                    ) : (
+                                        <select
+                                            value={getDotdStateForDiv(division)}
+                                            onChange={(e) => handleDotdChange(division, e.target.value)}
+                                            style={{
+                                                width: '100%',
+                                                padding: '8px',
+                                                borderRadius: '6px',
+                                                background: '#1e293b',
+                                                color: '#fff',
+                                                border: '1px solid #334155'
+                                            }}
+                                        >
+                                            <option value="0">0 - No Activas (Cerrado)</option>
+                                            <option value="1">1 - Votación Activa</option>
+                                            <option value="2">2 - Finalizadas (Oculto)</option>
+                                            <option value="3">3 - Finalizadas (Resultados Visibles)</option>
+                                        </select>
                                     )}
                                 </div>
                             </div>

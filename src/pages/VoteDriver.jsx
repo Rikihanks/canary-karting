@@ -28,8 +28,13 @@ const VoteDriver = () => {
 
     const [revealedDivs, setRevealedDivs] = useState([]);
 
-    // dotd state: 0 (disabled), 1 (active), 2 (finished)
-    const dotdState = parseInt(config?.dotd) || 0;
+    // dotd state: 0 (disabled), 1 (active), 2 (finished, hidden), 3 (finished, revealed)
+    const getDotdState = (div) => {
+        if (!Array.isArray(config?.dotd)) return 0;
+        const conf = config.dotd.find(d => d.división === div);
+        return conf ? conf.active : 0;
+    };
+    const dotdState = getDotdState(activeDivision);
 
     const getTodayStr = () => new Date().toISOString().split('T')[0];
 
@@ -67,17 +72,19 @@ const VoteDriver = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
+                const needsResults = Array.isArray(config?.dotd) && config.dotd.some(d => d.active === 2 || d.active === 3);
+
                 // Background revalidation: always force fresh data on mount
                 const [driversData, resultsData] = await Promise.all([
                     getLeaderboardData(true),
-                    [2, 3].includes(dotdState) ? getDOTDResults(true) : Promise.resolve([])
+                    needsResults ? getDOTDResults(true) : Promise.resolve([])
                 ]);
                 setDrivers(driversData);
                 setResults(resultsData);
 
                 // Persist for next boot
                 localStorage.setItem('leaderboard_cache', JSON.stringify(driversData));
-                if ([2, 3].includes(dotdState)) {
+                if (needsResults) {
                     localStorage.setItem('dotd_results_cache', JSON.stringify(resultsData));
                 }
 
@@ -91,23 +98,25 @@ const VoteDriver = () => {
         };
 
         fetchData();
-    }, [dotdState]);
+    }, [config?.dotd]);
 
     const handleRefresh = async () => {
         const { clearCache } = await import('../services/data');
         clearCache();
         try {
+            const needsResults = Array.isArray(config?.dotd) && config.dotd.some(d => d.active === 2 || d.active === 3);
+
             // Explicitly force network fetch
             const [driversData, resultsData] = await Promise.all([
                 getLeaderboardData(true),
-                [2, 3].includes(dotdState) ? getDOTDResults(true) : Promise.resolve([])
+                needsResults ? getDOTDResults(true) : Promise.resolve([])
             ]);
             setDrivers(driversData);
             setResults(resultsData);
 
             // Persist
             localStorage.setItem('leaderboard_cache', JSON.stringify(driversData));
-            if ([2, 3].includes(dotdState)) {
+            if (needsResults) {
                 localStorage.setItem('dotd_results_cache', JSON.stringify(resultsData));
             }
         } catch (err) {
@@ -161,24 +170,6 @@ const VoteDriver = () => {
     };
 
     const handleReveal = (divId) => {
-        // Find latest date results for reveal logic consistency
-        const latestDate = results.length > 0
-            ? results.reduce((max, r) => r.date > max ? r.date : max, results[0].date)
-            : null;
-        const currentResults = latestDate ? results.filter(r => r.date === latestDate) : [];
-
-        // Sequential check: 3 -> 2 -> 1
-        if (divId === 2) {
-            const hasDiv3Results = currentResults.some(r => r.division === 3);
-            if (hasDiv3Results && !revealedDivs.includes(3)) return;
-        }
-        if (divId === 1) {
-            const hasDiv2Results = currentResults.some(r => r.division === 2);
-            if (hasDiv2Results && !revealedDivs.includes(2)) return;
-            const hasDiv3Results = currentResults.some(r => r.division === 3);
-            if (hasDiv3Results && !revealedDivs.includes(3) && !hasDiv2Results) return;
-        }
-
         if (!revealedDivs.includes(divId)) {
             const updatedReveals = [...revealedDivs, divId];
             setRevealedDivs(updatedReveals);
@@ -216,6 +207,19 @@ const VoteDriver = () => {
         <PullToRefresh onRefresh={handleRefresh} pullingContent={''} className="ptr">
             <div className="container">
 
+                <div className="division-select-container fade-in" style={{ marginBottom: '30px', textAlign: 'center' }}>
+                    <p style={{ color: '#94a3b8', marginBottom: '10px' }}>Selecciona una división:</p>
+                    <select
+                        className="division-dropdown"
+                        value={activeDivision}
+                        onChange={(e) => setActiveDivision(parseInt(e.target.value))}
+                        style={{ margin: '0 auto', display: 'block', maxWidth: '300px' }}
+                    >
+                        <option value="1">1ª División</option>
+                        <option value="2">2ª División</option>
+                        <option value="3">3ª División</option>
+                    </select>
+                </div>
 
                 {dotdState === 0 ? (
                     <div className="disabled-state fade-in">
@@ -225,7 +229,7 @@ const VoteDriver = () => {
                         </div>
                         <h2 className="disabled-title">Votaciones Cerradas</h2>
                         <div className="disabled-divider"></div>
-                        <p className="disabled-text">Las votaciones para el Piloto del Día no están activas en este momento. Vuelve tras la carrera para apoyar a tu piloto favorito.</p>
+                        <p className="disabled-text">Las votaciones para el Piloto del Día no están activas para esta división en este momento.</p>
                     </div>
                 ) : (dotdState === 2 || dotdState === 3) ? (
                     <>
@@ -241,7 +245,7 @@ const VoteDriver = () => {
                                     : null;
                                 const currentResults = latestDate ? results.filter(r => r.date === latestDate) : [];
 
-                                return (dotdState === 3 ? [1, 2, 3] : [3, 2, 1]).map(divId => {
+                                return [activeDivision].map(divId => {
                                     const divResults = currentResults.filter(r => r.division === divId);
                                     if (divResults.length === 0) return null;
 
@@ -252,30 +256,11 @@ const VoteDriver = () => {
 
                                     // In dotdState 3, everything is already revealed
                                     const isRevealed = dotdState === 3 || revealedDivs.includes(divId);
-
-                                    // Sequential Reveal Logic: 3 -> 2 -> 1
-                                    let canReveal = dotdState === 3 || revealsPrevious(divId, currentResults, revealedDivs);
-
-                                    function revealsPrevious(id, res, reveals) {
-                                        if (id === 3) return true;
-                                        if (id === 2) {
-                                            const has3 = res.some(r => r.division === 3);
-                                            return !has3 || reveals.includes(3);
-                                        }
-                                        if (id === 1) {
-                                            const has2 = res.some(r => r.division === 2);
-                                            const has3 = res.some(r => r.division === 3);
-                                            if (has2) return reveals.includes(2);
-                                            if (has3) return reveals.includes(3);
-                                            return true;
-                                        }
-                                        return true;
-                                    }
-
-                                    const lockMessage = divId === 2 ? 'REVELA 3ª DIV PRIMERO' : 'REVELA DIV ANTERIOR';
+                                    const canReveal = true; // Isolated division reveal
+                                    const lockMessage = 'TOCAR PARA REVELAR';
 
                                     return (
-                                        <div key={divId} className={`division-results-section fade-in ${!canReveal ? 'is-locked' : ''}`}>
+                                        <div key={divId} className={`division-results-section fade-in`}>
                                             <h3 className="division-result-header">
                                                 {divId}ª División
                                             </h3>
@@ -347,19 +332,6 @@ const VoteDriver = () => {
                     </>
                 ) : (
                     <div className="voting-main fade-in">
-                        <div className="division-select-container">
-                            <p>Vota por el piloto que mejor rendimiento ha tenido hoy.</p>
-                            <select
-                                className="division-dropdown"
-                                value={activeDivision}
-                                onChange={(e) => setActiveDivision(parseInt(e.target.value))}
-                            >
-                                <option value="1">1ª División</option>
-                                <option value="2">2ª División</option>
-                                <option value="3">3ª División</option>
-                            </select>
-                        </div>
-
                         {hasAlreadyVoted && (
                             <div className="already-voted-msg">
                                 <i className="fa-solid fa-circle-info"></i> Tu voto para esta división ha sido para {votedDriver?.name}

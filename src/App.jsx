@@ -129,21 +129,21 @@ function App() {
                     <Route path="/assistance-confirmation" element={<AssistanceConfirmation />} />
 
                     <Route path="/sorteo" element={
-                      <FeatureGuard feature="sorteo">
+                      <AdminGuard>
                         <Sorteo />
-                      </FeatureGuard>
+                      </AdminGuard>
                     } />
 
                     <Route path="/sorteo-equipo" element={
-                      <FeatureGuard feature="sorteo">
+                      <AdminGuard>
                         <TeamDraw />
-                      </FeatureGuard>
+                      </AdminGuard>
                     } />
 
                     <Route path="/team-draw-input" element={
-                      <FeatureGuard feature="sorteo">
+                      <AdminGuard>
                         <TeamDrawInput />
-                      </FeatureGuard>
+                      </AdminGuard>
                     } />
 
                     <Route path="/login" element={

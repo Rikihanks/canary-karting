@@ -14,7 +14,16 @@ const getInitialConfig = () => {
         inscripcion: true,
         sorteo: true,
         login: true,
-        clasi_arrows: true,
+        clasi_arrows: [
+            { división: 1, active: false },
+            { división: 2, active: false },
+            { división: 3, active: false }
+        ],
+        dotd: [
+            { división: 1, active: 0 },
+            { división: 2, active: 0 },
+            { división: 3, active: 0 }
+        ],
         mantenimiento: false,
         loading: true,
         hasUpdate: false,
@@ -59,7 +68,10 @@ export const ConfigProvider = ({ children }) => {
 
             const today = new Date();
             today.setHours(23, 59, 59, 999);
-            const publishedNews = newsData.filter(item => new Date(item.date) <= today);
+            const publishedNews = newsData.filter(item => {
+                if (window.location.hostname === 'localhost') return true;
+                return new Date(item.date) <= today;
+            });
 
             const lastNewsCount = parseInt(localStorage.getItem('last_news_count') || '0');
             const currentNewsCount = publishedNews.length;

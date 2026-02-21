@@ -210,8 +210,6 @@ const Profile = () => {
                 getDriverResults()
             ]);
 
-            console.log(results);
-
             const stats = leaderboard.find(d => d.name === driverName && d.season === season);
             const history = results.filter(r => r.name === driverName && r.season === season);
 
