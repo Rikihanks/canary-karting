@@ -49,7 +49,7 @@ const Races = () => {
     }, [events, selectedDivision]);
 
     const handleEventClick = (event) => {
-        navigate(`/race-detail?id=${event.id_circuito}&date=${encodeURIComponent(event.fecha)}&circuitName=${encodeURIComponent(event.nombre)}`);
+        navigate(`/race-detail?id=${event.id_circuito}&date=${encodeURIComponent(event.fecha)}&circuitName=${encodeURIComponent(event.nombre)}&division=${event.division}`);
     };
 
     const getDivisionClass = (division) => {
