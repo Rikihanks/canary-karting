@@ -59,6 +59,8 @@ const LoadingFallback = () => (
 
 function App() {
   React.useEffect(() => {
+    localStorage.removeItem('ck_reveals');
+    localStorage.removeItem('dotd_results_cache');
     if (messaging) {
       const unsubscribe = onMessage(messaging, (payload) => {
         console.log('Mensaje en primer plano recibido:', payload);

@@ -1,0 +1,282 @@
+.dotd-story-template {
+    position: fixed;
+    top: -9999px;
+    left: -9999px;
+    width: 450px !important;
+    height: 800px !important;
+    background: #090d17;
+    color: white;
+    font-family: 'Montserrat', sans-serif;
+    overflow: hidden;
+    z-index: -100;
+    box-sizing: border-box;
+}
+
+.dotd-story-template * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.dotd-story-template.debug-visible {
+    position: relative;
+    top: 0;
+    left: 0;
+    z-index: 10002;
+}
+
+.dotd-story-bg-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+.dotd-story-bg {
+    position: absolute;
+    top: -10%;
+    left: -10%;
+    width: 120% !important;
+    height: 120% !important;
+    object-fit: cover !important;
+    object-position: center !important;
+    /* Massive blur for clean abstraction */
+    filter: blur(100px) !important;
+    -webkit-filter: blur(100px) !important;
+    opacity: 0.4;
+    z-index: 1;
+}
+
+.dotd-story-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* Darker, multi-stop gradient for better depth */
+    background: linear-gradient(180deg,
+            rgba(9, 13, 23, 0.6) 0%,
+            rgba(9, 13, 23, 0.8) 50%,
+            rgba(9, 13, 23, 1) 100%);
+    z-index: 2;
+}
+
+.dotd-story-content {
+    position: relative;
+    z-index: 10;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 60px 30px;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+.dotd-story-badge {
+    background: #fbbf24;
+    color: #0f172a;
+    padding: 8px 18px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 2.5px;
+    margin-bottom: 40px;
+    box-shadow: 0 10px 20px rgba(251, 191, 36, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dotd-story-image-card {
+    width: 350px;
+    background: rgba(30, 41, 59, 0.301) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 30px;
+    padding: 40px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.6);
+    margin: 20px 0 40px;
+    position: relative;
+}
+
+.dotd-story-photo-wrapper {
+    position: relative;
+    width: 180px !important;
+    height: 180px !important;
+    margin: 0 auto 25px !important;
+    border: 4px solid #fbbf24;
+    border-radius: 50%;
+    padding: 4px;
+    /* Reduced padding for cleaner look */
+    background: #0f172a;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    box-sizing: border-box;
+    display: flex;
+    /* Centering the image perfectly */
+    align-items: center;
+    justify-content: center;
+    overflow: visible;
+}
+
+.dotd-story-photo {
+    width: 100% !important;
+    height: 100% !important;
+    border-radius: 50% !important;
+    object-fit: cover !important;
+    object-position: center top !important;
+    display: block;
+    margin: 0;
+    /* High quality rendering hints */
+    image-rendering: -webkit-optimize-contrast;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+}
+
+.dotd-story-crown-absolute {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #fbbf24;
+    color: #0f172a;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    border: 3px solid #0f172a;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+    z-index: 10;
+}
+
+.dotd-title-container {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.dotd-story-name {
+    /* EXTREME RESET FOR HTML2CANVAS */
+    background: transparent !important;
+    background-color: transparent !important;
+    -webkit-background-clip: initial !important;
+    background-clip: initial !important;
+    color: white !important;
+    -webkit-text-fill-color: white !important;
+    text-shadow: 0 5px 15px rgba(0, 0, 0, 0.5) !important;
+
+    font-family: 'Russo One', sans-serif;
+    font-size: 2.5rem;
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 15px 0 0 0 !important;
+    padding: 0 !important;
+    text-align: center;
+}
+
+.dotd-story-team {
+    color: #94a3b8;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 5px;
+}
+
+.dotd-story-stats-grid {
+    display: flex;
+    gap: 15px;
+    width: 100%;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.dotd-story-stat-box {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 12px 20px;
+    border-radius: 15px;
+    flex: 1;
+    max-width: 130px;
+}
+
+.dotd-story-stat-val {
+    display: block;
+    font-family: 'Russo One', sans-serif;
+    font-size: 1.4rem;
+    color: #fbbf24;
+}
+
+.dotd-story-stat-lbl {
+    display: block;
+    font-size: 0.65rem;
+    color: #94a3b8;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 2px;
+}
+
+.dotd-story-footer {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.dotd-story-branding {
+    font-family: 'Russo One', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 3px;
+    color: white;
+    text-transform: uppercase;
+}
+
+.dotd-story-date {
+    color: #fbbf24;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    opacity: 0.9;
+}
+
+.dotd-share-loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(9, 13, 23, 0.95);
+    backdrop-filter: blur(10px);
+    z-index: 10000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.dotd-share-loader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    color: #fbbf24;
+}
+
+.dotd-share-loader i {
+    font-size: 3.5rem;
+    filter: drop-shadow(0 0 15px rgba(251, 191, 36, 0.5));
+}
+
+.dotd-share-loader span {
+    font-weight: 700;
+    letter-spacing: 1px;
+    font-size: 1.1rem;
+}

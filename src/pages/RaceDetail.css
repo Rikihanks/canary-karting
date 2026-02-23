@@ -1,0 +1,54 @@
+.share-actions-inline {
+    display: flex;
+    gap: 10px;
+    margin-left: 15px;
+}
+
+.share-race-btn,
+.preview-race-btn {
+    background: rgba(251, 191, 36, 0.15);
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    color: #fbbf24;
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    font-size: 1rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.share-race-btn:hover {
+    background: #fbbf24;
+    color: #020617;
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 8px 20px rgba(251, 191, 36, 0.3);
+}
+
+.preview-race-btn {
+    background: rgba(148, 163, 184, 0.15);
+    border-color: rgba(148, 163, 184, 0.3);
+    color: #f1f5f9;
+}
+
+.preview-race-btn:hover {
+    background: #f1f5f9;
+    color: #020617;
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 8px 20px rgba(255, 255, 255, 0.2);
+}
+
+/* Glass table tweaks for consistency */
+.results-table-container {
+    padding-top: 5px;
+    padding-bottom: 15px;
+}
+
+#resultado-section h2 {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}

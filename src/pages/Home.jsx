@@ -14,6 +14,8 @@ const Home = () => {
     const [loading, setLoading] = useState(drivers.length === 0);
     const [error, setError] = useState(null);
     const [activeDivision, setActiveDivision] = useState(() => {
+        localStorage.removeItem('ck_reveals');
+        localStorage.removeItem('dotd_results_cache');
         const savedDivision = localStorage.getItem('active_division_leaderboard');
         return savedDivision ? parseInt(savedDivision) : 1;
     });

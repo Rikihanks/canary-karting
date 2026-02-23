@@ -3,6 +3,8 @@ import { useSearchParams, Link } from 'react-router-dom';
 import PullToRefresh from 'react-simple-pull-to-refresh';
 import { getRaceDetails } from '../services/data';
 import { useAuth } from '../context/AuthContext';
+import RaceResultStoryShare from '../components/RaceResultStoryShare';
+import './RaceDetail.css'; // Assuming we might need some extra page styles or they exist
 
 const RaceDetail = () => {
     const [searchParams] = useSearchParams();
@@ -22,6 +24,9 @@ const RaceDetail = () => {
     const [isQualyOpen, setIsQualyOpen] = useState(false); // Start closed for animation
     const [isResultOpen, setIsResultOpen] = useState(false); // Default closed
     const resultsRef = useRef(null);
+
+    const [sharingResults, setSharingResults] = useState(null);
+    const [isPreviewing, setIsPreviewing] = useState(false);
 
     // Auto-scroll to results when opened
     useEffect(() => {
@@ -72,8 +77,6 @@ const RaceDetail = () => {
     }, [id, date, division]);
 
     const renderGrid = (data, type) => {
-        console.log(data);
-
         if (data.length === 0) return <p className="empty-message" style={{ textAlign: 'center', color: '#94a3b8' }}>No hay datos de {type} para esta carrera.</p>;
 
         const sortedData = [...data].sort((a, b) => a.posicion - b.posicion);
@@ -210,7 +213,37 @@ const RaceDetail = () => {
                                     userSelect: 'none'
                                 }}
                             >
-                                <span>🏁 Resultado Final</span>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    <span>🏁 Resultado Final</span>
+                                    {resultData.length > 0 && (
+                                        <div className="share-actions-inline">
+                                            <button
+                                                className="share-race-btn"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setIsPreviewing(false);
+                                                    setSharingResults(resultData);
+                                                }}
+                                                title="Compartir Story"
+                                            >
+                                                <i className="fa-solid fa-share-nodes"></i>
+                                            </button>
+                                            {import.meta.env.DEV && (
+                                                <button
+                                                    className="preview-race-btn"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setIsPreviewing(true);
+                                                        setSharingResults(resultData);
+                                                    }}
+                                                    title="Vista Previa"
+                                                >
+                                                    <i className="fa-solid fa-eye"></i>
+                                                </button>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
                                 <i className={`fa-solid fa-chevron-${isResultOpen ? 'up' : 'down'}`} style={{ fontSize: '0.8em', transition: 'transform 0.3s' }}></i>
                             </h2>
                             <div className={`collapsible-content ${isResultOpen ? 'open' : ''}`}>
@@ -221,7 +254,7 @@ const RaceDetail = () => {
                                     <div className="fastest-lap-banner fade-in">
                                         <div className="fl-content">
                                             <div className="fl-label">
-                                                <i className="fa-solid fa-stopwatch-20"></i> VUELTA RÁPIDA
+                                                <i className="fa-solid fa-stopwatch-20"></i> VUELTA RÁPIDA DE CARRERA
                                             </div>
                                             <div className="fl-driver">
                                                 {fastestLapDriver.piloto}
@@ -523,6 +556,17 @@ const RaceDetail = () => {
                         padding-bottom: 20px;
                     }
                 `}</style>
+                <RaceResultStoryShare
+                    results={sharingResults}
+                    circuitId={id}
+                    circuitName={circuitName}
+                    date={date}
+                    division={division}
+                    fastestLapDriver={fastestLapDriver}
+                    debug={isPreviewing}
+                    onShareComplete={() => setSharingResults(null)}
+                    onShareError={(msg) => alert(msg)}
+                />
             </div>
         </PullToRefresh>
     );

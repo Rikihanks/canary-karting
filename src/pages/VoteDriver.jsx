@@ -5,6 +5,7 @@ import { useConfig } from '../context/ConfigContext';
 import { getLeaderboardData, submitVote, getDOTDResults } from '../services/data';
 import { useAuth } from '../context/AuthContext';
 import { logEvent } from '../services/telemetry';
+import DOTDStoryShare from '../components/DOTDStoryShare';
 
 const VoteDriver = () => {
     const config = useConfig();
@@ -25,6 +26,8 @@ const VoteDriver = () => {
     const [showSuccess, setShowSuccess] = useState(false);
     const [hasAlreadyVoted, setHasAlreadyVoted] = useState(false);
     const [submittingDriver, setSubmittingDriver] = useState(null);
+    const [sharingWinner, setSharingWinner] = useState(null);
+    const [isPreviewing, setIsPreviewing] = useState(false);
 
     const [revealedDivs, setRevealedDivs] = useState([]);
 
@@ -182,6 +185,36 @@ const VoteDriver = () => {
         }
     };
 
+    const handleShareWinner = (e, winner, divId, totalVotes) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const driverInfo = filteredDrivers.find(d => d.name === winner.driver);
+        console.log(driverInfo);
+
+        setSharingWinner({
+            ...winner,
+            photo: driverInfo?.photo,
+            team: driverInfo?.team,
+            division: divId,
+            totalVotes
+        });
+        setIsPreviewing(false);
+    };
+
+    const handlePreviewWinner = (e, winner, divId, totalVotes) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const driverInfo = filteredDrivers.find(d => d.name === winner.driver);
+        setSharingWinner({
+            ...winner,
+            photo: driverInfo?.photo,
+            team: driverInfo?.team,
+            division: divId,
+            totalVotes
+        });
+        setIsPreviewing(true);
+    };
+
     const filteredDrivers = drivers
         .filter(driver => driver.division === activeDivision)
         .filter(driver => driver.season === activeSeason)
@@ -310,6 +343,23 @@ const VoteDriver = () => {
                                                                                 <div className="winner-team">{driverInfo?.team || 'INDEPENDIENTE'}</div>
                                                                                 <div className="winner-votes">
                                                                                     {totalVotes > 0 ? ((winner.votes / totalVotes) * 100).toFixed(0) : 0}% de los votos
+                                                                                </div>
+
+                                                                                <div className="winner-share-actions">
+                                                                                    <button
+                                                                                        className="winner-share-btn"
+                                                                                        onClick={(e) => handleShareWinner(e, winner, divId, totalVotes)}
+                                                                                    >
+                                                                                        <i className="fa-solid fa-share-nodes"></i> Compartir
+                                                                                    </button>
+                                                                                    {import.meta.env.DEV && (
+                                                                                        <button
+                                                                                            className="winner-preview-btn"
+                                                                                            onClick={(e) => handlePreviewWinner(e, winner, divId, totalVotes)}
+                                                                                        >
+                                                                                            <i className="fa-solid fa-eye"></i>
+                                                                                        </button>
+                                                                                    )}
                                                                                 </div>
                                                                             </div>
                                                                         </Link>
@@ -1085,6 +1135,49 @@ const VoteDriver = () => {
                         font-weight: 800;
                         font-size: 1rem;
                         color: #fff;
+                        margin-bottom: 15px;
+                    }
+
+                    .winner-share-actions {
+                        display: flex;
+                        gap: 10px;
+                        justify-content: center;
+                    }
+
+                    .winner-share-btn {
+                        background: #fbbf24;
+                        color: #0f172a;
+                        border: none;
+                        padding: 8px 16px;
+                        border-radius: 12px;
+                        font-weight: 800;
+                        font-size: 0.85rem;
+                        cursor: pointer;
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        transition: all 0.3s;
+                        text-transform: uppercase;
+                        letter-spacing: 0.5px;
+                    }
+
+                    .winner-share-btn:active {
+                        transform: scale(0.95);
+                        background: #f59e0b;
+                    }
+
+                    .winner-preview-btn {
+                        background: rgba(255, 255, 255, 0.1);
+                        color: white;
+                        border: 1px solid rgba(255, 255, 255, 0.2);
+                        padding: 8px 12px;
+                        border-radius: 12px;
+                        cursor: pointer;
+                        transition: all 0.3s;
+                    }
+
+                    .winner-preview-btn:hover {
+                        background: rgba(255, 255, 255, 0.2);
                     }
 
                     .division-tag {
@@ -1275,6 +1368,21 @@ const VoteDriver = () => {
                     }
                 `}</style>
             </div>
+            <DOTDStoryShare
+                winner={sharingWinner}
+                division={sharingWinner?.division}
+                totalVotes={sharingWinner?.totalVotes}
+                debug={isPreviewing}
+                onShareComplete={() => {
+                    setSharingWinner(null);
+                    setIsPreviewing(false);
+                }}
+                onShareError={(msg) => {
+                    alert(msg);
+                    setSharingWinner(null);
+                    setIsPreviewing(false);
+                }}
+            />
         </PullToRefresh>
     );
 };
