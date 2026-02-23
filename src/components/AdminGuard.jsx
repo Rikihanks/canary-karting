@@ -20,6 +20,15 @@ const AdminGuard = ({ children }) => {
         setLoading(true);
         setError(null);
         try {
+            // Bypass Google login on localhost for development
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                setIsAuthenticated(true);
+                sessionStorage.setItem('canary_admin_auth', 'true');
+                sessionStorage.setItem('canary_admin_email', 'admin_local@localhost.com');
+                setLoading(false);
+                return;
+            }
+
             const result = await signInWithPopup(auth, googleProvider);
             const userEmail = result.user.email;
 

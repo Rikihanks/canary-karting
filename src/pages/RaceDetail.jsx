@@ -9,6 +9,7 @@ const RaceDetail = () => {
     const id = searchParams.get('id');
     const date = searchParams.get('date');
     const circuitName = searchParams.get('circuitName');
+    const division = searchParams.get('division');
 
     const [clasiData, setClasiData] = useState([]);
     const [resultData, setResultData] = useState([]);
@@ -50,10 +51,10 @@ const RaceDetail = () => {
 
         const fetchData = async () => {
             try {
-                const { clasi, results, raceInfo } = await getRaceDetails(id, date);
+                const { clasi, results, raceInfo } = await getRaceDetails(id, date, division);
 
-                const filteredClasi = clasi.filter(r => r.id_circuito === id && r.fecha === date);
-                const filteredResults = results.filter(r => r.id_circuito === id && r.fecha === date);
+                const filteredClasi = clasi.filter(r => r.id_circuito === id && r.fecha === date && (!division || r.division == division));
+                const filteredResults = results.filter(r => r.id_circuito === id && r.fecha === date && (!division || r.division == division));
 
                 setClasiData(filteredClasi);
                 setResultData(filteredResults);
@@ -68,11 +69,9 @@ const RaceDetail = () => {
         };
 
         fetchData();
-    }, [id, date]);
+    }, [id, date, division]);
 
     const renderGrid = (data, type) => {
-        console.log(data);
-
         if (data.length === 0) return <p className="empty-message" style={{ textAlign: 'center', color: '#94a3b8' }}>No hay datos de {type} para esta carrera.</p>;
 
         const sortedData = [...data].sort((a, b) => a.posicion - b.posicion);
@@ -107,10 +106,10 @@ const RaceDetail = () => {
         const { clearCache } = await import('../services/data');
         clearCache();
         try {
-            const { clasi, results } = await getRaceDetails();
+            const { clasi, results } = await getRaceDetails(id, date, division);
 
-            const filteredClasi = clasi.filter(r => r.id_circuito === id && r.fecha === date);
-            const filteredResults = results.filter(r => r.id_circuito === id && r.fecha === date);
+            const filteredClasi = clasi.filter(r => r.id_circuito === id && r.fecha === date && (!division || r.division == division));
+            const filteredResults = results.filter(r => r.id_circuito === id && r.fecha === date && (!division || r.division == division));
 
             setClasiData(filteredClasi);
             setResultData(filteredResults);
@@ -125,6 +124,33 @@ const RaceDetail = () => {
         '2': 'https://iili.io/ftKPwpj.png'
     };
     const headerBackgroundImage = circuitImages[id] || 'https://wikikarting.com/wp-content/uploads/2021/03/Instalaciones-Karting-Canarias.webp';
+
+    const getFastestLapDriver = (results) => {
+        if (!results || results.length === 0) return null;
+        let fastestDriver = null;
+        let bestTime = Infinity;
+
+        for (const r of results) {
+            if (r.vuelta_rapida && typeof r.vuelta_rapida === 'string' && r.vuelta_rapida.trim() !== '' && r.vuelta_rapida.toLowerCase() !== 'n/a') {
+                const timeStr = r.vuelta_rapida.replace(',', '.');
+                let seconds = Infinity;
+                if (timeStr.includes(':')) {
+                    const parts = timeStr.split(':');
+                    seconds = parseFloat(parts[0]) * 60 + parseFloat(parts[1]);
+                } else {
+                    seconds = parseFloat(timeStr);
+                }
+
+                if (!isNaN(seconds) && seconds > 0 && seconds < bestTime) {
+                    bestTime = seconds;
+                    fastestDriver = r;
+                }
+            }
+        }
+        return fastestDriver;
+    };
+
+    const fastestLapDriver = getFastestLapDriver(resultData);
 
     return (
         <PullToRefresh onRefresh={handleRefresh} pullingContent={''}>
@@ -189,17 +215,17 @@ const RaceDetail = () => {
                                 <div id="resultado-table" className="results-table-container">
                                     {renderGrid(resultData, 'resultados')}
                                 </div>
-                                {resultData.find(r => r.vuelta_rapida) && (
+                                {fastestLapDriver && (
                                     <div className="fastest-lap-banner fade-in">
                                         <div className="fl-content">
                                             <div className="fl-label">
                                                 <i className="fa-solid fa-stopwatch-20"></i> VUELTA RÁPIDA
                                             </div>
                                             <div className="fl-driver">
-                                                {resultData.find(r => r.vuelta_rapida).piloto}
+                                                {fastestLapDriver.piloto}
                                             </div>
                                             <div className="fl-time">
-                                                ⏱️ {resultData.find(r => r.vuelta_rapida).vuelta_rapida}
+                                                ⏱️ {fastestLapDriver.vuelta_rapida}
                                             </div>
                                         </div>
                                     </div>

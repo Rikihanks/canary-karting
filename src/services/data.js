@@ -1,5 +1,10 @@
+import { getLeaderboardDataV2, getTeamsDataV2 } from './dataAggregation';
+
 const GOOGLE_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTlPsGq-SypD4WPitvnR7JcluA8_6-5ePtuzyf5zFGJ31eppN55iUIHsKo0oduOZ9AVyVTf6VkPvTyu/pub?output=csv";
 const RESULTS_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQP2AF0yixedvzkQcGkkLxnAP4fKl26f46dCFHdL6f11_QbeZP6NHLDshKqBkKtZdYLkyH8Rqrtedp5/pub?output=csv";
+
+const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const USE_V2_ON_LOCALHOST = false;
 
 // Flag to use mock data for development
 const USE_MOCK_DATA = false;
@@ -200,6 +205,9 @@ export function parseRaceDetailCSV(csvText) {
 }
 
 export async function getLeaderboardData(skipCache = false) {
+    if (isLocalhost && USE_V2_ON_LOCALHOST) {
+        return await getLeaderboardDataV2(skipCache);
+    }
     const response = await fetchWithRetry(SHEET_URL, 3, skipCache, true);
     const data = await response.text();
     return parseCSV(data);
@@ -286,16 +294,19 @@ export function parseTeamsCSV(csvText) {
 }
 
 export async function getTeamsData(skipCache = false) {
+    if (isLocalhost && USE_V2_ON_LOCALHOST) {
+        return await getTeamsDataV2(skipCache);
+    }
     const response = await fetchWithRetry(TEAMS_URL, 3, skipCache, true);
     const data = await response.text();
     return parseTeamsCSV(data);
 }
 
-export async function getRaceDetails(id, date) {
+export async function getRaceDetails(id, date, division) {
     if (USE_MOCK_DATA) {
         console.log('Using mock race data');
         const { mockClasiData, mockResultData, mockCalendarData } = await import('./mockRaceData');
-        const raceInfo = mockCalendarData.find(r => r.id_circuito === id && r.fecha === date);
+        const raceInfo = mockCalendarData.find(r => r.id_circuito === id && r.fecha === date && (!division || r.division == division));
         return {
             clasi: mockClasiData,
             results: mockResultData,
@@ -309,7 +320,7 @@ export async function getRaceDetails(id, date) {
         getCalendarData()
     ]);
 
-    const raceInfo = calendarData.find(r => r.id_circuito === id && r.fecha === date);
+    const raceInfo = calendarData.find(r => r.id_circuito === id && r.fecha === date && (!division || r.division == division));
 
     return {
         clasi: parseRaceDetailCSV(clasiData),

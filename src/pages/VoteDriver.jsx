@@ -293,7 +293,7 @@ const VoteDriver = () => {
                                                                     </div>
                                                                 )}
                                                                 {winners.map((winner, idx) => {
-                                                                    const driverInfo = drivers.find(d => d.name === winner.driver);
+                                                                    const driverInfo = filteredDrivers.find(d => d.name === winner.driver);
                                                                     return (
                                                                         <Link
                                                                             key={winner.driver}
