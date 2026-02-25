@@ -30,6 +30,7 @@ const TeamProfile = lazy(() => import('./pages/TeamProfile'));
 const Inscripcion_Academia = lazy(() => import('./pages/Inscripcion_Academia'));
 const FeatureDisabled = lazy(() => import('./pages/FeatureDisabled'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const AdminResults = lazy(() => import('./pages/AdminResults'));
 const VoteDriver = lazy(() => import('./pages/VoteDriver'));
 const TeamDraw = lazy(() => import('./pages/TeamDraw'));
 const InstallApp = lazy(() => import('./pages/InstallApp'));
@@ -157,6 +158,12 @@ function App() {
                     <Route path="/admin" element={
                       <AdminGuard>
                         <AdminDashboard />
+                      </AdminGuard>
+                    } />
+
+                    <Route path="/admin-results" element={
+                      <AdminGuard>
+                        <AdminResults />
                       </AdminGuard>
                     } />
 

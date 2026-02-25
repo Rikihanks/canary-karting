@@ -188,6 +188,9 @@ const AdminDashboard = () => {
                         <Link to="/sorteo" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', padding: '12px 16px', borderRadius: '8px', color: 'white', fontWeight: 'bold' }}>
                             <i className="fa-solid fa-ticket"></i> Sorteo de Karts (Admin)
                         </Link>
+                        <Link to="/admin-results" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none', background: 'rgba(59, 130, 246, 0.2)', border: '1px solid var(--accent)', padding: '12px 16px', borderRadius: '8px', color: 'white', fontWeight: 'bold' }}>
+                            <i className="fa-solid fa-list-ol"></i> Gestión de Resultados V2
+                        </Link>
                     </div>
                 </CollapsibleSection>
 

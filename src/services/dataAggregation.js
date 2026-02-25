@@ -1,4 +1,5 @@
 import { fetchWithRetry, getDOTDResults } from './data';
+import { getBackendData } from './backendService';
 
 // ==========================================
 // NEW V2 SPREADSHEET LINKS (PLACEHOLDERS)
@@ -22,6 +23,7 @@ const POINTS_SYSTEM = {
 };
 
 const POLE_POINTS = 1;
+const WIN_BONUS = 0;
 const FAST_LAP_POINTS = 1;
 
 // ==========================================
@@ -58,7 +60,7 @@ export function parseResultsV2CSV(csvText) {
         if (!line) continue;
         const parts = line.split(',');
 
-        // Expected columns: Piloto, ID_Circuito, Fecha, Division, Posicion_Clasificacion, Posicion_Final, Tiempo_Vuelta_Rapida, Es_Vuelta_Rapida, Condicion, Investigando
+        // Expected columns: Piloto, ID_Circuito, Fecha, Division, Posicion_Clasificacion, Posicion_Final, Tiempo_Vuelta_Rapida, Es_Vuelta_Rapida, Condicion, Investigando, Sustituye_A
         if (parts.length >= 8) {
             results.push({
                 pilot: parts[0].trim(),
@@ -71,6 +73,7 @@ export function parseResultsV2CSV(csvText) {
                 es_vuelta_rapida: parts[7].trim().toUpperCase() === 'TRUE' || parts[7].trim().toUpperCase() === 'SI' || parts[7].trim() === '1',
                 condicion: parts[8] ? parts[8].trim() : "Seco",
                 investigating: parts[9] ? (parseInt(parts[9].trim()) || 0) : 0,
+                replaces: parts[10] ? parts[10].trim() : ""
             });
         }
     }
@@ -101,12 +104,28 @@ export function parseTeamsV2CSV(csvText) {
 let aggregationCache = null;
 
 async function buildAggregatedData() {
-    // Si tienes enlaces reales, descomenta esto. 
-    // Por ahora, para no romper nada, devolveremos arrays vacios si fallan los placeholders
     let pilotsData = [];
     let resultsData = [];
     let teamsMeta = [];
 
+    const { getBackendData, USE_V3 } = await import('./backendService');
+
+    if (USE_V3) {
+        try {
+            const backendResponse = await getBackendData();
+            if (backendResponse.success) {
+                pilotsData = backendResponse.data.pilots;
+                resultsData = backendResponse.data.results;
+                teamsMeta = backendResponse.data.teams;
+                aggregationCache = { pilotsMap: new Map(), teamsMap: new Map(), resultsData: [] };
+                // ... same processing logic as V2 but with V3 data ...
+            }
+        } catch (e) {
+            console.warn("V3 fetch failed, you might want to enable it in backendService.js", e);
+        }
+    }
+
+    // V2 Sheets Fallback (remains active until V3 is toggled)
     try {
         const pilotsRes = await fetchWithRetry(PILOTS_V2_CSV_LINK, 1, false, false);
         pilotsData = parsePilotsV2CSV(await pilotsRes.text());
@@ -114,17 +133,13 @@ async function buildAggregatedData() {
         const resultsRes = await fetchWithRetry(RESULTS_V2_CSV_LINK, 1, false, false);
         resultsData = parseResultsV2CSV(await resultsRes.text());
 
-        // Retrieve team metadata (logo, etc) if available
         try {
             const teamsRes = await fetchWithRetry(TEAMS_V2_CSV_LINK, 1, false, false);
             teamsMeta = parseTeamsV2CSV(await teamsRes.text());
-        } catch (e) {
-            console.warn("Teams_V2 CSV no configurado, los logos no cargarán.", e);
-        }
+        } catch (e) { }
 
     } catch (e) {
-        console.warn("V2 CSVs no están configurados todavía o falló la descarga.", e);
-        // Retornar data vacía u objetos simulados por ahora para no romper
+        console.warn("V2 CSVs failed.", e);
         return { pilotsMap: new Map(), teamsMap: new Map(), resultsData: [] };
     }
 
@@ -140,8 +155,7 @@ async function buildAggregatedData() {
             division: p.division,
             season: p.season,
             championship: p.championship,
-            dotdTimes: p.dotdTimes, // LECTURA DIRECTA DE LA COLUMNA DOTD
-            // Calculated fields:
+            dotdTimes: p.dotdTimes,
             points: 0,
             podiums: 0,
             poles: 0,
@@ -150,43 +164,11 @@ async function buildAggregatedData() {
         });
     });
 
-    // 2. Process Race Results to calculate Points
-    resultsData.forEach(r => {
-        const pState = pilotsMap.get(r.pilot);
-        if (!pState) return; // Piloto no encontrado en Pilotos_V2
-
-        // Calulate points
-        let pts = 0;
-
-        // - Race Position points
-        if (POINTS_SYSTEM[r.pos_final]) {
-            pts += POINTS_SYSTEM[r.pos_final];
-        }
-
-        // - Pole position points
-        if (r.pos_clasificacion === 1) {
-            pts += POLE_POINTS;
-            pState.poles += 1;
-        }
-
-        // - Fastest lap points
-        if (r.es_vuelta_rapida) {
-            pts += FAST_LAP_POINTS;
-        }
-
-        // Update Pilot State
-        pState.points += pts;
-        if (r.pos_final === 1) pState.wins += 1;
-        if (r.pos_final > 0 && r.pos_final <= 3) pState.podiums += 1;
-        if (r.investigating === 1) pState.investigating = 1;
-    });
-
-    // 3. Aggregate Teams Data
+    // 2. Initialize Teams Map (to decouple points from individual pilot sums)
+    // We need to know which teams exist and their metadata
     Array.from(pilotsMap.values()).forEach(p => {
         if (!teamsMap.has(p.team)) {
-            // Find team metadata if we fetched it (for the logo)
             const meta = teamsMeta.find(t => t.name.toLowerCase() === p.team.toLowerCase());
-
             teamsMap.set(p.team, {
                 name: p.team,
                 points: 0,
@@ -199,14 +181,64 @@ async function buildAggregatedData() {
                 season: p.season
             });
         }
-
         const tState = teamsMap.get(p.team);
-        tState.points += p.points;
-        tState.podiums += p.podiums;
-        tState.poles += p.poles;
-        tState.wins += p.wins;
         if (!tState.pilots.includes(p.name)) {
             tState.pilots.push(p.name);
+        }
+    });
+
+    // 3. Process Race Results with Business Rules for Substitutions
+    resultsData.forEach(r => {
+        const actingPilot = pilotsMap.get(r.pilot);
+        const replacedPilot = r.replaces ? pilotsMap.get(r.replaces) : null;
+
+        if (!actingPilot && !replacedPilot) return; // Unknown actors
+
+        // Calculate points for this result
+        let pts = 0;
+        if (POINTS_SYSTEM[r.pos_final]) pts += POINTS_SYSTEM[r.pos_final];
+        if (r.pos_final === 1) pts += WIN_BONUS; // Win bonus
+        if (r.pos_clasificacion === 1) pts += POLE_POINTS;
+        if (r.es_vuelta_rapida) pts += FAST_LAP_POINTS;
+
+        // Determine who gets the points/stats
+        if (replacedPilot) {
+            // SUBSTITUTION RULE:
+            // - Acting pilot (A) gets 0 personal points.
+            // - Replaced pilot (B) gets 0 personal points.
+            // - Team of replaced pilot (B) gets the points and stats.
+
+            const targetTeamName = replacedPilot.team;
+            const tState = teamsMap.get(targetTeamName);
+
+            if (tState) {
+                tState.points += pts;
+                if (r.pos_final === 1) tState.wins += 1;
+                if (r.pos_final > 0 && r.pos_final <= 3) tState.podiums += 1;
+                if (r.pos_clasificacion === 1) tState.poles += 1;
+            }
+
+            // The acting pilot still gets the "investigating" flag if they were involved in an incident
+            if (actingPilot && r.investigating === 1) actingPilot.investigating = 1;
+
+        } else if (actingPilot) {
+            // NORMAL RULE:
+            // - Pilot gets points.
+            // - Team gets points.
+
+            actingPilot.points += pts;
+            if (r.pos_final === 1) actingPilot.wins += 1;
+            if (r.pos_final > 0 && r.pos_final <= 3) actingPilot.podiums += 1;
+            if (r.pos_clasificacion === 1) actingPilot.poles += 1;
+            if (r.investigating === 1) actingPilot.investigating = 1;
+
+            const tState = teamsMap.get(actingPilot.team);
+            if (tState) {
+                tState.points += pts;
+                if (r.pos_final === 1) tState.wins += 1;
+                if (r.pos_final > 0 && r.pos_final <= 3) tState.podiums += 1;
+                if (r.pos_clasificacion === 1) tState.poles += 1;
+            }
         }
     });
 
@@ -227,4 +259,11 @@ export async function getTeamsDataV2(skipCache = false) {
         await buildAggregatedData();
     }
     return Array.from(aggregationCache.teamsMap.values());
+}
+
+export async function getResultsDataV2(skipCache = false) {
+    if (!aggregationCache || skipCache) {
+        await buildAggregatedData();
+    }
+    return aggregationCache.resultsData;
 }

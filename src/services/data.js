@@ -1,10 +1,11 @@
-import { getLeaderboardDataV2, getTeamsDataV2 } from './dataAggregation';
+import { getLeaderboardDataV2, getTeamsDataV2, getResultsDataV2 } from './dataAggregation';
+import { getBackendData } from './backendService';
 
 const GOOGLE_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTlPsGq-SypD4WPitvnR7JcluA8_6-5ePtuzyf5zFGJ31eppN55iUIHsKo0oduOZ9AVyVTf6VkPvTyu/pub?output=csv";
 const RESULTS_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQP2AF0yixedvzkQcGkkLxnAP4fKl26f46dCFHdL6f11_QbeZP6NHLDshKqBkKtZdYLkyH8Rqrtedp5/pub?output=csv";
 
 const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-const USE_V2_ON_LOCALHOST = false;
+const USE_V2 = window.location.hostname.includes('rikihanks') || window.location.hostname.includes('canarykarting') || isLocalhost;
 
 // Flag to use mock data for development
 const USE_MOCK_DATA = false;
@@ -18,7 +19,7 @@ const UPDATE_CONFIG_EXEC = "https://script.google.com/macros/s/AKfycbwPsWOaN1WkF
 const DRIVER_OF_THE_DAY_EXEC = "https://script.google.com/macros/s/AKfycbxa4ahCzg9IieNBR3y4OxPHnqeBwA10oU9XrEG9yYIWYbH82cw8Fmkes-ivheETAsFupg/exec";
 const DOTD_RESULTS_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTLNZjbf5AjIxBl659WE4OZsK1RpOpu7HSwa55-b3Dbxxp2Rrggu5lDdjXLyhvZYXpB7uYE6LaEP_G2/pub?output=csv";
 const NEWS_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRguh21pKudFW_SOQW1wyjW-D95dzJ_Rn8LK-tHeaes0zKbRPVQbzRcKy_4xJ1l-tXRyTff4nfkbOLm/pub?output=csv";
-
+export const RESULTS_V2_EXEC = "https://script.google.com/macros/s/AKfycbxA5js_Adt78HAQHW6851VtqZCtMzZoFEVuqi4A31752DUCM_tc0EtYRrPTGJTBLgap/exec";
 
 // Direct URLs - Google Sheets published CSVs are already CORS-enabled
 const DOTD_RESULTS_URL = DOTD_RESULTS_CSV_LINK;
@@ -205,7 +206,7 @@ export function parseRaceDetailCSV(csvText) {
 }
 
 export async function getLeaderboardData(skipCache = false) {
-    if (isLocalhost && USE_V2_ON_LOCALHOST) {
+    if (USE_V2) {
         return await getLeaderboardDataV2(skipCache);
     }
     const response = await fetchWithRetry(SHEET_URL, 3, skipCache, true);
@@ -224,6 +225,18 @@ export async function getCalendarData(skipCache = false) {
         const { mockCalendarData } = await import('./mockRaceData');
         return mockCalendarData;
     }
+
+    if (USE_V2) {
+        try {
+            const backendResponse = await getBackendData();
+            if (backendResponse.success && backendResponse.data.calendar.length > 0) {
+                return backendResponse.data.calendar;
+            }
+        } catch (e) {
+            console.warn("Backend calendar v3 fetch failed, falling back to Sheets", e);
+        }
+    }
+
     const response = await fetchWithRetry(CALENDAR_CSV_LINK, 3, skipCache, true);
     const data = await response.text();
     return parseCalendarCSV(data);
@@ -294,7 +307,7 @@ export function parseTeamsCSV(csvText) {
 }
 
 export async function getTeamsData(skipCache = false) {
-    if (isLocalhost && USE_V2_ON_LOCALHOST) {
+    if (USE_V2) {
         return await getTeamsDataV2(skipCache);
     }
     const response = await fetchWithRetry(TEAMS_URL, 3, skipCache, true);
@@ -303,13 +316,36 @@ export async function getTeamsData(skipCache = false) {
 }
 
 export async function getRaceDetails(id, date, division) {
-    if (USE_MOCK_DATA) {
-        console.log('Using mock race data');
-        const { mockClasiData, mockResultData, mockCalendarData } = await import('./mockRaceData');
-        const raceInfo = mockCalendarData.find(r => r.id_circuito === id && r.fecha === date && (!division || r.division == division));
+    if (USE_V2) {
+        const [allResults, calendarData] = await Promise.all([
+            getResultsDataV2(),
+            getCalendarData()
+        ]);
+
+        const raceInfo = calendarData.find(r => r.id_circuito === id && r.fecha === date && (!division || r.division == division));
+
+        // Filter results for this specific race and division
+        const raceResults = allResults.filter(r => r.id_circuito === id && r.date === date && (!division || r.division == division));
+
+        // Format for UI (RaceDetail.jsx expects specific naming conventions)
+        const formatForUI = (r, isClasi = false) => ({
+            piloto: r.replaces ? `${r.pilot} *` : r.pilot,
+            posicion: isClasi ? r.pos_clasificacion : r.pos_final,
+            id_circuito: r.id_circuito,
+            fecha: r.date,
+            division: r.division,
+            temporada: "2026",
+            vuelta_rapida: r.tiempo_vuelta,
+            es_vuelta_rapida: r.es_vuelta_rapida
+        });
+
         return {
-            clasi: mockClasiData,
-            results: mockResultData,
+            clasi: raceResults
+                .map(r => formatForUI(r, true))
+                .sort((a, b) => a.posicion - b.posicion),
+            results: raceResults
+                .map(r => formatForUI(r, false))
+                .sort((a, b) => a.posicion - b.posicion),
             raceInfo: raceInfo
         };
     }

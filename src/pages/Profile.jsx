@@ -336,7 +336,7 @@ const Profile = () => {
                             <div className="stat-icon-wrapper"><i className="fa-solid fa-bolt"></i></div>
                             <div className="stat-info">
                                 <span className="stat-number">{fastLaps}</span>
-                                <span className="stat-title">Mejor Vuelta</span>
+                                <span className="stat-title">Vueltas rápidas</span>
                             </div>
                         </div>
                     </div>

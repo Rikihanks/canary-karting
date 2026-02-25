@@ -215,7 +215,7 @@ const RaceDetail = () => {
                             >
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                     <span>🏁 Resultado Final</span>
-                                    {resultData.length > 0 && (
+                                    {resultData.length > 0 && (<span></span>/*
                                         <div className="share-actions-inline">
                                             <button
                                                 className="share-race-btn"
@@ -242,7 +242,7 @@ const RaceDetail = () => {
                                                 </button>
                                             )}
                                         </div>
-                                    )}
+                                    */)}
                                 </div>
                                 <i className={`fa-solid fa-chevron-${isResultOpen ? 'up' : 'down'}`} style={{ fontSize: '0.8em', transition: 'transform 0.3s' }}></i>
                             </h2>
