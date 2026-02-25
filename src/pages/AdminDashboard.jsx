@@ -189,7 +189,13 @@ const AdminDashboard = () => {
                             <i className="fa-solid fa-ticket"></i> Sorteo de Karts (Admin)
                         </Link>
                         <Link to="/admin-results" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none', background: 'rgba(59, 130, 246, 0.2)', border: '1px solid var(--accent)', padding: '12px 16px', borderRadius: '8px', color: 'white', fontWeight: 'bold' }}>
-                            <i className="fa-solid fa-list-ol"></i> Gestión de Resultados V2
+                            <i className="fa-solid fa-list-ol"></i> Gestión Resultados V2/V3
+                        </Link>
+                        <Link to="/admin-results-v3" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none', background: 'rgba(16, 185, 129, 0.2)', border: '1px solid #10b981', padding: '12px 16px', borderRadius: '8px', color: 'white', fontWeight: 'bold' }}>
+                            <i className="fa-solid fa-bolt"></i> Gestión Resultados V3 PRO
+                        </Link>
+                        <Link to="/admin-db" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none', background: 'rgba(245, 158, 11, 0.2)', border: '1px solid #f59e0b', padding: '12px 16px', borderRadius: '8px', color: 'white', fontWeight: 'bold' }}>
+                            <i className="fa-solid fa-database"></i> Database SQL Manager
                         </Link>
                     </div>
                 </CollapsibleSection>

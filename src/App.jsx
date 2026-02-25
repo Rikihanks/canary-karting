@@ -31,6 +31,8 @@ const Inscripcion_Academia = lazy(() => import('./pages/Inscripcion_Academia'));
 const FeatureDisabled = lazy(() => import('./pages/FeatureDisabled'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const AdminResults = lazy(() => import('./pages/AdminResults'));
+const AdminResultsV3 = lazy(() => import('./pages/AdminResultsV3'));
+const AdminDatabaseV3 = lazy(() => import('./pages/AdminDatabaseV3'));
 const VoteDriver = lazy(() => import('./pages/VoteDriver'));
 const TeamDraw = lazy(() => import('./pages/TeamDraw'));
 const InstallApp = lazy(() => import('./pages/InstallApp'));
@@ -164,6 +166,18 @@ function App() {
                     <Route path="/admin-results" element={
                       <AdminGuard>
                         <AdminResults />
+                      </AdminGuard>
+                    } />
+
+                    <Route path="/admin-results-v3" element={
+                      <AdminGuard>
+                        <AdminResultsV3 />
+                      </AdminGuard>
+                    } />
+
+                    <Route path="/admin-db" element={
+                      <AdminGuard>
+                        <AdminDatabaseV3 />
                       </AdminGuard>
                     } />
 

@@ -91,6 +91,59 @@ app.get('/api/v3/data', (req, res) => {
     }
 });
 
+// --- SCHEMA MANAGEMENT ENDPOINTS ---
+
+// List all tables
+app.get('/api/v3/tables', (req, res) => {
+    try {
+        const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").all();
+        res.json({ success: true, tables: tables.map(t => t.name) });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Get table schema
+app.get('/api/v3/schema/:table', (req, res) => {
+    const { table } = req.params;
+    try {
+        const columns = db.prepare(`PRAGMA table_info(${table})`).all();
+        res.json({ success: true, columns });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Modify Table Schema (Add, Rename, Drop Columns)
+app.post('/api/v3/schema/modify', (req, res) => {
+    if (process.env.ENABLE_V3 !== 'true') {
+        return res.status(503).json({ success: false, error: 'V3 API is currently disabled' });
+    }
+    const { table, action, columnName, newColumnName, columnType } = req.body;
+
+    try {
+        if (action === 'addColumn') {
+            db.prepare(`ALTER TABLE ${table} ADD COLUMN ${columnName} ${columnType || 'TEXT'}`).run();
+            return res.json({ success: true, message: `Column ${columnName} added to ${table}` });
+        }
+
+        if (action === 'renameColumn') {
+            db.prepare(`ALTER TABLE ${table} RENAME COLUMN ${columnName} TO ${newColumnName}`).run();
+            return res.json({ success: true, message: `Column ${columnName} renamed to ${newColumnName} in ${table}` });
+        }
+
+        if (action === 'dropColumn') {
+            // Note: DROP COLUMN requires SQLite 3.35.0+
+            db.prepare(`ALTER TABLE ${table} DROP COLUMN ${columnName}`).run();
+            return res.json({ success: true, message: `Column ${columnName} dropped from ${table}` });
+        }
+
+        res.status(400).json({ success: false, error: 'Invalid schema action' });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 // --- POST ENDPOINT (WRITE) ---
 app.post('/api/v3/results', (req, res) => {
     if (process.env.ENABLE_V3 !== 'true') {
@@ -100,51 +153,54 @@ app.post('/api/v3/results', (req, res) => {
 
     try {
         if (action === 'addResult') {
-            const stmt = db.prepare(`
-        INSERT INTO results (pilot, id_circuito, date, division, pos_clasificacion, pos_final, tiempo_vuelta, es_vuelta_rapida, condicion, investigating, replaces)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `);
-            stmt.run(
-                payload.pilot,
-                payload.id_circuito,
-                payload.fecha,
-                payload.division,
-                payload.pos_clasificacion,
-                payload.pos_final,
-                payload.tiempo_vuelta,
-                payload.es_vuelta_rapida ? 1 : 0,
-                payload.condicion || 'Seco',
-                payload.investigating || 0,
-                payload.replaces || null
-            );
+            // Get columns dynamically to support expanded schema
+            const columnsInfo = db.prepare("PRAGMA table_info(results)").all();
+            const validColumns = columnsInfo.map(c => c.name).filter(c => c !== 'id');
+
+            // Build dynamic insert
+            const providedKeys = Object.keys(payload).filter(k => validColumns.includes(k));
+            const placeholders = providedKeys.map(() => '?').join(', ');
+            const columnsString = providedKeys.join(', ');
+            const values = providedKeys.map(k => {
+                const val = payload[k];
+                if (typeof val === 'boolean') return val ? 1 : 0;
+                return val;
+            });
+
+            const stmt = db.prepare(`INSERT INTO results (${columnsString}) VALUES (${placeholders})`);
+            stmt.run(...values);
             return res.json({ success: true, message: 'Result added' });
         }
 
         if (action === 'updateResult') {
+            // Get columns dynamically
+            const columnsInfo = db.prepare("PRAGMA table_info(results)").all();
+            const validColumns = columnsInfo.map(c => c.name).filter(c => !['id', 'pilot', 'id_circuito', 'date', 'division'].includes(c));
+
+            const updateParts = [];
+            const values = [];
+
+            Object.keys(payload).forEach(key => {
+                if (validColumns.includes(key)) {
+                    updateParts.push(`${key} = ?`);
+                    let val = payload[key];
+                    if (typeof val === 'boolean') val = val ? 1 : 0;
+                    values.push(val);
+                }
+            });
+
+            if (updateParts.length === 0) {
+                return res.status(400).json({ success: false, error: 'No valid columns to update' });
+            }
+
+            // Where clause values
+            values.push(payload.pilot, payload.id_circuito, payload.fecha, payload.division);
+
             const stmt = db.prepare(`
-        UPDATE results SET 
-          pos_clasificacion = ?, 
-          pos_final = ?, 
-          tiempo_vuelta = ?, 
-          es_vuelta_rapida = ?, 
-          condicion = ?, 
-          investigating = ?, 
-          replaces = ?
+        UPDATE results SET ${updateParts.join(', ')}
         WHERE pilot = ? AND id_circuito = ? AND date = ? AND division = ?
       `);
-            stmt.run(
-                payload.pos_clasificacion,
-                payload.pos_final,
-                payload.tiempo_vuelta,
-                payload.es_vuelta_rapida ? 1 : 0,
-                payload.condicion || 'Seco',
-                payload.investigating || 0,
-                payload.replaces || null,
-                payload.pilot,
-                payload.id_circuito,
-                payload.fecha,
-                payload.division
-            );
+            stmt.run(...values);
             return res.json({ success: true, message: 'Result updated' });
         }
 
