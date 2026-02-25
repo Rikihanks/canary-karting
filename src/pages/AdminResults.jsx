@@ -24,7 +24,8 @@ const AdminResults = () => {
         es_vuelta_rapida: false,
         condicion: 'Seco',
         investigating: 0,
-        replaces: ''
+        replaces: '',
+        tiempo_qualy: ''
     });
 
     useEffect(() => {
@@ -78,7 +79,8 @@ const AdminResults = () => {
             es_vuelta_rapida: false,
             condicion: 'Seco',
             investigating: 0,
-            replaces: ''
+            replaces: '',
+            tiempo_qualy: ''
         });
         setEditingRecord(null);
     };
@@ -93,7 +95,8 @@ const AdminResults = () => {
             es_vuelta_rapida: record.es_vuelta_rapida,
             condicion: record.condicion || 'Seco',
             investigating: record.investigating || 0,
-            replaces: record.replaces || ''
+            replaces: record.replaces || '',
+            tiempo_qualy: record.tiempo_qualy || ''
         });
         // Scroll to form if needed
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -252,8 +255,13 @@ const AdminResults = () => {
                                     </div>
 
                                     <div className="form-group">
-                                        <label>Tiempo Vuelta Rápida</label>
-                                        <input type="text" name="tiempo_vuelta" placeholder="33.723 (usa punto, no coma)" value={formData.tiempo_vuelta} onChange={handleInputChange} />
+                                        <label>Tiempo Vuelta Rápida (Carrera)</label>
+                                        <input type="text" name="tiempo_vuelta" placeholder="33.723" value={formData.tiempo_vuelta} onChange={handleInputChange} />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label>Tiempo Qualy (V3)</label>
+                                        <input type="text" name="tiempo_qualy" placeholder="32.145" value={formData.tiempo_qualy} onChange={handleInputChange} />
                                     </div>
 
                                     <div className="form-row checkbox-row">

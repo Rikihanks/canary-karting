@@ -121,7 +121,7 @@ const Races = () => {
                             {filteredEvents.map((event, index) => (
                                 <li
                                     key={index}
-                                    className={`event-item ${event.activa == 0 ? 'disabled' : ''} ${getDivisionClass(event.division)}`}
+                                    className={`event-item ${event.activa == 0 ? 'disabled' : ''} ${(event.terminada == 1 || event.terminada == '1') && event.activa == 1 ? 'finished' : ''} ${getDivisionClass(event.division)}`}
                                     onClick={() => (event.activa != 0 || window.location.hostname === 'localhost') && handleEventClick(event)}
                                     style={{
                                         cursor: (event.activa != 0 || window.location.hostname === 'localhost') ? 'pointer' : 'default',
@@ -129,7 +129,12 @@ const Races = () => {
                                     }}
                                 >
                                     <div className="event-info">
-                                        <span className={`event-date ${getDivisionClass(event.division)}`} >Fecha: {event.fecha}</span>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <span className={`event-date ${getDivisionClass(event.division)}`} >Fecha: {event.fecha}</span>
+                                            {(event.terminada == 1 || event.terminada == '1') && event.activa == 1 && (
+                                                <i className="fa-solid fa-circle-check" style={{ color: 'var(--accent)', fontSize: '0.9rem' }}></i>
+                                            )}
+                                        </div>
                                         <span className="event-name" style={{ display: 'block', fontSize: '1.1em' }}>Circuito: {event.nombre}</span>
                                     </div>
                                     <i className="fa-solid fa-chevron-right event-icon" style={{ color: '#64748b' }}></i>

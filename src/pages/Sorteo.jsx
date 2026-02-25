@@ -203,13 +203,13 @@ const Sorteo = () => {
         let forceMappings = {};
 
         if (isOscuroMode && activeDivision === 1) {
-            const luisIndex = nombresParaSortear.findIndex(n => n.toLowerCase().includes('luis hidalgo'));
+            /*const luisIndex = nombresParaSortear.findIndex(n => n.toLowerCase().includes('luis hidalgo'));
             const kartIndex = kartsParaSortear.findIndex(k => k === '60');
             if (luisIndex !== -1 && kartIndex !== -1) {
                 forceMappings[nombresParaSortear[luisIndex]] = '60';
                 nombresParaSortear.splice(luisIndex, 1);
                 kartsParaSortear.splice(kartIndex, 1);
-            }
+            }*/
         }
 
         // Run matching on the (potentially filtered) lists

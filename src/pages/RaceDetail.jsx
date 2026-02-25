@@ -93,10 +93,18 @@ const RaceDetail = () => {
                         <div key={index} className={`grid-item ${posClass}`} data-pos={item.posicion}>
                             <div className="grid-piloto-container">
                                 <span className="grid-pos">{item.posicion}.</span>
-                                <Link to={`/profile?driver=${encodeURIComponent(item.piloto)}&season=${item.temporada}`} className="grid-piloto-link">
-                                    <span className="grid-piloto">{item.piloto}</span>
-                                </Link>
+                                <div className="grid-piloto-info">
+                                    <Link to={`/profile?driver=${encodeURIComponent(item.piloto)}&season=${item.temporada}`} className="grid-piloto-link">
+                                        <span className="grid-piloto">{item.piloto}</span>
+                                    </Link>
+                                </div>
                             </div>
+
+                            {item.vuelta_rapida && item.vuelta_rapida !== 'N/A' && (
+                                <div className={`grid-lap-time`}>
+                                    <i className="fa-solid fa-stopwatch"></i> {item.vuelta_rapida}
+                                </div>
+                            )}
                         </div>
                     );
                 })}
@@ -192,7 +200,7 @@ const RaceDetail = () => {
                                     userSelect: 'none'
                                 }}
                             >
-                                <span>⏱️ Qualy</span>
+                                <span style={{ color: 'var(--text-main)', textShadow: 'none' }}>⏱️ Qualy</span>
                                 <i className={`fa-solid fa-chevron-${isQualyOpen ? 'up' : 'down'}`} style={{ fontSize: '0.8em', transition: 'transform 0.3s' }}></i>
                             </h2>
                             <div className={`collapsible-content ${isQualyOpen ? 'open' : ''}`}>
@@ -214,7 +222,7 @@ const RaceDetail = () => {
                                 }}
                             >
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                    <span>🏁 Resultado Final</span>
+                                    <span style={{ color: 'var(--text-main)', textShadow: 'none' }}>🏁 Resultado Final</span>
                                     {resultData.length > 0 && (<span></span>/*
                                         <div className="share-actions-inline">
                                             <button
@@ -554,6 +562,72 @@ const RaceDetail = () => {
                     .results-table-container {
                         padding-top: 10px;
                         padding-bottom: 20px;
+                    }
+                    .grid-piloto-info {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 2px;
+                    }
+
+                    .grid-lap-time {
+                        position: absolute;
+                        bottom: -10px;
+                        right: 8px;
+                        background: rgba(15, 23, 42, 0.85);
+                        backdrop-filter: blur(8px);
+                        -webkit-backdrop-filter: blur(8px);
+                        padding: 3px 12px;
+                        border-radius: 12px;
+                        font-size: 0.9rem;
+                        color: #f1f5f9;
+                        display: flex;
+                        align-items: center;
+                        gap: 6px;
+                        font-family: 'JetBrains Mono', monospace;
+                        border: 1px solid rgba(255, 255, 255, 0.1);
+                        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+                        z-index: 20;
+                        transition: all 0.3s ease;
+                    }
+
+                    .grid-item:hover .grid-lap-time {
+                        transform: translateY(-2px);
+                        background: rgba(30, 41, 59, 0.95);
+                        border-color: rgba(255, 255, 255, 0.2);
+                    }
+
+                    .grid-lap-time i {
+                        font-size: 0.8em;
+                        color: var(--accent);
+                    }
+
+                    .grid-lap-time.is-fastest {
+                        background: linear-gradient(135deg, rgba(251, 191, 36, 0.25), rgba(217, 119, 6, 0.15));
+                        border: 1px solid rgba(251, 191, 36, 0.5);
+                        color: #fbbf24;
+                        box-shadow: 0 0 15px rgba(251, 191, 36, 0.25);
+                        font-weight: 800;
+                        text-shadow: 0 0 8px rgba(251, 191, 36, 0.3);
+                    }
+
+                    .grid-lap-time.is-fastest i {
+                        color: #fbbf24;
+                        animation: pulse-gold 2s infinite;
+                    }
+
+                    @keyframes pulse-gold {
+                        0% { transform: scale(1); opacity: 1; }
+                        50% { transform: scale(1.2); opacity: 0.7; }
+                        100% { transform: scale(1); opacity: 1; }
+                    }
+
+                    @media (max-width: 600px) {
+                        .grid-lap-time {
+                            padding: 2px 8px;
+                            font-size: 0.75rem;
+                            bottom: -15px;
+                            right: 4px;
+                        }
                     }
                 `}</style>
                 <RaceResultStoryShare

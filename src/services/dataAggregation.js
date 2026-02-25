@@ -60,7 +60,7 @@ export function parseResultsV2CSV(csvText) {
         if (!line) continue;
         const parts = line.split(',');
 
-        // Expected columns: Piloto, ID_Circuito, Fecha, Division, Posicion_Clasificacion, Posicion_Final, Tiempo_Vuelta_Rapida, Es_Vuelta_Rapida, Condicion, Investigando, Sustituye_A
+        // Expected columns: Piloto, ID_Circuito, Fecha, Division, Posicion_Clasificacion, Posicion_Final, Tiempo_Vuelta_Rapida, Es_Vuelta_Rapida, Condicion, Investigando, Sustituye_A, Tiempo_Vuelta_Rapida_Clasi
         if (parts.length >= 8) {
             results.push({
                 pilot: parts[0].trim(),
@@ -73,7 +73,8 @@ export function parseResultsV2CSV(csvText) {
                 es_vuelta_rapida: parts[7].trim().toUpperCase() === 'TRUE' || parts[7].trim().toUpperCase() === 'SI' || parts[7].trim() === '1',
                 condicion: parts[8] ? parts[8].trim() : "Seco",
                 investigating: parts[9] ? (parseInt(parts[9].trim()) || 0) : 0,
-                replaces: parts[10] ? parts[10].trim() : ""
+                replaces: parts[10] ? parts[10].trim() : "",
+                tiempo_qualy: parts[11] ? parts[11].trim() : ""
             });
         }
     }

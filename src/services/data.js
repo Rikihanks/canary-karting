@@ -335,8 +335,8 @@ export async function getRaceDetails(id, date, division) {
             fecha: r.date,
             division: r.division,
             temporada: "2026",
-            vuelta_rapida: r.tiempo_vuelta,
-            es_vuelta_rapida: r.es_vuelta_rapida
+            vuelta_rapida: isClasi ? r.tiempo_qualy : r.tiempo_vuelta,
+            es_vuelta_rapida: !isClasi && r.es_vuelta_rapida
         });
 
         return {

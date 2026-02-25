@@ -768,6 +768,19 @@ h2 {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
 }
 
+.event-item.finished {
+    border-left-color: var(--accent);
+    background: rgba(30, 41, 59, 0.4);
+    position: relative;
+    overflow: hidden;
+}
+
+.event-item.disabled {
+    opacity: 0.5;
+    filter: grayscale(0.8);
+    cursor: not-allowed !important;
+}
+
 .event-date {
     font-weight: bold;
     color: var(--accent);
