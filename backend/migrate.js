@@ -38,7 +38,7 @@ async function migrate() {
     console.log("Migrating Results...");
     const resultsCsv = await fetch(LINKS.results).then(r => r.text());
     const resultsLines = resultsCsv.split('\n').slice(1);
-    const resultStmt = db.prepare('INSERT INTO results (pilot, id_circuito, date, division, pos_clasificacion, pos_final, tiempo_vuelta, es_vuelta_rapida, condicion, investigating, replaces) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+    const resultStmt = db.prepare('INSERT INTO results (pilot, id_circuito, date, division, pos_clasificacion, pos_final, tiempo_vuelta, es_vuelta_rapida, condicion, investigating, replaces, tiempo_qualy) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
 
     db.prepare('DELETE FROM results').run(); // Clear existing results for fresh migration
     db.transaction(() => {
@@ -47,7 +47,7 @@ async function migrate() {
             if (r.length >= 8) {
                 resultStmt.run(
                     r[0], r[1], r[2], parseInt(r[3]) || 0, parseInt(r[4]) || 0, parseInt(r[5]) || 0,
-                    r[6], r[7]?.toUpperCase() === 'TRUE' ? 1 : 0, r[8] || 'Seco', parseInt(r[9]) || 0, r[10] || null
+                    r[6], r[7]?.toUpperCase() === 'TRUE' ? 1 : 0, r[8] || 'Seco', parseInt(r[9]) || 0, r[10] || null, r[11] || null
                 );
             }
         }

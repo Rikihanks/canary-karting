@@ -42,7 +42,8 @@ db.exec(`
     es_vuelta_rapida INTEGER DEFAULT 0,
     condicion TEXT DEFAULT 'Seco',
     investigating INTEGER DEFAULT 0,
-    replaces TEXT
+    replaces TEXT,
+    tiempo_qualy TEXT
   );
 
   CREATE TABLE IF NOT EXISTS teams (

@@ -108,40 +108,45 @@ async function buildAggregatedData() {
     let pilotsData = [];
     let resultsData = [];
     let teamsMeta = [];
+    let dataLoaded = false;
 
-    const { getBackendData, USE_V3 } = await import('./backendService');
-
-    if (USE_V3) {
-        try {
+    // 1. Try V3 Backend
+    try {
+        const { getBackendData, USE_V3 } = await import('./backendService');
+        if (USE_V3) {
             const backendResponse = await getBackendData();
+
             if (backendResponse.success) {
                 pilotsData = backendResponse.data.pilots;
                 resultsData = backendResponse.data.results;
                 teamsMeta = backendResponse.data.teams;
-                aggregationCache = { pilotsMap: new Map(), teamsMap: new Map(), resultsData: [] };
-                // ... same processing logic as V2 but with V3 data ...
+                dataLoaded = true;
+                console.log("V3 Data Loaded Successfully");
             }
-        } catch (e) {
-            console.warn("V3 fetch failed, you might want to enable it in backendService.js", e);
         }
+    } catch (e) {
+        console.warn("V3 fetch failed, falling back to V2.", e);
     }
 
-    // V2 Sheets Fallback (remains active until V3 is toggled)
-    try {
-        const pilotsRes = await fetchWithRetry(PILOTS_V2_CSV_LINK, 1, false, false);
-        pilotsData = parsePilotsV2CSV(await pilotsRes.text());
-
-        const resultsRes = await fetchWithRetry(RESULTS_V2_CSV_LINK, 1, false, false);
-        resultsData = parseResultsV2CSV(await resultsRes.text());
-
+    // 2. V2 Sheets Fallback (Only if V3 didn't load)
+    if (!dataLoaded) {
         try {
-            const teamsRes = await fetchWithRetry(TEAMS_V2_CSV_LINK, 1, false, false);
-            teamsMeta = parseTeamsV2CSV(await teamsRes.text());
-        } catch (e) { }
+            const [pilotsRes, resultsRes, teamsRes] = await Promise.all([
+                fetchWithRetry(PILOTS_V2_CSV_LINK, 1, false, false),
+                fetchWithRetry(RESULTS_V2_CSV_LINK, 1, false, false),
+                fetchWithRetry(TEAMS_V2_CSV_LINK, 1, false, false).catch(() => null)
+            ]);
 
-    } catch (e) {
-        console.warn("V2 CSVs failed.", e);
-        return { pilotsMap: new Map(), teamsMap: new Map(), resultsData: [] };
+            pilotsData = parsePilotsV2CSV(await pilotsRes.text());
+            resultsData = parseResultsV2CSV(await resultsRes.text());
+            if (teamsRes) {
+                teamsMeta = parseTeamsV2CSV(await teamsRes.text());
+            }
+            dataLoaded = true;
+        } catch (e) {
+            console.warn("V2 CSVs failed.", e);
+            return { pilotsMap: new Map(), teamsMap: new Map(), resultsData: [] };
+        }
     }
 
     const pilotsMap = new Map();
