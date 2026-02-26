@@ -9,8 +9,16 @@
 .admin-results-panel {
     background-color: var(--card-bg);
     border-radius: 20px;
-    padding: 30px;
+    padding: 20px;
     min-height: 80vh;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 0 10px;
 }
 
 .race-selector {

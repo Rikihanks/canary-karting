@@ -20,16 +20,65 @@ app.use(express.json());
 
 // Initialize Database Tables
 db.exec(`
-  CREATE TABLE IF NOT EXISTS pilots (
-    name TEXT PRIMARY KEY,
+  CREATE TABLE IF NOT EXISTS pilots_new (
+    name TEXT,
     team TEXT,
     photo TEXT,
     division INTEGER,
     season TEXT,
     championship TEXT,
-    dotdTimes INTEGER DEFAULT 0
+    dotdTimes INTEGER DEFAULT 0,
+    PRIMARY KEY (name, team, season)
   );
 
+  -- Check if old pilots table exists and has name as single PRIMARY KEY
+  -- We can use a trick to migrate if pilots exists but pilots_new doesn't have data yet
+`);
+
+// Migration logic for pilots table
+const tableInfo = db.prepare("PRAGMA table_info(pilots)").all();
+const isOldPKSingle = tableInfo.length > 0 && tableInfo.filter(c => c.pk > 0).length === 1 && tableInfo.find(c => c.pk > 0).name === 'name';
+
+if (isOldPKSingle) {
+    console.log("Migrating pilots table to new composite primary key...");
+    db.transaction(() => {
+        // Create new table with correct PK if it doesn't exist (already done above but to be safe)
+        db.exec(`
+      CREATE TABLE IF NOT EXISTS pilots_new (
+        name TEXT,
+        team TEXT,
+        photo TEXT,
+        division INTEGER,
+        season TEXT,
+        championship TEXT,
+        dotdTimes INTEGER DEFAULT 0,
+        PRIMARY KEY (name, team, season)
+      )
+    `);
+        // Copy data
+        db.exec(`INSERT OR IGNORE INTO pilots_new SELECT * FROM pilots`);
+        // Drop old and rename
+        db.exec(`DROP TABLE pilots`);
+        db.exec(`ALTER TABLE pilots_new RENAME TO pilots`);
+    })();
+    console.log("Pilots migration completed.");
+} else {
+    // Initial creation if it doesn't exist at all
+    db.exec(`
+    CREATE TABLE IF NOT EXISTS pilots (
+      name TEXT,
+      team TEXT,
+      photo TEXT,
+      division INTEGER,
+      season TEXT,
+      championship TEXT,
+      dotdTimes INTEGER DEFAULT 0,
+      PRIMARY KEY (name, team, season)
+    )
+  `);
+}
+
+db.exec(`
   CREATE TABLE IF NOT EXISTS results (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     pilot TEXT,
