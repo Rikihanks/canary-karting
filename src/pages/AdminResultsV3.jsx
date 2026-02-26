@@ -3,6 +3,7 @@ import { getCalendarData } from '../services/data';
 import { getLeaderboardDataV2 } from '../services/dataAggregation';
 import { saveResultToBackend, getTableSchemaV3, getBackendData } from '../services/backendService';
 import './AdminResults.css';
+import './AdminResultsV3.css';
 
 const AdminResultsV3 = () => {
     const adminEmail = sessionStorage.getItem('canary_admin_email') || 'admin';
@@ -97,7 +98,8 @@ const AdminResultsV3 = () => {
             }
         });
         setFormData(editData);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // Scroll to form if needed - Removed as per user request
+        // window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const handleDelete = async () => {
@@ -119,7 +121,7 @@ const AdminResultsV3 = () => {
             fetchResultsForRace(selectedRace);
         } catch (err) {
             console.error(err);
-            alert("Error al borrar");
+            alert(err.message);
         } finally {
             setSubmitting(false);
         }
@@ -136,6 +138,8 @@ const AdminResultsV3 = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!selectedRace || !formData.pilot) return;
+
+        if (editingRecord && !window.confirm("¿Seguros que quieres actualizar este resultado?")) return;
 
         setSubmitting(true);
         try {
@@ -154,7 +158,7 @@ const AdminResultsV3 = () => {
             fetchResultsForRace(selectedRace);
         } catch (err) {
             console.error(err);
-            alert("Error al guardar");
+            alert(err.message);
         } finally {
             setSubmitting(false);
         }
@@ -171,29 +175,55 @@ const AdminResultsV3 = () => {
     return (
         <div className="container push-top">
             <div className="admin-results-panel">
-                <div className="panel-header">
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <h2 style={{ color: 'var(--accent)' }}>Gestión V3 Pro</h2>
-                        <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Edición directa en SQLite con columnas dinámicas</span>
+                <div className="v3-pro-header">
+                    <div className="v3-title-container">
+                        <h2>
+                            <i className="fa-solid fa-bolt"></i>
+                            GESTIÓN V3 PRO
+                        </h2>
+                        <span className="v3-subtitle">Direct SQL Manipulation & Dynamic Fields</span>
                     </div>
-                    <button onClick={() => fetchResultsForRace(selectedRace)} className="refresh-btn">
+                    <button onClick={() => fetchResultsForRace(selectedRace)} className="v3-refresh-btn">
                         <i className="fa-solid fa-rotate-right"></i> Sincronizar
                     </button>
                 </div>
 
                 {!selectedRace ? (
-                    <div className="race-selector">
-                        <h3>Selecciona una Carrera</h3>
-                        <div className="races-list">
+                    <div className="race-selector-v3 fade-in">
+                        <h3>SELECCIONA UNA CARRERA</h3>
+                        <div className="races-grid-v3">
                             {races.map(race => (
                                 <div key={`${race.id_circuito}-${race.fecha}-${race.division}`}
-                                    className="race-select-card"
+                                    className="race-card-v3"
                                     onClick={() => handleRaceSelect(race)}>
-                                    <div className="race-main-info">
-                                        <strong>{race.nombre}</strong>
-                                        <span>Div {race.division}</span>
+                                    <div className="race-header-v3">
+                                        <h4 className="race-title-v3">{race.nombre}</h4>
+                                        <div className="div-badge-v3">Div {race.division}</div>
                                     </div>
-                                    <div className="race-sub-info">{race.fecha}</div>
+
+                                    <div className="race-details-v3">
+                                        <div className="detail-item-v3">
+                                            <i className="fa-solid fa-calendar-day"></i>
+                                            <span>{race.fecha}</span>
+                                        </div>
+                                        <div className="detail-item-v3">
+                                            <i className="fa-solid fa-id-badge"></i>
+                                            <span>ID: {race.id_circuito}</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="race-footer-v3">
+                                        <div className="status-badge-v3">
+                                            {race.terminada === '1' ? (
+                                                <span className="status-check-v3"><i className="fa-solid fa-check-double"></i> Terminada</span>
+                                            ) : (
+                                                <span className="status-pending-v3"><i className="fa-solid fa-flag-checkered"></i> En curso</span>
+                                            )}
+                                        </div>
+                                        <div className="go-btn-v3">
+                                            <i className="fa-solid fa-arrow-right"></i>
+                                        </div>
+                                    </div>
                                 </div>
                             ))}
                         </div>
@@ -312,22 +342,27 @@ const AdminResultsV3 = () => {
                                         <table>
                                             <thead>
                                                 <tr>
-                                                    <th>Piloto</th>
-                                                    <th>P1/P2</th>
-                                                    {customCols.slice(0, 2).map(c => <th key={c.name}>{c.name}</th>)}
-                                                    <th>VR</th>
+                                                    <th style={{ textAlign: 'left' }}>Piloto</th>
+                                                    <th style={{ width: '60px', textAlign: 'center' }}>Qualy</th>
+                                                    <th style={{ width: '60px', textAlign: 'center' }}>Carrera</th>
+                                                    <th style={{ width: '110px' }}>Sustituye a</th>
+                                                    {customCols.slice(0, 1).map(c => <th key={c.name} style={{ width: '60px' }}>{c.name}</th>)}
+                                                    <th style={{ width: '35px', textAlign: 'center' }}>Inv.</th>
+                                                    <th style={{ width: '35px', textAlign: 'center' }}>VR</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 {raceResults.map((r, i) => (
                                                     <tr key={i} onClick={() => handleEdit(r)} className="clickable-row">
-                                                        <td>
+                                                        <td style={{ fontSize: '1rem', fontWeight: '500' }}>
                                                             {r.pilot}
-                                                            {r.replaces && <small> 🔁</small>}
                                                         </td>
-                                                        <td>{r.pos_clasificacion}/{r.pos_final}</td>
-                                                        {customCols.slice(0, 2).map(c => <td key={c.name}>{r[c.name] ?? '-'}</td>)}
-                                                        <td>{r.es_vuelta_rapida ? '⭐' : ''}</td>
+                                                        <td style={{ textAlign: 'center', fontWeight: 'bold', color: '#94a3b8' }}>{r.pos_clasificacion}</td>
+                                                        <td style={{ textAlign: 'center', fontWeight: 'bold', color: 'var(--accent)' }}>{r.pos_final}</td>
+                                                        <td style={{ fontSize: '0.8rem', color: '#64748b' }}>{r.replaces || '-'}</td>
+                                                        {customCols.slice(0, 1).map(c => <td key={c.name} style={{ fontSize: '0.8rem' }}>{r[c.name] ?? '-'}</td>) /* Custom Field */}
+                                                        <td style={{ textAlign: 'center' }}>{r.investigating ? '⚠️' : ''}</td>
+                                                        <td style={{ textAlign: 'center' }}>{r.es_vuelta_rapida ? '⭐' : ''}</td>
                                                     </tr>
                                                 ))}
                                             </tbody>

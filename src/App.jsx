@@ -33,6 +33,7 @@ const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const AdminResults = lazy(() => import('./pages/AdminResults'));
 const AdminResultsV3 = lazy(() => import('./pages/AdminResultsV3'));
 const AdminDatabaseV3 = lazy(() => import('./pages/AdminDatabaseV3'));
+const AdminEntityManagerV3 = lazy(() => import('./pages/AdminEntityManagerV3'));
 const VoteDriver = lazy(() => import('./pages/VoteDriver'));
 const TeamDraw = lazy(() => import('./pages/TeamDraw'));
 const InstallApp = lazy(() => import('./pages/InstallApp'));
@@ -178,6 +179,12 @@ function App() {
                     <Route path="/admin-db" element={
                       <AdminGuard>
                         <AdminDatabaseV3 />
+                      </AdminGuard>
+                    } />
+
+                    <Route path="/admin-entities" element={
+                      <AdminGuard>
+                        <AdminEntityManagerV3 />
                       </AdminGuard>
                     } />
 

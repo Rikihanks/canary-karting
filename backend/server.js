@@ -224,6 +224,66 @@ app.post('/api/v3/results', (req, res) => {
     }
 });
 
+// --- GENERIC ENTITY MANAGEMENT (PILOTS, TEAMS, CALENDAR) ---
+app.post('/api/v3/manage/:table', (req, res) => {
+    if (process.env.ENABLE_V3 !== 'true') {
+        return res.status(503).json({ success: false, error: 'V3 API is currently disabled' });
+    }
+    const { table } = req.params;
+    const { action, ...payload } = req.body;
+
+    try {
+        const columnsInfo = db.prepare(`PRAGMA table_info(${table})`).all();
+        if (columnsInfo.length === 0) return res.status(404).json({ success: false, error: 'Table not found' });
+
+        const validColumns = columnsInfo.map(c => c.name);
+        const pkColumns = columnsInfo.filter(c => c.pk > 0).map(c => c.name);
+        const autoInc = columnsInfo.some(c => c.pk === 1 && c.type === 'INTEGER' && table === 'results'); // Simplified check
+
+        if (action === 'addItem' || action === 'add') {
+            const keys = Object.keys(payload).filter(k => validColumns.includes(k) && k !== 'id');
+            const placeholders = keys.map(() => '?').join(', ');
+            const stmt = db.prepare(`INSERT INTO ${table} (${keys.join(', ')}) VALUES (${placeholders})`);
+            const values = keys.map(k => {
+                const val = payload[k];
+                return typeof val === 'boolean' ? (val ? 1 : 0) : val;
+            });
+            stmt.run(...values);
+            return res.json({ success: true, message: 'Item added' });
+        }
+
+        if (action === 'updateItem' || action === 'update') {
+            const updateKeys = Object.keys(payload).filter(k => validColumns.includes(k) && !pkColumns.includes(k));
+            const setClause = updateKeys.map(k => `${k} = ?`).join(', ');
+            const whereClause = pkColumns.map(k => `${k} = ?`).join(' AND ');
+
+            const values = [
+                ...updateKeys.map(k => {
+                    const val = payload[k];
+                    return typeof val === 'boolean' ? (val ? 1 : 0) : val;
+                }),
+                ...pkColumns.map(k => payload[k])
+            ];
+
+            const stmt = db.prepare(`UPDATE ${table} SET ${setClause} WHERE ${whereClause}`);
+            stmt.run(...values);
+            return res.json({ success: true, message: 'Item updated' });
+        }
+
+        if (action === 'deleteItem' || action === 'delete') {
+            const whereClause = pkColumns.map(k => `${k} = ?`).join(' AND ');
+            const values = pkColumns.map(k => payload[k]);
+            const stmt = db.prepare(`DELETE FROM ${table} WHERE ${whereClause}`);
+            stmt.run(...values);
+            return res.json({ success: true, message: 'Item deleted' });
+        }
+
+        res.status(400).json({ success: false, error: 'Invalid action' });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });

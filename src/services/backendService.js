@@ -7,10 +7,12 @@ export const USE_V3 = window.location.hostname.includes('rikihanks') || isLocalh
 
 export async function getBackendData() {
     if (!USE_V3) return { success: false, error: 'V3 Disabled' };
-    console.log("Calling v3");
     const response = await fetch(`${API_BASE_URL}/api/v3/data`);
-    if (!response.ok) throw new Error('Error fetching from backend');
-    return await response.json();
+    const data = await response.json();
+    if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Error fetching from backend');
+    }
+    return data;
 }
 
 export async function saveResultToBackend(payload) {
@@ -20,8 +22,11 @@ export async function saveResultToBackend(payload) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
     });
-    if (!response.ok) throw new Error('Error saving to backend');
-    return await response.json();
+    const data = await response.json();
+    if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Error saving result');
+    }
+    return data;
 }
 
 // --- Schema Management ---
@@ -47,6 +52,24 @@ export async function modifySchemaV3(payload) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
     });
-    if (!response.ok) throw new Error('Error modifying schema');
-    return await response.json();
+    const data = await response.json();
+    if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Error modifying schema');
+    }
+    return data;
+}
+
+export async function saveItemV3(table, payload) {
+    if (!USE_V3) return { success: false, error: 'V3 Disabled' };
+    const response = await fetch(`${API_BASE_URL}/api/v3/manage/${table}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    });
+
+    const data = await response.json();
+    if (!response.ok || !data.success) {
+        throw new Error(data.error || data.message || 'Error saving item');
+    }
+    return data;
 }

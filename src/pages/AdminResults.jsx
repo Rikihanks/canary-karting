@@ -98,8 +98,8 @@ const AdminResults = () => {
             replaces: record.replaces || '',
             tiempo_qualy: record.tiempo_qualy || ''
         });
-        // Scroll to form if needed
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // Scroll to form if needed - Removed as per user request
+        // window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const handleDelete = async () => {
