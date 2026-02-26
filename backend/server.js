@@ -28,21 +28,22 @@ db.exec(`
     season TEXT,
     championship TEXT,
     dotdTimes INTEGER DEFAULT 0,
-    PRIMARY KEY (name, team, season)
+    PRIMARY KEY (name, team, division, season)
   );
-
-  -- Check if old pilots table exists and has name as single PRIMARY KEY
-  -- We can use a trick to migrate if pilots exists but pilots_new doesn't have data yet
 `);
 
 // Migration logic for pilots table
 const tableInfo = db.prepare("PRAGMA table_info(pilots)").all();
-const isOldPKSingle = tableInfo.length > 0 && tableInfo.filter(c => c.pk > 0).length === 1 && tableInfo.find(c => c.pk > 0).name === 'name';
+// Check if the current table has the old PK structure (either just 'name' or anything not matching the new one)
+const currentPKs = tableInfo.filter(c => c.pk > 0).map(c => c.name).sort();
+const targetPKs = ['name', 'team', 'division', 'season'].sort();
+const needsMigration = tableInfo.length > 0 && JSON.stringify(currentPKs) !== JSON.stringify(targetPKs);
 
-if (isOldPKSingle) {
-    console.log("Migrating pilots table to new composite primary key...");
+if (needsMigration) {
+    console.log(`Migrating pilots table... (Old PK: ${currentPKs.join(', ')} -> New PK: ${targetPKs.join(', ')})`);
     db.transaction(() => {
-        // Create new table with correct PK if it doesn't exist (already done above but to be safe)
+        // Ensure pilots_new is clean
+        db.exec(`DROP TABLE IF EXISTS pilots_new`);
         db.exec(`
       CREATE TABLE IF NOT EXISTS pilots_new (
         name TEXT,
@@ -52,18 +53,20 @@ if (isOldPKSingle) {
         season TEXT,
         championship TEXT,
         dotdTimes INTEGER DEFAULT 0,
-        PRIMARY KEY (name, team, season)
+        PRIMARY KEY (name, team, division, season)
       )
     `);
-        // Copy data
-        db.exec(`INSERT OR IGNORE INTO pilots_new SELECT * FROM pilots`);
-        // Drop old and rename
+        // Copy data - using INSERT OR IGNORE to handle cases where duplicates might exist if we are narrowing PK (not our case)
+        db.exec(`INSERT OR IGNORE INTO pilots_new (name, team, photo, division, season, championship, dotdTimes) 
+                SELECT name, team, photo, division, season, championship, dotdTimes FROM pilots`);
+
+        // Final swap
         db.exec(`DROP TABLE pilots`);
         db.exec(`ALTER TABLE pilots_new RENAME TO pilots`);
     })();
     console.log("Pilots migration completed.");
-} else {
-    // Initial creation if it doesn't exist at all
+} else if (tableInfo.length === 0) {
+    // Initial creation if it doesn't exist
     db.exec(`
     CREATE TABLE IF NOT EXISTS pilots (
       name TEXT,
@@ -73,7 +76,7 @@ if (isOldPKSingle) {
       season TEXT,
       championship TEXT,
       dotdTimes INTEGER DEFAULT 0,
-      PRIMARY KEY (name, team, season)
+      PRIMARY KEY (name, team, division, season)
     )
   `);
 }
