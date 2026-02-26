@@ -81,6 +81,19 @@ if (needsMigration) {
   `);
 }
 
+// Migration logic for results table (adding temporada)
+const resultsInfo = db.prepare("PRAGMA table_info(results)").all();
+const hasTemporada = resultsInfo.some(c => c.name === 'temporada');
+if (!hasTemporada && resultsInfo.length > 0) {
+    console.log("Adding 'temporada' column to results table...");
+    try {
+        db.exec("ALTER TABLE results ADD COLUMN temporada TEXT");
+        console.log("Column added successfully.");
+    } catch (e) {
+        console.error("Error adding column:", e.message);
+    }
+}
+
 db.exec(`
   CREATE TABLE IF NOT EXISTS results (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -95,7 +108,8 @@ db.exec(`
     condicion TEXT DEFAULT 'Seco',
     investigating INTEGER DEFAULT 0,
     replaces TEXT,
-    tiempo_qualy TEXT
+    tiempo_qualy TEXT,
+    temporada TEXT
   );
 
   CREATE TABLE IF NOT EXISTS teams (
@@ -120,11 +134,26 @@ app.get('/api/v3/data', (req, res) => {
     if (process.env.ENABLE_V3 !== 'true') {
         return res.status(503).json({ success: false, error: 'V3 API is currently disabled' });
     }
+    const { season, temporada } = req.query;
+    const filterValue = season || temporada;
+
     try {
-        const pilots = db.prepare('SELECT * FROM pilots').all();
-        const results = db.prepare('SELECT * FROM results').all();
+        let pilotsQuery = 'SELECT * FROM pilots';
+        let resultsQuery = 'SELECT * FROM results';
+        let calendarQuery = 'SELECT * FROM calendar';
+        const params = [];
+
+        if (filterValue) {
+            pilotsQuery += ' WHERE season = ?';
+            resultsQuery += ' WHERE temporada = ?';
+            calendarQuery += ' WHERE temporada = ?';
+            params.push(filterValue);
+        }
+
+        const pilots = db.prepare(pilotsQuery).all(...params);
+        const results = db.prepare(resultsQuery).all(...params);
         const teams = db.prepare('SELECT * FROM teams').all();
-        const calendar = db.prepare('SELECT * FROM calendar').all();
+        const calendar = db.prepare(calendarQuery).all(...params);
 
         res.json({
             success: true,
