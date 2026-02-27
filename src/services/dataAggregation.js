@@ -74,7 +74,8 @@ export function parseResultsV2CSV(csvText) {
                 condicion: parts[8] ? parts[8].trim() : "Seco",
                 investigating: parts[9] ? (parseInt(parts[9].trim()) || 0) : 0,
                 replaces: parts[10] ? parts[10].trim() : "",
-                tiempo_qualy: parts[11] ? parts[11].trim() : ""
+                tiempo_qualy: parts[11] ? parts[11].trim() : "",
+                temporada: parts[12] ? parts[12].trim() : "2026"
             });
         }
     }
@@ -152,9 +153,13 @@ async function buildAggregatedData() {
     const pilotsMap = new Map();
     const teamsMap = new Map();
 
+    // Helper to generate unique pilot keys based on our new constraint
+    const getPilotKey = (p) => `${p.name || ''}_${p.team || ''}_${p.division || 0}_${p.season || ''}`;
+
     // 1. Initialize Pilots Map from Pilotos_V2
     pilotsData.forEach(p => {
-        pilotsMap.set(p.name, {
+        const key = getPilotKey(p);
+        pilotsMap.set(key, {
             name: p.name,
             team: p.team,
             photo: p.photo,
@@ -170,12 +175,12 @@ async function buildAggregatedData() {
         });
     });
 
-    // 2. Initialize Teams Map (to decouple points from individual pilot sums)
-    // We need to know which teams exist and their metadata
+    // 2. Initialize Teams Map
     Array.from(pilotsMap.values()).forEach(p => {
-        if (!teamsMap.has(p.team)) {
+        const teamKey = `${p.team}_${p.division}_${p.season}`;
+        if (!teamsMap.has(teamKey)) {
             const meta = teamsMeta.find(t => t.name.toLowerCase() === p.team.toLowerCase());
-            teamsMap.set(p.team, {
+            teamsMap.set(teamKey, {
                 name: p.team,
                 points: 0,
                 logo: meta ? meta.logo : "",
@@ -187,58 +192,61 @@ async function buildAggregatedData() {
                 season: p.season
             });
         }
-        const tState = teamsMap.get(p.team);
+        const tState = teamsMap.get(teamKey);
         if (!tState.pilots.includes(p.name)) {
             tState.pilots.push(p.name);
         }
     });
 
     // 3. Process Race Results with Business Rules for Substitutions
-    resultsData.forEach(r => {
-        const actingPilot = pilotsMap.get(r.pilot);
-        const replacedPilot = r.replaces ? pilotsMap.get(r.replaces) : null;
+    resultsData.forEach((r, idx) => {
+        // Find the pilot in the right division and season
+        // If season/temporada is null/missing (common in V3 experimental entries), default to '2026'
+        const actingPilot = Array.from(pilotsMap.values()).find(p =>
+            p.name === r.pilot &&
+            p.division.toString() === r.division.toString() &&
+            (p.season || "2026").toString() === (r.temporada || r.season || "2026").toString()
+        );
 
-        if (!actingPilot && !replacedPilot) return; // Unknown actors
+        let replacedPilot = null;
+        if (r.replaces) {
+            replacedPilot = Array.from(pilotsMap.values()).find(p =>
+                p.name === r.replaces &&
+                p.division.toString() === r.division.toString() &&
+                (p.season || "2026").toString() === (r.temporada || r.season || "2026").toString()
+            );
+        }
+
+        if (!actingPilot && !replacedPilot) return;
 
         // Calculate points for this result
         let pts = 0;
         if (POINTS_SYSTEM[r.pos_final]) pts += POINTS_SYSTEM[r.pos_final];
-        if (r.pos_final === 1) pts += WIN_BONUS; // Win bonus
+        if (r.pos_final === 1) pts += WIN_BONUS;
         if (r.pos_clasificacion === 1) pts += POLE_POINTS;
         if (r.es_vuelta_rapida) pts += FAST_LAP_POINTS;
 
-        // Determine who gets the points/stats
+        // Determine target team key
+        const pilotForTeam = replacedPilot || actingPilot;
+        const teamKey = `${pilotForTeam.team}_${pilotForTeam.division}_${pilotForTeam.season}`;
+        const tState = teamsMap.get(teamKey);
+
         if (replacedPilot) {
-            // SUBSTITUTION RULE:
-            // - Acting pilot (A) gets 0 personal points.
-            // - Replaced pilot (B) gets 0 personal points.
-            // - Team of replaced pilot (B) gets the points and stats.
-
-            const targetTeamName = replacedPilot.team;
-            const tState = teamsMap.get(targetTeamName);
-
             if (tState) {
                 tState.points += pts;
                 if (r.pos_final === 1) tState.wins += 1;
                 if (r.pos_final > 0 && r.pos_final <= 3) tState.podiums += 1;
                 if (r.pos_clasificacion === 1) tState.poles += 1;
             }
-
-            // The acting pilot still gets the "investigating" flag if they were involved in an incident
             if (actingPilot && r.investigating === 1) actingPilot.investigating = 1;
 
         } else if (actingPilot) {
-            // NORMAL RULE:
-            // - Pilot gets points.
-            // - Team gets points.
-
             actingPilot.points += pts;
             if (r.pos_final === 1) actingPilot.wins += 1;
             if (r.pos_final > 0 && r.pos_final <= 3) actingPilot.podiums += 1;
             if (r.pos_clasificacion === 1) actingPilot.poles += 1;
             if (r.investigating === 1) actingPilot.investigating = 1;
 
-            const tState = teamsMap.get(actingPilot.team);
             if (tState) {
                 tState.points += pts;
                 if (r.pos_final === 1) tState.wins += 1;

@@ -20,81 +20,17 @@ app.use(express.json());
 
 // Initialize Database Tables
 db.exec(`
-  CREATE TABLE IF NOT EXISTS pilots_new (
+  CREATE TABLE IF NOT EXISTS pilots (
     name TEXT,
     team TEXT,
     photo TEXT,
     division INTEGER,
-    season TEXT,
+    season TEXT DEFAULT '2026',
     championship TEXT,
     dotdTimes INTEGER DEFAULT 0,
     PRIMARY KEY (name, team, division, season)
   );
-`);
 
-// Migration logic for pilots table
-const tableInfo = db.prepare("PRAGMA table_info(pilots)").all();
-// Check if the current table has the old PK structure (either just 'name' or anything not matching the new one)
-const currentPKs = tableInfo.filter(c => c.pk > 0).map(c => c.name).sort();
-const targetPKs = ['name', 'team', 'division', 'season'].sort();
-const needsMigration = tableInfo.length > 0 && JSON.stringify(currentPKs) !== JSON.stringify(targetPKs);
-
-if (needsMigration) {
-    console.log(`Migrating pilots table... (Old PK: ${currentPKs.join(', ')} -> New PK: ${targetPKs.join(', ')})`);
-    db.transaction(() => {
-        // Ensure pilots_new is clean
-        db.exec(`DROP TABLE IF EXISTS pilots_new`);
-        db.exec(`
-      CREATE TABLE IF NOT EXISTS pilots_new (
-        name TEXT,
-        team TEXT,
-        photo TEXT,
-        division INTEGER,
-        season TEXT,
-        championship TEXT,
-        dotdTimes INTEGER DEFAULT 0,
-        PRIMARY KEY (name, team, division, season)
-      )
-    `);
-        // Copy data - using INSERT OR IGNORE to handle cases where duplicates might exist if we are narrowing PK (not our case)
-        db.exec(`INSERT OR IGNORE INTO pilots_new (name, team, photo, division, season, championship, dotdTimes) 
-                SELECT name, team, photo, division, season, championship, dotdTimes FROM pilots`);
-
-        // Final swap
-        db.exec(`DROP TABLE pilots`);
-        db.exec(`ALTER TABLE pilots_new RENAME TO pilots`);
-    })();
-    console.log("Pilots migration completed.");
-} else if (tableInfo.length === 0) {
-    // Initial creation if it doesn't exist
-    db.exec(`
-    CREATE TABLE IF NOT EXISTS pilots (
-      name TEXT,
-      team TEXT,
-      photo TEXT,
-      division INTEGER,
-      season TEXT,
-      championship TEXT,
-      dotdTimes INTEGER DEFAULT 0,
-      PRIMARY KEY (name, team, division, season)
-    )
-  `);
-}
-
-// Migration logic for results table (adding temporada)
-const resultsInfo = db.prepare("PRAGMA table_info(results)").all();
-const hasTemporada = resultsInfo.some(c => c.name === 'temporada');
-if (!hasTemporada && resultsInfo.length > 0) {
-    console.log("Adding 'temporada' column to results table...");
-    try {
-        db.exec("ALTER TABLE results ADD COLUMN temporada TEXT");
-        console.log("Column added successfully.");
-    } catch (e) {
-        console.error("Error adding column:", e.message);
-    }
-}
-
-db.exec(`
   CREATE TABLE IF NOT EXISTS results (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     pilot TEXT,
@@ -109,7 +45,7 @@ db.exec(`
     investigating INTEGER DEFAULT 0,
     replaces TEXT,
     tiempo_qualy TEXT,
-    temporada TEXT
+    temporada TEXT DEFAULT '2026'
   );
 
   CREATE TABLE IF NOT EXISTS teams (
@@ -124,7 +60,7 @@ db.exec(`
     activa TEXT,
     terminada TEXT,
     division INTEGER,
-    temporada TEXT,
+    temporada TEXT DEFAULT '2026',
     PRIMARY KEY (id_circuito, fecha, division)
   );
 `);

@@ -5,7 +5,7 @@ const GOOGLE_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTlPsGq
 const RESULTS_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQP2AF0yixedvzkQcGkkLxnAP4fKl26f46dCFHdL6f11_QbeZP6NHLDshKqBkKtZdYLkyH8Rqrtedp5/pub?output=csv";
 
 const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-const USE_V2 = window.location.hostname.includes('rikihanks') || window.location.hostname.includes('canarykarting') || isLocalhost;
+const USE_V2 = window.location.hostname.includes('rikihanks') || isLocalhost;
 
 // Flag to use mock data for development
 const USE_MOCK_DATA = false;
