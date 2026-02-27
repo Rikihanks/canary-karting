@@ -3,7 +3,7 @@ const API_BASE_URL = window.location.hostname === 'localhost' || window.location
     : 'https://resistant-clinic-luxury-believes.trycloudflare.com';
 
 const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-export const USE_V3 = window.location.hostname.includes('rikihanks');
+export const USE_V3 = window.location.hostname === 'localhost' || window.location.hostname.includes('rikihanks') || window.location.hostname.includes('canarykarting');
 
 export async function getBackendData() {
     if (!USE_V3) return { success: false, error: 'V3 Disabled' };

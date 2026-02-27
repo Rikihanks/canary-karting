@@ -75,7 +75,9 @@ export function parseResultsV2CSV(csvText) {
                 investigating: parts[9] ? (parseInt(parts[9].trim()) || 0) : 0,
                 replaces: parts[10] ? parts[10].trim() : "",
                 tiempo_qualy: parts[11] ? parts[11].trim() : "",
-                temporada: parts[12] ? parts[12].trim() : "2026"
+                temporada: parts[12] ? parts[12].trim() : "2026",
+                sancion: parts[13] ? (parseInt(parts[13].trim()) || 0) : 0,
+                amonestacion: parts[14] ? (parseInt(parts[14].trim()) || 0) : 0
             });
         }
     }

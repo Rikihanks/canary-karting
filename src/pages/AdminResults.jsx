@@ -24,6 +24,8 @@ const AdminResults = () => {
         es_vuelta_rapida: false,
         condicion: 'Seco',
         investigating: 0,
+        sancion: 0,
+        amonestacion: 0,
         replaces: '',
         tiempo_qualy: ''
     });
@@ -79,6 +81,8 @@ const AdminResults = () => {
             es_vuelta_rapida: false,
             condicion: 'Seco',
             investigating: 0,
+            sancion: 0,
+            amonestacion: 0,
             replaces: '',
             tiempo_qualy: ''
         });
@@ -95,6 +99,8 @@ const AdminResults = () => {
             es_vuelta_rapida: record.es_vuelta_rapida,
             condicion: record.condicion || 'Seco',
             investigating: record.investigating || 0,
+            sancion: record.sancion || 0,
+            amonestacion: record.amonestacion || 0,
             replaces: record.replaces || '',
             tiempo_qualy: record.tiempo_qualy || ''
         });
@@ -293,6 +299,14 @@ const AdminResults = () => {
                                             <input type="checkbox" name="investigating" checked={formData.investigating == 1} onChange={handleInputChange} />
                                             Investigado (⚠️)
                                         </label>
+                                        <label className="checkbox-container">
+                                            <input type="checkbox" name="sancion" checked={formData.sancion == 1} onChange={handleInputChange} />
+                                            Sanción (🟥)
+                                        </label>
+                                        <label className="checkbox-container">
+                                            <input type="checkbox" name="amonestacion" checked={formData.amonestacion == 1} onChange={handleInputChange} />
+                                            Amonest. (🟨)
+                                        </label>
                                     </div>
 
                                     <div className="form-group">
@@ -345,6 +359,8 @@ const AdminResults = () => {
                                                             {r.pilot}
                                                             {r.replaces && <small title={`Sustituye a ${r.replaces}`}> 🔁</small>}
                                                             {r.investigating == 1 && <small title="Bajo Investigación"> ⚠️</small>}
+                                                            {r.sancion == 1 && <small title="Sanción"> 🟥</small>}
+                                                            {r.amonestacion == 1 && <small title="Amonestación"> 🟨</small>}
                                                         </td>
                                                         <td>{r.pos_clasificacion}</td>
                                                         <td>{r.pos_final}</td>
