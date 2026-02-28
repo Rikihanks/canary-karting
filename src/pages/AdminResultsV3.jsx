@@ -28,7 +28,7 @@ const AdminResultsV3 = () => {
                     getLeaderboardDataV2(),
                     getTableSchemaV3('results')
                 ]);
-                setRaces(calendar.filter(r => r.terminada === '1' || r.activa === '1'));
+                setRaces(calendar.filter(r => r.terminada == 1 || r.activa == 1));
                 setPilots(allPilots.sort((a, b) => a.name.localeCompare(b.name)));
 
                 const cols = schema.columns || [];
@@ -169,7 +169,7 @@ const AdminResultsV3 = () => {
     }
 
     // Identify standard vs custom columns
-    const standardCols = ['pilot', 'pos_clasificacion', 'pos_final', 'tiempo_vuelta', 'es_vuelta_rapida', 'condicion', 'investigating', 'replaces', 'tiempo_qualy'];
+    const standardCols = ['pilot', 'pos_clasificacion', 'pos_final', 'tiempo_vuelta', 'es_vuelta_rapida', 'condicion', 'investigating', 'sancion', 'amonestacion', 'replaces', 'tiempo_qualy'];
     const customCols = columns.filter(c => !standardCols.includes(c.name) && c.name !== 'id' && !['id_circuito', 'date', 'division'].includes(c.name));
 
     return (
@@ -214,7 +214,7 @@ const AdminResultsV3 = () => {
 
                                     <div className="race-footer-v3">
                                         <div className="status-badge-v3">
-                                            {race.terminada === '1' ? (
+                                            {race.terminada == 1 ? (
                                                 <span className="status-check-v3"><i className="fa-solid fa-check-double"></i> Terminada</span>
                                             ) : (
                                                 <span className="status-pending-v3"><i className="fa-solid fa-flag-checkered"></i> En curso</span>
@@ -304,6 +304,14 @@ const AdminResultsV3 = () => {
                                             <input type="checkbox" name="investigating" checked={formData.investigating == 1} onChange={handleInputChange} />
                                             Investigado (⚠️)
                                         </label>
+                                        <label className="checkbox-container">
+                                            <input type="checkbox" name="sancion" checked={formData.sancion == 1} onChange={handleInputChange} />
+                                            Sanción (🟥)
+                                        </label>
+                                        <label className="checkbox-container">
+                                            <input type="checkbox" name="amonestacion" checked={formData.amonestacion == 1} onChange={handleInputChange} />
+                                            Amonest. (🟨)
+                                        </label>
                                     </div>
 
                                     <div className="form-group">
@@ -348,6 +356,8 @@ const AdminResultsV3 = () => {
                                                     <th style={{ width: '110px' }}>Sustituye a</th>
                                                     {customCols.slice(0, 1).map(c => <th key={c.name} style={{ width: '60px' }}>{c.name}</th>)}
                                                     <th style={{ width: '35px', textAlign: 'center' }}>Inv.</th>
+                                                    <th style={{ width: '35px', textAlign: 'center' }}>San.</th>
+                                                    <th style={{ width: '35px', textAlign: 'center' }}>Amo.</th>
                                                     <th style={{ width: '35px', textAlign: 'center' }}>VR</th>
                                                 </tr>
                                             </thead>
@@ -362,6 +372,8 @@ const AdminResultsV3 = () => {
                                                         <td style={{ fontSize: '0.8rem', color: '#64748b' }}>{r.replaces || '-'}</td>
                                                         {customCols.slice(0, 1).map(c => <td key={c.name} style={{ fontSize: '0.8rem' }}>{r[c.name] ?? '-'}</td>) /* Custom Field */}
                                                         <td style={{ textAlign: 'center' }}>{r.investigating ? '⚠️' : ''}</td>
+                                                        <td style={{ textAlign: 'center' }}>{r.sancion ? '🟥' : ''}</td>
+                                                        <td style={{ textAlign: 'center' }}>{r.amonestacion ? '🟨' : ''}</td>
                                                         <td style={{ textAlign: 'center' }}>{r.es_vuelta_rapida ? '⭐' : ''}</td>
                                                     </tr>
                                                 ))}

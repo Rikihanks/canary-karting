@@ -61,7 +61,7 @@ const AdminDashboard = () => {
         if (raceIndex === -1) return;
 
         const currentRace = races[raceIndex];
-        const currentValue = currentRace[field] === '1'; // '1' is true in CSV
+        const currentValue = currentRace[field] == 1; // Handles '1' (CSV), 1 (V3), and "1.0"
         const newValue = !currentValue;
         const newValueString = newValue ? '1' : '0';
 
@@ -251,7 +251,7 @@ const AdminDashboard = () => {
                                                 <label className="switch">
                                                     <input
                                                         type="checkbox"
-                                                        checked={race.activa === '1'}
+                                                        checked={race.activa == 1}
                                                         onChange={() => handleRaceToggle(race.nombre, race.fecha, 'activa')}
                                                     />
                                                     <span className="slider round"></span>
@@ -264,7 +264,7 @@ const AdminDashboard = () => {
                                                 <label className="switch">
                                                     <input
                                                         type="checkbox"
-                                                        checked={race.terminada === '1'}
+                                                        checked={race.terminada == 1}
                                                         onChange={() => handleRaceToggle(race.nombre, race.fecha, 'terminada')}
                                                     />
                                                     <span className="slider round"></span>

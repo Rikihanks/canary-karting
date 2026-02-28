@@ -18,6 +18,8 @@ const CONFIG_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRzmcWD
 const UPDATE_CONFIG_EXEC = "https://script.google.com/macros/s/AKfycbwPsWOaN1WkF7eq5SXDWASonFNJUBW69HmdDSs8EpOZlCAQ8d_ShIQtvGaUaV0-YhZUtA/exec";
 const DRIVER_OF_THE_DAY_EXEC = "https://script.google.com/macros/s/AKfycbxa4ahCzg9IieNBR3y4OxPHnqeBwA10oU9XrEG9yYIWYbH82cw8Fmkes-ivheETAsFupg/exec";
 const DOTD_RESULTS_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTLNZjbf5AjIxBl659WE4OZsK1RpOpu7HSwa55-b3Dbxxp2Rrggu5lDdjXLyhvZYXpB7uYE6LaEP_G2/pub?output=csv";
+
+export const DEFAULT_PILOT_PHOTO = "https://www.shutterstock.com/image-photo/formula-1-pilot-profile-silhouette-600nw-2666928449.jpg";
 const NEWS_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRguh21pKudFW_SOQW1wyjW-D95dzJ_Rn8LK-tHeaes0zKbRPVQbzRcKy_4xJ1l-tXRyTff4nfkbOLm/pub?output=csv";
 export const RESULTS_V2_EXEC = "https://script.google.com/macros/s/AKfycbxA5js_Adt78HAQHW6851VtqZCtMzZoFEVuqi4A31752DUCM_tc0EtYRrPTGJTBLgap/exec";
 
@@ -173,8 +175,8 @@ export function parseCalendarCSV(csvText) {
                 id_circuito: parts[0] ? parts[0].trim() : '',
                 nombre: parts[1] ? parts[1].trim() : 'Carrera sin nombre',
                 fecha: parts[2] ? parts[2].trim() : '',
-                activa: parts[3] ? parts[3].trim() : '0',
-                terminada: parts[4] ? parts[4].trim() : '0',
+                activa: parts[3] ? (parseFloat(parts[3].trim()) == 1 ? '1' : '0') : '0',
+                terminada: parts[4] ? (parseFloat(parts[4].trim()) == 1 ? '1' : '0') : '0',
                 division: parts[5] ? parts[5].trim() : '1',
                 temporada: parts[6] ? parts[6].trim() : '2026',
             });
@@ -230,7 +232,11 @@ export async function getCalendarData(skipCache = false) {
         try {
             const backendResponse = await getBackendData();
             if (backendResponse.success && backendResponse.data.calendar.length > 0) {
-                return backendResponse.data.calendar;
+                return backendResponse.data.calendar.map(r => ({
+                    ...r,
+                    activa: r.activa != null ? (parseFloat(r.activa) == 1 ? '1' : '0') : '0',
+                    terminada: r.terminada != null ? (parseFloat(r.terminada) == 1 ? '1' : '0') : '0'
+                }));
             }
         } catch (e) {
             console.warn("Backend calendar v3 fetch failed, falling back to Sheets", e);
@@ -336,7 +342,9 @@ export async function getRaceDetails(id, date, division) {
             division: r.division,
             temporada: "2026",
             vuelta_rapida: isClasi ? r.tiempo_qualy : r.tiempo_vuelta,
-            es_vuelta_rapida: !isClasi && r.es_vuelta_rapida
+            es_vuelta_rapida: !isClasi && r.es_vuelta_rapida,
+            sancion: r.sancion,
+            amonestacion: r.amonestacion
         });
 
         return {

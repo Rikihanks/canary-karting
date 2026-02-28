@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import PullToRefresh from 'react-simple-pull-to-refresh';
-import { getTeamsData, getLeaderboardData } from '../services/data';
+import { getTeamsData, getLeaderboardData, DEFAULT_PILOT_PHOTO } from '../services/data';
 import { logEvent } from '../services/telemetry';
 import CountUp from '../components/CountUp';
 
@@ -154,11 +154,12 @@ const TeamProfile = () => {
                             <Link key={index} to={`/profile?driver=${encodeURIComponent(pilot.name)}&season=${season}`} className="pilot-card-link">
                                 <div className="pilot-card">
                                     <div className="pilot-img-wrapper">
-                                        {pilot.photo ? (
-                                            <img src={pilot.photo} alt={pilot.name} className="pilot-img" />
-                                        ) : (
-                                            <div className="pilot-img-placeholder"><i className="fa-solid fa-helmet-safety"></i></div>
-                                        )}
+                                        <img
+                                            src={pilot.photo || DEFAULT_PILOT_PHOTO}
+                                            alt={pilot.name}
+                                            className="pilot-img"
+                                            onError={(e) => { e.target.src = DEFAULT_PILOT_PHOTO; }}
+                                        />
                                     </div>
                                     <div className="pilot-name">{pilot.name}</div>
                                 </div>

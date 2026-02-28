@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import html2canvas from 'html2canvas';
+import { DEFAULT_PILOT_PHOTO } from '../services/data';
 import './DOTDStoryShare.css';
 
 const DOTDStoryShare = ({ winner, division, totalVotes, onShareComplete, onShareError, debug = false }) => {
@@ -100,7 +101,7 @@ const DOTDStoryShare = ({ winner, division, totalVotes, onShareComplete, onShare
         <div className={`dotd-story-template ${debug ? 'debug-visible' : ''}`} ref={templateRef}>
             <div className="dotd-story-bg-wrapper">
                 <img
-                    src={winner.photo || 'https://www.w3schools.com/howto/img_avatar.png'}
+                    src={winner.photo || DEFAULT_PILOT_PHOTO}
                     alt=""
                     className="dotd-story-bg"
                     crossOrigin="anonymous"
@@ -117,7 +118,7 @@ const DOTDStoryShare = ({ winner, division, totalVotes, onShareComplete, onShare
                 <div className="dotd-story-image-card">
                     <div className="dotd-story-photo-wrapper">
                         <img
-                            src={winner.photo || 'https://www.w3schools.com/howto/img_avatar.png'}
+                            src={winner.photo || DEFAULT_PILOT_PHOTO}
                             alt={winner.driver}
                             className="dotd-story-photo"
                             crossOrigin="anonymous"

@@ -75,6 +75,14 @@ const Profile = () => {
         } else if (type === 'fastLaps') {
             title = 'Vueltas Rápidas';
             content = generateFastestLapHTML(driverHistory);
+        } else if (type === 'sanciones') {
+            title = 'Sanciones';
+            filteredEvents = driverHistory.filter(r => r.sancion == 1);
+            content = generateEventListHTML(filteredEvents);
+        } else if (type === 'amonestaciones') {
+            title = 'Amonestaciones';
+            filteredEvents = driverHistory.filter(r => r.amonestacion == 1);
+            content = generateEventListHTML(filteredEvents);
         }
 
         setModalTitle(title);
@@ -341,6 +349,23 @@ const Profile = () => {
                         </div>
                     </div>
 
+                    <div className="disciplinary-row">
+                        <div className="stat-card penalty-card red">
+                            <div className="stat-icon-wrapper"><i className="fa-solid fa-triangle-exclamation"></i></div>
+                            <div className="stat-info">
+                                <span className="stat-number">{driverStats.sanciones || 0}</span>
+                                <span className="stat-title">Sanciones</span>
+                            </div>
+                        </div>
+                        <div className="stat-card penalty-card yellow">
+                            <div className="stat-icon-wrapper"><i className="fa-solid fa-circle-exclamation"></i></div>
+                            <div className="stat-info">
+                                <span className="stat-number">{driverStats.amonestaciones || 0}</span>
+                                <span className="stat-title">Amonest.</span>
+                            </div>
+                        </div>
+                    </div>
+
                     <div className="stat-card dotd">
                         <div className="stat-icon-wrapper"><i className="fa-solid fa-thumbs-up"></i></div>
                         <div className="stat-info">
@@ -381,13 +406,13 @@ const Profile = () => {
                     }
 
                     .section-title {
-                        margin-top: 10px;
+                        margin-top: 5px;
                         font-family: 'Russo One', sans-serif;
-                        font-size: 0.85rem;
+                        font-size: 0.75rem;
                         color: #64748b;
                         text-transform: uppercase;
-                        letter-spacing: 2px;
-                        margin-bottom: 15px;
+                        letter-spacing: 1.5px;
+                        margin-bottom: 10px;
                         display: flex;
                         align-items: center;
                     }
@@ -402,8 +427,8 @@ const Profile = () => {
                     .stats-section {
                         background: rgba(30, 41, 59, 0.4);
                         border: 1px solid rgba(255, 255, 255, 0.05);
-                        border-radius: 28px;
-                        padding: 18px;
+                        border-radius: 20px;
+                        padding: 14px;
                         margin-bottom: 20px;
                     }
 
@@ -416,7 +441,7 @@ const Profile = () => {
                         position: relative;
                         border: 1px solid rgba(255, 255, 255, 0.1);
                         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-                        margin-bottom: 30px;
+                        margin-bottom: 10px;
                         overflow: hidden;
                     }
 
@@ -523,13 +548,13 @@ const Profile = () => {
 
                     /* Championship Section */
                     .championship-section {
-                        border-radius: 16px;
-                        padding: 15px;
+                        border-radius: 12px;
+                        padding: 10px;
                         display: flex;
                         align-items: center;
                         justify-content: center;
-                        gap: 15px;
-                        margin-bottom: 15px;
+                        gap: 10px;
+                        margin-bottom: 10px;
                         position: relative;
                         overflow: hidden;
                         transform-style: preserve-3d;
@@ -586,8 +611,8 @@ const Profile = () => {
 
                     .champ-icon-wrapper {
                         background: rgba(255, 255, 255, 0.2);
-                        width: 50px;
-                        height: 50px;
+                        width: 38px;
+                        height: 38px;
                         border-radius: 50%;
                         display: flex;
                         align-items: center;
@@ -598,7 +623,7 @@ const Profile = () => {
                     }
 
                     .champ-icon {
-                        font-size: 1.5rem;
+                        font-size: 1.1rem;
                         color: #FFF;
                         filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
                     }
@@ -607,21 +632,22 @@ const Profile = () => {
                         display: flex;
                         flex-direction: column;
                         z-index: 1;
+                        text-align: left;
                     }
 
                     .champ-count {
                         font-family: 'Russo One', sans-serif;
-                        font-size: 2rem;
+                        font-size: 1.4rem;
                         color: white;
                         line-height: 1;
-                        text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+                        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
                     }
 
                     .champ-label {
-                        font-size: 0.75rem;
+                        font-size: 0.65rem;
                         color: rgba(255, 255, 255, 0.9);
                         font-weight: 700;
-                        letter-spacing: 1px;
+                        letter-spacing: 0.5px;
                         text-transform: uppercase;
                     }
 
@@ -631,13 +657,12 @@ const Profile = () => {
                         display: grid;
                         grid-template-columns: repeat(2, 1fr);
                         gap: 10px;
-                        margin-bottom: 10px;
                     }
 
                     .stat-card {
                         background: #1e293b;
-                        border-radius: 12px;
-                        padding: 15px;
+                        border-radius: 10px;
+                        padding: 10px 12px;
                         display: flex;
                         align-items: center;
                         border: 1px solid rgba(255, 255, 255, 0.05);
@@ -657,15 +682,15 @@ const Profile = () => {
                     .stat-card.dotd { background: linear-gradient(145deg, #1e293b, rgba(39, 36, 251, 0.1)); border-bottom: 3px solid #244bfbff; border-top: 0 }
 
                     .stat-icon-wrapper {
-                        width: 36px;
-                        height: 36px;
-                        border-radius: 10px;
+                        width: 30px;
+                        height: 30px;
+                        border-radius: 8px;
                         background: rgba(255, 255, 255, 0.05);
                         display: flex;
                         align-items: center;
                         justify-content: center;
-                        font-size: 1rem;
-                        margin-right: 12px;
+                        font-size: 0.9rem;
+                        margin-right: 10px;
                     }
 
                     .gold .stat-icon-wrapper { color: #fbbf24; }
@@ -680,16 +705,30 @@ const Profile = () => {
 
                     .stat-number {
                         font-family: 'Russo One', sans-serif;
-                        font-size: 1.4rem;
+                        font-size: 1.2rem;
                         line-height: 1;
                     }
 
                     .stat-title {
-                        font-size: 0.7rem;
+                        font-size: 0.65rem;
                         color: #94a3b8;
                         text-transform: uppercase;
                         font-weight: 600;
                     }
+
+                    /* Disciplinary Cards CSS Restored */
+                    .disciplinary-row {
+                        display: grid;
+                        grid-template-columns: 1fr 1fr;
+                        gap: 10px;
+                        margin-top: 5px;
+                        margin-bottom: 5px;
+                    }
+
+                    .penalty-card.red { background: linear-gradient(145deg, #1e293b, rgba(239, 68, 68, 0.1)); border-bottom: 3px solid #ef4444; }
+                    .penalty-card.yellow { background: linear-gradient(145deg, #1e293b, rgba(234, 179, 8, 0.1)); border-bottom: 3px solid #eab308; }
+                    .penalty-card.red .stat-icon-wrapper { color: #ef4444; }
+                    .penalty-card.yellow .stat-icon-wrapper { color: #eab308; }
 
                     /* Modal Styles */
                     .modal {

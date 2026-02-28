@@ -39,7 +39,7 @@ const RaceDetail = () => {
 
     // Animate Qualy open when data finishes loading
     useEffect(() => {
-        if (!loading && (raceStatus === '1' || window.location.hostname === 'localhost')) {
+        if (!loading && (raceStatus == 1 || window.location.hostname === 'localhost')) {
             const timer = setTimeout(() => {
                 setIsQualyOpen(true);
             }, 300); // Slight delay to allow render before animating
@@ -99,6 +99,21 @@ const RaceDetail = () => {
                                     </Link>
                                 </div>
                             </div>
+
+                            {type === 'resultados' && (item.sancion == 1 || item.amonestacion == 1) && (
+                                <div className="grid-penalties-wrapper">
+                                    {item.sancion == 1 && (
+                                        <div className="grid-penalty grid-sancion" title="Sanción">
+                                            Sanción
+                                        </div>
+                                    )}
+                                    {item.amonestacion == 1 && (
+                                        <div className="grid-penalty grid-amonestacion" title="Amonestación">
+                                            Amonestación
+                                        </div>
+                                    )}
+                                </div>
+                            )}
 
                             {item.vuelta_rapida && item.vuelta_rapida !== 'N/A' && (
                                 <div className={`grid-lap-time`}>
@@ -187,7 +202,7 @@ const RaceDetail = () => {
                     </p>
                 </div>
 
-                {raceStatus === '1' || window.location.hostname === 'localhost' ? (
+                {raceStatus == 1 || window.location.hostname === 'localhost' ? (
                     <>
                         <section id="clasificacion-section">
                             <h2
@@ -283,7 +298,7 @@ const RaceDetail = () => {
                             <h3>Próxima carrera</h3>
                             <p>Esta carrera aún no ha finalizado. Te avisaremos cuando se publiquen los resultados.</p>
 
-                            {user && isRaceActive === '1' && (
+                            {user && isRaceActive == 1 && (
                                 <div className="assistance-action">
                                     <div className="divider"></div>
                                     <p className="assistance-note">Si eres piloto recuerda que debes confirmar tu asistencia</p>
@@ -601,6 +616,44 @@ const RaceDetail = () => {
                         color: var(--accent);
                     }
 
+                    .grid-penalties-wrapper {
+                        position: absolute;
+                        bottom: -10px;
+                        left: 8px;
+                        display: flex;
+                        gap: 4px;
+                        z-index: 20;
+                    }
+
+                    .grid-penalty {
+                        background: rgba(15, 23, 42, 0.85);
+                        backdrop-filter: blur(8px);
+                        -webkit-backdrop-filter: blur(8px);
+                        padding: 2px 8px;
+                        border-radius: 8px;
+                        font-size: 0.75rem;
+                        font-weight: bold;
+                        color: #f1f5f9;
+                        display: flex;
+                        align-items: center;
+                        gap: 4px;
+                        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+                        transition: all 0.3s ease;
+                    }
+
+                    .grid-sancion {
+                        border: 2px solid rgba(239, 68, 68, 0.4);
+                    }
+
+                    .grid-amonestacion {
+                        border: 2px solid rgba(234, 179, 8, 0.4);
+                    }
+
+                    .grid-item:hover .grid-penalty {
+                        transform: translateY(-2px);
+                        background: rgba(30, 41, 59, 0.95);
+                    }
+
                     .grid-lap-time.is-fastest {
                         background: linear-gradient(135deg, rgba(251, 191, 36, 0.25), rgba(217, 119, 6, 0.15));
                         border: 1px solid rgba(251, 191, 36, 0.5);
@@ -627,6 +680,15 @@ const RaceDetail = () => {
                             font-size: 0.75rem;
                             bottom: -15px;
                             right: 4px;
+                        }
+                        .grid-penalties-wrapper {
+                            bottom: -15px;
+                            left: 4px;
+                            gap: 2px;
+                        }
+                        .grid-penalty {
+                            padding: 2px 5px;
+                            font-size: 0.65rem;
                         }
                     }
                 `}</style>

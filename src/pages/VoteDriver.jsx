@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import PullToRefresh from 'react-simple-pull-to-refresh';
 import { useConfig } from '../context/ConfigContext';
-import { getLeaderboardData, submitVote, getDOTDResults } from '../services/data';
+import { getLeaderboardData, submitVote, getDOTDResults, DEFAULT_PILOT_PHOTO } from '../services/data';
 import { useAuth } from '../context/AuthContext';
 import { logEvent } from '../services/telemetry';
 import DOTDStoryShare from '../components/DOTDStoryShare';
@@ -335,7 +335,11 @@ const VoteDriver = () => {
                                                                             style={{ animationDelay: `${idx * 0.2}s` }}
                                                                         >
                                                                             <div className="winner-img-container">
-                                                                                <img src={driverInfo?.photo || 'https://www.w3schools.com/howto/img_avatar.png'} alt={winner.driver} />
+                                                                                <img
+                                                                                    src={driverInfo?.photo || DEFAULT_PILOT_PHOTO}
+                                                                                    alt={winner.driver}
+                                                                                    onError={(e) => { e.target.src = DEFAULT_PILOT_PHOTO; }}
+                                                                                />
                                                                                 <div className="winner-trophy"><i className="fa-solid fa-trophy"></i></div>
                                                                             </div>
                                                                             <div className="winner-info">
@@ -399,7 +403,12 @@ const VoteDriver = () => {
                                         <div className="card-bg-glow"></div>
                                         <div className="driver-img-wrapper">
                                             <div className="image-ring"></div>
-                                            <img src={driver.photo} alt={driver.name} className="driver-img" />
+                                            <img
+                                                src={driver.photo || DEFAULT_PILOT_PHOTO}
+                                                alt={driver.name}
+                                                className="driver-img"
+                                                onError={(e) => { e.target.src = DEFAULT_PILOT_PHOTO; }}
+                                            />
                                         </div>
                                         <div className="driver-info">
                                             <h3 className="driver-name">{driver.name}</h3>
@@ -438,7 +447,12 @@ const VoteDriver = () => {
                             <h2>¡Voto Registrado!</h2>
                             <p>Has votado por <strong>{votedDriver?.name}</strong> como Piloto del Día.</p>
                             <div className="driver-mini-stats">
-                                <img className='driver-img' src={votedDriver?.photo} alt={votedDriver?.name} />
+                                <img
+                                    className='driver-img'
+                                    src={votedDriver?.photo || DEFAULT_PILOT_PHOTO}
+                                    alt={votedDriver?.name}
+                                    onError={(e) => { e.target.src = DEFAULT_PILOT_PHOTO; }}
+                                />
                                 <div>
                                     <div className="mini-name">{votedDriver?.name}</div>
                                     <div className="mini-team">{votedDriver?.team}</div>

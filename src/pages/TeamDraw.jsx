@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
-import { getLeaderboardData } from '../services/data';
+import { getLeaderboardData, DEFAULT_PILOT_PHOTO } from '../services/data';
 import html2canvas from 'html2canvas';
 import { logEvent } from '../services/telemetry';
 import drumrollSound from '../assets/drumroll2.mp3';
@@ -458,7 +458,12 @@ const TeamDraw = () => {
                                             <div key={cardIdx} className={`spinning-card-container reel-${cardIdx}`}>
                                                 <div className="spinning-card">
                                                     <div className="spinning-card-inner">
-                                                        <img src={displayPilot.photo} alt="" className="spinning-card-photo" />
+                                                        <img
+                                                            src={displayPilot.photo || DEFAULT_PILOT_PHOTO}
+                                                            alt=""
+                                                            className="spinning-card-photo"
+                                                            onError={(e) => { e.target.src = DEFAULT_PILOT_PHOTO; }}
+                                                        />
                                                         <div className="spinning-card-info">
                                                             <span className="spinning-card-name">{displayPilot.name}</span>
                                                         </div>
@@ -474,7 +479,12 @@ const TeamDraw = () => {
                                     {pairingPilots.map((p, idx) => (
                                         <div key={idx} className="announcer-pilot">
                                             <div className="announcer-portrait-wrap">
-                                                <img src={p.photo} alt={p.name} className="announcer-photo" />
+                                                <img
+                                                    src={p.photo || DEFAULT_PILOT_PHOTO}
+                                                    alt={p.name}
+                                                    className="announcer-photo"
+                                                    onError={(e) => { e.target.src = DEFAULT_PILOT_PHOTO; }}
+                                                />
                                                 <div className="announcer-pilot-badge">{p.number}</div>
                                             </div>
                                             <div className="announcer-pilot-name">{p.name}</div>
@@ -497,7 +507,12 @@ const TeamDraw = () => {
                                 <div className="pilot-square-inner">
                                     {/* FRONT FACE */}
                                     <div className="card-face card-front">
-                                        <img src={pilot.photo} alt={pilot.name} className="p-photo" />
+                                        <img
+                                            src={pilot.photo || DEFAULT_PILOT_PHOTO}
+                                            alt={pilot.name}
+                                            className="p-photo"
+                                            onError={(e) => { e.target.src = DEFAULT_PILOT_PHOTO; }}
+                                        />
                                         <div className="p-info">
                                             <span className="p-name">{pilot.name}</span>
                                         </div>
@@ -554,7 +569,11 @@ const TeamDraw = () => {
                                     <div className="stripe-members">
                                         {team.pilots.map(p => (
                                             <div key={p.name} className="stripe-member">
-                                                <img src={p.photo} alt={p.name} />
+                                                <img
+                                                    src={p.photo || DEFAULT_PILOT_PHOTO}
+                                                    alt={p.name}
+                                                    onError={(e) => { e.target.src = DEFAULT_PILOT_PHOTO; }}
+                                                />
                                                 <div className="sm-info">
                                                     <span className="sm-name">{p.name}</span>
                                                     <span className="sm-rank">Nº {p.number}</span>
@@ -577,7 +596,11 @@ const TeamDraw = () => {
                                     <div className="stripe-members">
                                         {team.pilots.map(p => (
                                             <div key={p.name} className="stripe-member">
-                                                <img src={p.photo} alt={p.name} />
+                                                <img
+                                                    src={p.photo || DEFAULT_PILOT_PHOTO}
+                                                    alt={p.name}
+                                                    onError={(e) => { e.target.src = DEFAULT_PILOT_PHOTO; }}
+                                                />
                                                 <div className="sm-info">
                                                     <span className="sm-name">{p.name}</span>
                                                     <span className="sm-rank">Nº {p.number}</span>
@@ -601,7 +624,11 @@ const TeamDraw = () => {
                                     <div className="stripe-members">
                                         {team.pilots.map(p => (
                                             <div key={p.name} className="stripe-member">
-                                                <img src={p.photo} alt={p.name} />
+                                                <img
+                                                    src={p.photo || DEFAULT_PILOT_PHOTO}
+                                                    alt={p.name}
+                                                    onError={(e) => { e.target.src = DEFAULT_PILOT_PHOTO; }}
+                                                />
                                                 <div className="sm-info">
                                                     <span className="sm-name">{p.name}</span>
                                                     <span className="sm-rank">Nº {p.number}</span>

@@ -37,7 +37,7 @@ const AdminResults = () => {
                     getCalendarData(),
                     getLeaderboardDataV2()
                 ]);
-                setRaces(calendar.filter(r => r.terminada === '1' || r.activa === '1'));
+                setRaces(calendar.filter(r => r.terminada == 1 || r.activa == 1));
                 setPilots(allPilots.sort((a, b) => a.name.localeCompare(b.name)));
             } catch (err) {
                 console.error("Error fetching admin data", err);

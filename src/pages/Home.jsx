@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import PullToRefresh from 'react-simple-pull-to-refresh';
-import { getLeaderboardData } from '../services/data';
+import { getLeaderboardData, DEFAULT_PILOT_PHOTO } from '../services/data';
 import { requestPermission } from '../services/firebase';
 import NotificationModal from '../components/NotificationModal';
 import { useConfig } from '../context/ConfigContext';
@@ -209,7 +209,12 @@ const Home = () => {
                                                     <i className="fa-solid fa-circle-chevron-down relegation-arrow" title="Zona de descenso"></i>
                                                 )}
                                             </div>
-                                            <img src={driver.photo} alt={driver.name} className="mini-avatar" />
+                                            <img
+                                                src={driver.photo || DEFAULT_PILOT_PHOTO}
+                                                alt={driver.name}
+                                                className="mini-avatar"
+                                                onError={(e) => { e.target.src = DEFAULT_PILOT_PHOTO; }}
+                                            />
                                             <div className="info">
                                                 <div className="l-name">
                                                     {driver.name}
@@ -251,7 +256,12 @@ const Home = () => {
                                                     <i className="fa-solid fa-circle-chevron-down relegation-arrow" title="Zona de descenso"></i>
                                                 )}
                                             </div>
-                                            <img src={driver.photo} alt={driver.name} className="mini-avatar" />
+                                            <img
+                                                src={driver.photo || DEFAULT_PILOT_PHOTO}
+                                                alt={driver.name}
+                                                className="mini-avatar"
+                                                onError={(e) => { e.target.src = DEFAULT_PILOT_PHOTO; }}
+                                            />
                                             <div className="info">
                                                 <div className="l-name">
                                                     {driver.name}

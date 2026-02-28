@@ -70,7 +70,7 @@ export function parseResultsV2CSV(csvText) {
                 pos_clasificacion: parseInt(parts[4].trim()) || 0,
                 pos_final: parseInt(parts[5].trim()) || 0,
                 tiempo_vuelta: parts[6].trim(),
-                es_vuelta_rapida: parts[7].trim().toUpperCase() === 'TRUE' || parts[7].trim().toUpperCase() === 'SI' || parts[7].trim() === '1',
+                es_vuelta_rapida: parts[7].trim().toUpperCase() === 'TRUE' || parts[7].trim().toUpperCase() === 'SI' || parseFloat(parts[7].trim()) == 1,
                 condicion: parts[8] ? parts[8].trim() : "Seco",
                 investigating: parts[9] ? (parseInt(parts[9].trim()) || 0) : 0,
                 replaces: parts[10] ? parts[10].trim() : "",
@@ -123,6 +123,14 @@ async function buildAggregatedData() {
                 pilotsData = backendResponse.data.pilots;
                 resultsData = backendResponse.data.results;
                 teamsMeta = backendResponse.data.teams;
+                // Normalize calendar data if it exists in response (though usually retrieved via getCalendarData)
+                if (backendResponse.data.calendar) {
+                    backendResponse.data.calendar = backendResponse.data.calendar.map(r => ({
+                        ...r,
+                        activa: r.activa != null ? (parseFloat(r.activa) == 1 ? '1' : '0') : '0',
+                        terminada: r.terminada != null ? (parseFloat(r.terminada) == 1 ? '1' : '0') : '0'
+                    }));
+                }
                 dataLoaded = true;
                 console.log("V3 Data Loaded Successfully");
             }
@@ -174,6 +182,8 @@ async function buildAggregatedData() {
             poles: 0,
             wins: 0,
             investigating: 0,
+            sanciones: 0,
+            amonestaciones: 0,
         });
     });
 
@@ -241,6 +251,8 @@ async function buildAggregatedData() {
                 if (r.pos_clasificacion === 1) tState.poles += 1;
             }
             if (actingPilot && r.investigating === 1) actingPilot.investigating = 1;
+            if (actingPilot && r.sancion == 1) actingPilot.sanciones += 1;
+            if (actingPilot && r.amonestacion == 1) actingPilot.amonestaciones += 1;
 
         } else if (actingPilot) {
             actingPilot.points += pts;
@@ -248,6 +260,8 @@ async function buildAggregatedData() {
             if (r.pos_final > 0 && r.pos_final <= 3) actingPilot.podiums += 1;
             if (r.pos_clasificacion === 1) actingPilot.poles += 1;
             if (r.investigating === 1) actingPilot.investigating = 1;
+            if (r.sancion == 1) actingPilot.sanciones += 1;
+            if (r.amonestacion == 1) actingPilot.amonestaciones += 1;
 
             if (tState) {
                 tState.points += pts;
