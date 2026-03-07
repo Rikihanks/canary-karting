@@ -1,8 +1,8 @@
 
 // Configuración de Caché (¡No tocar!)
 
-const CACHE_VERSION = 'v1.92';
-const CACHE_NAME = 'clasificacion-ck-cache-v1.92';
+const CACHE_VERSION = 'v1.93';
+const CACHE_NAME = 'clasificacion-ck-cache-v1.93';
 // OneSignal se encarga automáticamente de los eventos 'push' y 'notificationclick'.
 // Si necesitas lógica personalizada aquí, OneSignal permite extender el SW, 
 // pero por ahora dejamos que el SDK lo gestione todo para simplificar el "Enviar a todos".

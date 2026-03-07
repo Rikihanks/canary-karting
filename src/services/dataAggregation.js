@@ -165,6 +165,8 @@ async function buildAggregatedData() {
     const pilotsMap = new Map();
     const teamsMap = new Map();
 
+    const normalizeName = (name) => name ? name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() : "";
+
     // Helper to generate unique pilot keys based on our new constraint
     const getPilotKey = (p) => `${p.name || ''}_${p.team || ''}_${p.division || 0}_${p.season || ''}`;
 
@@ -229,19 +231,42 @@ async function buildAggregatedData() {
     resultsData.forEach((r, idx) => {
         // Find the pilot in the right division and season
         // If season/temporada is null/missing (common in V3 experimental entries), default to '2026'
-        const actingPilot = Array.from(pilotsMap.values()).find(p =>
-            p.name === r.pilot &&
+        const rPilotNorm = normalizeName(r.pilot);
+        const rSeason = (r.temporada || r.season || "2026").toString();
+
+        // MATCHING LOGIC:
+        // 1. Try to find pilot in SAME division (priority)
+        let actingPilot = Array.from(pilotsMap.values()).find(p =>
+            normalizeName(p.name) === rPilotNorm &&
             p.division.toString() === r.division.toString() &&
-            (p.season || "2026").toString() === (r.temporada || r.season || "2026").toString()
+            (p.season || "2026").toString() === rSeason
         );
+
+        // 2. FALLBACK: Find pilot in ANY division for this season (if they moved divisions)
+        if (!actingPilot) {
+            actingPilot = Array.from(pilotsMap.values()).find(p =>
+                normalizeName(p.name) === rPilotNorm &&
+                (p.season || "2026").toString() === rSeason
+            );
+        }
 
         let replacedPilot = null;
         if (r.replaces) {
+            const rReplacesNorm = normalizeName(r.replaces);
+            // 1. Same division priority
             replacedPilot = Array.from(pilotsMap.values()).find(p =>
-                p.name === r.replaces &&
+                normalizeName(p.name) === rReplacesNorm &&
                 p.division.toString() === r.division.toString() &&
-                (p.season || "2026").toString() === (r.temporada || r.season || "2026").toString()
+                (p.season || "2026").toString() === rSeason
             );
+
+            // 2. Fallback to any division
+            if (!replacedPilot) {
+                replacedPilot = Array.from(pilotsMap.values()).find(p =>
+                    normalizeName(p.name) === rReplacesNorm &&
+                    (p.season || "2026").toString() === rSeason
+                );
+            }
         }
 
         if (!actingPilot && !replacedPilot) return;

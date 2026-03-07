@@ -217,6 +217,25 @@ export async function getLeaderboardData(skipCache = false) {
 }
 
 export async function getDriverResults() {
+    if (USE_V2) {
+        const results = await getResultsDataV2();
+        // Normalize V2 results to V1 format expected by Profile.jsx
+        return results.map(r => ({
+            name: r.pilot,
+            race: r.id_circuito, // V2 uses id_circuito as the identifier
+            date: r.date,
+            position: r.pos_final,
+            pole_pos: r.pos_clasificacion,
+            fastest_lap: r.tiempo_vuelta || "N/A",
+            condition: r.condicion || "Seco",
+            points_gained: 0, // Points are aggregated/calculated elsewhere or not needed here
+            season: r.temporada || r.season || "2026",
+            sancion: r.sancion || 0,
+            amonestacion: r.amonestacion || 0,
+            investigating: r.investigating || 0,
+            replaces: r.replaces || ""
+        }));
+    }
     const response = await fetchWithRetry(RESULTS_URL);
     const data = await response.text();
     return parseResultsCSV(data);

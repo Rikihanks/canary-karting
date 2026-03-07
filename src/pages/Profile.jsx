@@ -8,7 +8,7 @@ import CountUp from '../components/CountUp';
 const Profile = () => {
     const [searchParams] = useSearchParams();
     const driverName = searchParams.get('driver');
-    const season = searchParams.get('season') || '2025';
+    const season = searchParams.get('season') || '2026';
 
     const [driverStats, setDriverStats] = useState(null);
     const [driverHistory, setDriverHistory] = useState([]);
@@ -20,6 +20,8 @@ const Profile = () => {
     const [modalTitle, setModalTitle] = useState('');
     const [modalContent, setModalContent] = useState(null);
 
+    const normalizeName = (name) => name ? name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() : "";
+
     useEffect(() => {
         if (!driverName) {
             setError("No se especificó un piloto.");
@@ -29,18 +31,32 @@ const Profile = () => {
 
         const fetchData = async () => {
             try {
-                const [leaderboard, results] = await Promise.all([
-                    getLeaderboardData(),
-                    getDriverResults()
-                ]);
+                const leaderboard = await getLeaderboardData();
+                const results = await getDriverResults();
 
-                const stats = leaderboard.find(d => d.name === driverName && d.season === season);
-                const history = results.filter(r => r.name === driverName && r.season === season);
+                const searchNameNorm = normalizeName(driverName);
+                const pilotEntries = leaderboard.filter(d => normalizeName(d.name) === searchNameNorm && d.season === season);
+                const history = results.filter(r => normalizeName(r.name) === searchNameNorm && r.season === season);
 
-                if (!stats) {
+                if (pilotEntries.length === 0) {
                     setError("Piloto no encontrado.");
                 } else {
-                    setDriverStats(stats);
+                    // Aggregate stats across all divisions/entries for this pilot in the season
+                    const totalStats = pilotEntries.reduce((acc, curr) => ({
+                        ...curr,
+                        points: acc.points + (curr.points || 0),
+                        wins: acc.wins + (curr.wins || 0),
+                        podiums: acc.podiums + (curr.podiums || 0),
+                        poles: acc.poles + (curr.poles || 0),
+                        sanciones: acc.sanciones + (curr.sanciones || 0),
+                        amonestaciones: acc.amonestaciones + (curr.amonestaciones || 0),
+                        // Keep current division/team info from the most "active" or first entry found
+                        division: acc.division || curr.division,
+                        team: acc.team || curr.team,
+                        photo: acc.photo || curr.photo
+                    }), { points: 0, wins: 0, podiums: 0, poles: 0, sanciones: 0, amonestaciones: 0 });
+
+                    setDriverStats(totalStats);
                     setDriverHistory(history);
                 }
             } catch (err) {
@@ -99,7 +115,13 @@ const Profile = () => {
                         <div className="event-card-header">
                             <div className="event-race-info">
                                 <i className="fa-solid fa-flag-checkered event-icon"></i>
-                                <span className="race-name">{event.race}</span>
+                                <span className="race-name">
+                                    {event.race}
+                                    {event.replaces && <small title={`Sustituye a ${event.replaces}`}> 🔁</small>}
+                                    {event.investigating == 1 && <small title="Bajo Investigación"> ⚠️</small>}
+                                    {event.sancion == 1 && <small title="Sanción"> 🟥</small>}
+                                    {event.amonestacion == 1 && <small title="Amonestación"> 🟨</small>}
+                                </span>
                             </div>
                             <span className="race-date">{event.date}</span>
                         </div>
@@ -206,6 +228,8 @@ const Profile = () => {
     const podiums = driverHistory.filter(r => r.position > 0 && r.position <= 3).length;
     const poles = driverHistory.filter(r => r.pole_pos === 1).length;
     const fastLaps = driverHistory.filter(r => r.fastest_lap && r.fastest_lap !== 'N/A' && r.fastest_lap.trim() !== '-').length;
+    const sancionCount = driverHistory.filter(r => r.sancion == 1).length;
+    const amonestacionCount = driverHistory.filter(r => r.amonestacion == 1).length;
     const dotd = driverStats.dotdTimes;
 
 
@@ -213,18 +237,30 @@ const Profile = () => {
         const { clearCache } = await import('../services/data');
         clearCache();
         try {
-            const [leaderboard, results] = await Promise.all([
-                getLeaderboardData(),
-                getDriverResults()
-            ]);
+            const leaderboard = await getLeaderboardData();
+            const results = await getDriverResults();
 
-            const stats = leaderboard.find(d => d.name === driverName && d.season === season);
-            const history = results.filter(r => r.name === driverName && r.season === season);
+            const searchNameNorm = normalizeName(driverName);
+            const pilotEntries = leaderboard.filter(d => normalizeName(d.name) === searchNameNorm && d.season === season);
+            const history = results.filter(r => normalizeName(r.name) === searchNameNorm && r.season === season);
 
-            if (!stats) {
+            if (pilotEntries.length === 0) {
                 setError("Piloto no encontrado.");
             } else {
-                setDriverStats(stats);
+                const totalStats = pilotEntries.reduce((acc, curr) => ({
+                    ...curr,
+                    points: acc.points + (curr.points || 0),
+                    wins: acc.wins + (curr.wins || 0),
+                    podiums: acc.podiums + (curr.podiums || 0),
+                    poles: acc.poles + (curr.poles || 0),
+                    sanciones: acc.sanciones + (curr.sanciones || 0),
+                    amonestaciones: acc.amonestaciones + (curr.amonestaciones || 0),
+                    division: acc.division || curr.division,
+                    team: acc.team || curr.team,
+                    photo: acc.photo || curr.photo
+                }), { points: 0, wins: 0, podiums: 0, poles: 0, sanciones: 0, amonestaciones: 0 });
+
+                setDriverStats(totalStats);
                 setDriverHistory(history);
             }
         } catch (err) {
@@ -353,15 +389,15 @@ const Profile = () => {
                         <div className="stat-card penalty-card red">
                             <div className="stat-icon-wrapper"><i className="fa-solid fa-triangle-exclamation"></i></div>
                             <div className="stat-info">
-                                <span className="stat-number">{driverStats.sanciones || 0}</span>
+                                <span className="stat-number">{sancionCount}</span>
                                 <span className="stat-title">Sanciones</span>
                             </div>
                         </div>
                         <div className="stat-card penalty-card yellow">
                             <div className="stat-icon-wrapper"><i className="fa-solid fa-circle-exclamation"></i></div>
                             <div className="stat-info">
-                                <span className="stat-number">{driverStats.amonestaciones || 0}</span>
-                                <span className="stat-title">Amonest.</span>
+                                <span className="stat-number">{amonestacionCount}</span>
+                                <span className="stat-title">Amonestaciones</span>
                             </div>
                         </div>
                     </div>
