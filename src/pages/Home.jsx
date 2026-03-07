@@ -197,7 +197,7 @@ const Home = () => {
                                         to={`/profile?driver=${encodeURIComponent(driver.name)}&season=${season}`}
                                         className="podium-card-link"
                                     >
-                                        <div className={`list-item rank-${rank}`}>
+                                        <div className={`list-item rank-${rank}`} style={{ '--team-logo': `url(${driver.teamLogo})` }}>
                                             <div className="crown-wrapper">
                                                 <i className="fa-solid fa-medal crown"></i>
                                             </div>
@@ -219,7 +219,17 @@ const Home = () => {
                                                 <div className="l-name">
                                                     {driver.name}
                                                 </div>
-                                                <div className="l-team">{driver.team}</div>
+                                                <div className="l-team">
+                                                    {driver.teamLogo && (
+                                                        <img
+                                                            src={driver.teamLogo}
+                                                            alt=""
+                                                            className="mini-team-logo"
+                                                            onError={(e) => { e.target.style.display = 'none'; }}
+                                                        />
+                                                    )}
+                                                    {driver.team}
+                                                </div>
                                             </div>
                                             <div className="l-points">
                                                 {driver.points} <span>PTS</span>
@@ -246,7 +256,7 @@ const Home = () => {
                                         to={`/profile?driver=${encodeURIComponent(driver.name)}&season=${season}`}
                                         className="list-item-link"
                                     >
-                                        <div className="list-item">
+                                        <div className="list-item" style={{ '--team-logo': `url(${driver.teamLogo})` }}>
                                             <div className="rank-num">{rank}</div>
                                             <div className={`rank-indicator-area ${getDivisionName(driver.division)}`}>
                                                 {arrowsActive && activeDivision !== 1 && rank <= 2 && (
@@ -266,7 +276,17 @@ const Home = () => {
                                                 <div className="l-name">
                                                     {driver.name}
                                                 </div>
-                                                <div className="l-team">{driver.team}</div>
+                                                <div className="l-team">
+                                                    {driver.teamLogo && (
+                                                        <img
+                                                            src={driver.teamLogo}
+                                                            alt=""
+                                                            className="mini-team-logo"
+                                                            onError={(e) => { e.target.style.display = 'none'; }}
+                                                        />
+                                                    )}
+                                                    {driver.team}
+                                                </div>
                                             </div>
                                             <div className="l-points">
                                                 {driver.points} <span>PTS</span>

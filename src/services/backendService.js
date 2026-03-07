@@ -1,5 +1,5 @@
 const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? 'https://resistant-clinic-luxury-believes.trycloudflare.com'
+    ? 'http://localhost:3001'
     : 'https://resistant-clinic-luxury-believes.trycloudflare.com';
 
 const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';

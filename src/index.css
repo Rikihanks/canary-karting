@@ -527,12 +527,29 @@ h2 {
     background: rgba(15, 23, 42, 0.8);
 }
 
-
+.list-item::after {
+    content: '';
+    position: absolute;
+    right: 5%;
+    top: 50%;
+    transform: translateY(-50%) rotate(10deg);
+    width: 100px;
+    height: 100px;
+    background-image: var(--team-logo);
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    opacity: 0.06;
+    filter: grayscale(1) brightness(1.2);
+    mask-image: radial-gradient(circle, black 30%, transparent 85%);
+    -webkit-mask-image: radial-gradient(circle, black 30%, transparent 85%);
+    pointer-events: none;
+    z-index: 0;
+}
 
 .info {
     flex-grow: 1;
     min-width: 0;
-    /* Crucial for flex child truncation */
     display: flex;
     flex-direction: column;
     position: relative;
@@ -549,6 +566,19 @@ h2 {
 .l-team {
     font-size: 0.85rem;
     color: #94a3b8;
+    display: flex;
+    align-items: center;
+    margin-top: 2px;
+}
+
+.mini-team-logo {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+    margin-right: 6px;
+    border-radius: 2px;
+    /* Opción: un fondo muy sutil si el logo es blanco */
+    background: rgba(255, 255, 255, 0.03);
 }
 
 .l-points {

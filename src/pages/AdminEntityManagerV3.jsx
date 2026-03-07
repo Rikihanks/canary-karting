@@ -146,7 +146,7 @@ const AdminEntityManagerV3 = () => {
                         <h4>{editingItem ? 'Editar Registro' : 'Añadir Nuevo'}</h4>
                         <form onSubmit={handleSubmit} className="result-form">
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                                {columns.filter(c => !['activa', 'terminada', 'investigating', 'es_vuelta_rapida'].includes(c.name)).map(col => (
+                                {columns.filter(c => !['activa', 'terminada', 'investigating', 'es_vuelta_rapida', 'activo'].includes(c.name)).map(col => (
                                     <div className="form-group" key={col.name}>
                                         <label>{col.name} {col.pk ? '(PK)' : ''}</label>
                                         <input
@@ -163,7 +163,7 @@ const AdminEntityManagerV3 = () => {
                             </div>
 
                             <div style={{ display: 'flex', gap: '20px', marginTop: '15px', flexWrap: 'wrap', background: 'rgba(255,255,255,0.02)', padding: '10px', borderRadius: '8px' }}>
-                                {columns.filter(c => ['activa', 'terminada', 'investigating', 'es_vuelta_rapida'].includes(c.name)).map(col => (
+                                {columns.filter(c => ['activa', 'terminada', 'investigating', 'es_vuelta_rapida', 'activo'].includes(c.name)).map(col => (
                                     <div className="form-group" key={col.name} style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '10px', marginBottom: 0 }}>
                                         <input
                                             type="checkbox"

@@ -45,7 +45,9 @@ export function parsePilotsV2CSV(csvText) {
                 division: parseInt(parts[3].trim()) || 0,
                 season: parts[4] ? parts[4].trim() : "2026",
                 championship: parts[5] ? parts[5].trim() : "0",
-                dotdTimes: parts[6] ? parseInt(parts[6].trim()) : 0
+                dotdTimes: parts[6] ? parseInt(parts[6].trim()) : 0,
+                activo: parts[7] !== undefined ? (parseInt(parts[7].trim()) !== 0) : true,
+                puntos_ajuste: parts[8] ? parseInt(parts[8].trim()) : 0
             });
         }
     }
@@ -177,7 +179,9 @@ async function buildAggregatedData() {
             season: p.season,
             championship: p.championship,
             dotdTimes: p.dotdTimes,
-            points: 0,
+            activo: p.activo !== undefined ? (parseInt(p.activo) !== 0) : true,
+            puntos_ajuste: parseInt(p.puntos_ajuste) || 0,
+            points: parseInt(p.puntos_ajuste) || 0,
             podiums: 0,
             poles: 0,
             wins: 0,
@@ -192,6 +196,7 @@ async function buildAggregatedData() {
         const teamKey = `${p.team}_${p.division}_${p.season}`;
         if (!teamsMap.has(teamKey)) {
             const meta = teamsMeta.find(t => t.name.toLowerCase() === p.team.toLowerCase());
+            p.teamLogo = meta ? meta.logo : "";
             teamsMap.set(teamKey, {
                 name: p.team,
                 points: 0,
@@ -203,9 +208,19 @@ async function buildAggregatedData() {
                 pilots: [],
                 season: p.season
             });
+        } else {
+            const tState = teamsMap.get(teamKey);
+            p.teamLogo = tState.logo;
         }
         const tState = teamsMap.get(teamKey);
-        if (!tState.pilots.includes(p.name)) {
+
+        // Add manual points to both pilot and team initial state
+        if (p.puntos_ajuste) {
+            tState.points += p.puntos_ajuste;
+        }
+
+        // Add to team pilot list only if active
+        if (p.activo !== false && !tState.pilots.includes(p.name)) {
             tState.pilots.push(p.name);
         }
     });
@@ -280,8 +295,8 @@ export async function getLeaderboardDataV2(skipCache = false) {
     if (!aggregationCache || skipCache) {
         await buildAggregatedData();
     }
-    // Devolvemos el array en el mismo formato que parseCSV() en data.js
-    return Array.from(aggregationCache.pilotsMap.values());
+    // Devolvemos solo los pilotos cargados como activos
+    return Array.from(aggregationCache.pilotsMap.values()).filter(p => p.activo !== false);
 }
 
 export async function getTeamsDataV2(skipCache = false) {

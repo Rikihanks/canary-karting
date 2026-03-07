@@ -6,7 +6,8 @@
     "type": "module",
     "scripts": {
         "start": "node server.js",
-        "migrate": "node migrate.js"
+        "migrate": "node migrate.js",
+        "start2": "cmd /c \"set ENABLE_V3=true&&node server.js\""
     },
     "dependencies": {
         "better-sqlite3": "^11.5.0",
