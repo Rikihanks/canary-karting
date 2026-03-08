@@ -27,6 +27,7 @@ const Sorteo = () => {
             return [];
         }
     });
+    const [selectedSessionId, setSelectedSessionId] = useState('');
 
     // -- AUTO FILL HELPER --
     const loadDefaultPilots = (division, drivers = allDrivers) => {
@@ -73,11 +74,13 @@ const Sorteo = () => {
 
         const existingSaveIndex = savedSessions.findIndex(s => s.name === name);
         let updatedSaves;
+        let finalId = stateToSave.id;
 
         if (existingSaveIndex !== -1) {
             if (window.confirm(`Ya existe una sesión llamada "${name}". ¿Deseas sobreescribirla?`)) {
                 updatedSaves = [...savedSessions];
-                updatedSaves[existingSaveIndex] = { ...stateToSave, id: savedSessions[existingSaveIndex].id }; // Keep old ID
+                finalId = savedSessions[existingSaveIndex].id;
+                updatedSaves[existingSaveIndex] = { ...stateToSave, id: finalId }; // Keep old ID
             } else {
                 return; // User declined overwrite
             }
@@ -87,10 +90,12 @@ const Sorteo = () => {
 
         setSavedSessions(updatedSaves);
         localStorage.setItem('sorteo_saves', JSON.stringify(updatedSaves));
+        setSelectedSessionId(finalId);
     };
 
     const handleLoadSession = (e) => {
         const id = e.target.value;
+        setSelectedSessionId(id);
         if (!id) return;
 
         const session = savedSessions.find(s => s.id === id);
@@ -102,13 +107,22 @@ const Sorteo = () => {
             setResults(session.results || []);
             setLastAssignments(session.lastAssignments || []);
         }
-        e.target.value = ''; // reset select to default
     };
 
-    const handleDeleteSessions = () => {
-        if (window.confirm('¿Seguro que quieres borrar todas las sesiones guardadas de este navegador?')) {
-            setSavedSessions([]);
-            localStorage.removeItem('sorteo_saves');
+    const handleDeleteSession = () => {
+        if (!selectedSessionId) {
+            alert('Por favor, selecciona una sesión de la lista para borrarla.');
+            return;
+        }
+
+        const sessionToDelete = savedSessions.find(s => s.id === selectedSessionId);
+        if (!sessionToDelete) return;
+
+        if (window.confirm(`¿Seguro que quieres borrar la sesión "${sessionToDelete.name}"?`)) {
+            const updatedSaves = savedSessions.filter(s => s.id !== selectedSessionId);
+            setSavedSessions(updatedSaves);
+            localStorage.setItem('sorteo_saves', JSON.stringify(updatedSaves));
+            setSelectedSessionId(''); // Reset selection
         }
     };
 
@@ -166,7 +180,7 @@ const Sorteo = () => {
 
         // EXTRA RULE: Karts that cannot be ballasted: 51, 60, 61
         // If a pilot needs > 10kg ballast (difference > 10), they CANNOT get these karts.
-        const unballastableKarts = ['51', '60', '61'];
+        const unballastableKarts = ['51', '60', '61', '39'];
         validPilotos.forEach(p => {
             const w = parseFloat(p.weight);
             if (!isNaN(w) && (75 - w) > 10) {
@@ -203,13 +217,18 @@ const Sorteo = () => {
         let forceMappings = {};
 
         if (isOscuroMode && activeDivision === 1) {
-            /*const luisIndex = nombresParaSortear.findIndex(n => n.toLowerCase().includes('luis hidalgo'));
-            const kartIndex = kartsParaSortear.findIndex(k => k === '60');
-            if (luisIndex !== -1 && kartIndex !== -1) {
-                forceMappings[nombresParaSortear[luisIndex]] = '60';
+            const luisIndex = nombresParaSortear.findIndex(n => n.toLowerCase().includes('luis hidalgo'));
+            const targetKarts = ['52', '51', '55'];
+            const availableTargetKarts = kartsParaSortear.filter(k => targetKarts.includes(k));
+
+            if (luisIndex !== -1 && availableTargetKarts.length > 0) {
+                const chosenKart = availableTargetKarts[Math.floor(Math.random() * availableTargetKarts.length)];
+                const kartIndex = kartsParaSortear.indexOf(chosenKart);
+
+                forceMappings[nombresParaSortear[luisIndex]] = chosenKart;
                 nombresParaSortear.splice(luisIndex, 1);
                 kartsParaSortear.splice(kartIndex, 1);
-            }*/
+            }
         }
 
         // Run matching on the (potentially filtered) lists
@@ -355,17 +374,17 @@ const Sorteo = () => {
                     <select
                         value={activeDivision}
                         onChange={handleDivisionChange}
-                        style={{ width: '50%', padding: '8px 12px', borderRadius: '8px', background: '#1f2937', color: 'white', border: '1px solid #374151', fontSize: '1rem' }}
+                        style={{ width: 'auto', minWidth: '250px', padding: '8px 12px', borderRadius: '8px', background: '#1f2937', color: 'white', border: '1px solid #374151', fontSize: '1rem' }}
                     >
                         <option value="1">1ª División</option>
                         <option value="2">2ª División</option>
                         <option value="3">3ª División</option>
                     </select>
-                    <div style={{ marginLeft: 'auto', display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <div style={{ marginLeft: 'auto', display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap', flexGrow: 1, justifyContent: 'flex-end' }}>
                         <select
+                            value={selectedSessionId}
                             onChange={handleLoadSession}
-                            style={{ padding: '8px 12px', borderRadius: '8px', background: '#111827', color: 'white', border: '1px solid #374151', fontSize: '0.9rem', maxWidth: '180px' }}
-                            defaultValue=""
+                            style={{ padding: '8px 12px', borderRadius: '8px', background: '#111827', color: 'white', border: '1px solid #374151', fontSize: '0.9rem', width: 'auto', minWidth: '180px', maxWidth: '350px' }}
                         >
                             <option value="" disabled>Cargar sesión...</option>
                             {savedSessions.map(session => (
@@ -378,7 +397,7 @@ const Sorteo = () => {
                         </button>
 
                         {savedSessions.length > 0 && (
-                            <button onClick={handleDeleteSessions} className="btn-danger" style={{ padding: '8px 12px', fontSize: '0.9rem', width: 'auto' }} title="Borrar todas las sesiones guardadas">
+                            <button onClick={handleDeleteSession} className="btn-danger" style={{ padding: '8px 12px', fontSize: '0.9rem', width: 'auto' }} title="Borrar la sesión seleccionada">
                                 <i className="fa-solid fa-trash"></i>
                             </button>
                         )}
@@ -427,7 +446,7 @@ const Sorteo = () => {
 
                     <div className="table-right">
                         <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span><i className="fa-solid fa-car-side"></i> Karts Disponibles</span>
+                            <span><i className="fa-solid fa-car-side"></i> Karts</span>
                             <span style={{ fontSize: '0.85em', background: 'rgba(59, 130, 246, 0.2)', color: '#93c5fd', padding: '2px 8px', borderRadius: '12px' }}>
                                 {karts.split(/[\n;]+/).map(k => k.trim()).filter(k => k).length} total
                             </span>
@@ -449,7 +468,7 @@ const Sorteo = () => {
                         placeholder="Nombre: kart1, kart2 (evita repetir)"
                         value={historial}
                         onChange={(e) => setHistorial(e.target.value)}
-                        style={{ height: '80px' }}
+                        style={{ height: '130px' }}
                     ></textarea>
                 </div>
 
@@ -457,7 +476,7 @@ const Sorteo = () => {
                     <i className="fa-solid fa-circle-info"></i> El sistema asignará karts intentando no repetir los que estén en el historial. Mínimo 75kg.
                     <br />
                     <span style={{ color: '#fbbf24' }}>
-                        <i className="fa-solid fa-triangle-exclamation"></i> Karts sin lastre ({`51, 60, 61`}) excluidos para pilotos con ajuste &gt; 10kg.
+                        <i className="fa-solid fa-triangle-exclamation"></i> Karts sin lastre ({`51, 60, 61, 39`}) excluidos para pilotos con ajuste &gt; 10kg.
                     </span>
                 </small>
 

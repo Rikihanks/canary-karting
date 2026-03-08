@@ -10,7 +10,10 @@ const Races = () => {
         return savedEvents ? JSON.parse(savedEvents) : [];
     });
     const [loading, setLoading] = useState(events.length === 0);
-    const [selectedDivision, setSelectedDivision] = useState(null);
+    const [selectedDivision, setSelectedDivision] = useState(() => {
+        const saved = localStorage.getItem('selected_division_races');
+        return saved ? parseInt(saved) : null;
+    });
     const { user } = useAuth();
     const navigate = useNavigate();
 
@@ -32,18 +35,19 @@ const Races = () => {
         fetchData();
     }, []);
 
-    // Set the first division as default when events are loaded
+    // Set the first division as default when events are loaded if none saved
     useEffect(() => {
         if (events.length > 0 && selectedDivision === null) {
             const firstDivision = [...new Set(
                 events
                     .filter(event => event.temporada == 2026)
-                    .map(event => event.division)
-                    .filter(div => div !== undefined && div !== null)
+                    .map(event => parseInt(event.division))
+                    .filter(div => !isNaN(div))
             )].sort((a, b) => a - b)[0];
 
             if (firstDivision !== undefined) {
                 setSelectedDivision(firstDivision);
+                localStorage.setItem('selected_division_races', firstDivision);
             }
         }
     }, [events, selectedDivision]);
@@ -67,8 +71,8 @@ const Races = () => {
 
     // Filter events by temporada 2026 and selected division
     const filteredEvents = events.filter(event => {
-        const isTemporada2026 = event.temporada == 2026;
-        const matchesDivision = event.division == selectedDivision;
+        const isTemporada2026 = parseInt(event.temporada) === 2026;
+        const matchesDivision = parseInt(event.division) === parseInt(selectedDivision);
         return isTemporada2026 && matchesDivision;
     });
 
@@ -103,8 +107,12 @@ const Races = () => {
                     <select
                         id="division-filter"
                         className="division-dropdown"
-                        value={selectedDivision}
-                        onChange={(e) => setSelectedDivision(e.target.value)}
+                        value={selectedDivision || ''}
+                        onChange={(e) => {
+                            const val = parseInt(e.target.value);
+                            setSelectedDivision(val);
+                            localStorage.setItem('selected_division_races', val);
+                        }}
                     >
                         {divisions.map(div => (
                             <option key={div} value={div}>{div}º División </option>
