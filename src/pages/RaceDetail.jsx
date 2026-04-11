@@ -94,7 +94,7 @@ const RaceDetail = () => {
                             <div className="grid-piloto-container">
                                 <span className="grid-pos">{item.posicion}.</span>
                                 <div className="grid-piloto-info">
-                                    <Link to={`/profile?driver=${encodeURIComponent(item.piloto)}&season=${item.temporada}`} className="grid-piloto-link">
+                                    <Link to={`/profile?driver=${encodeURIComponent(item.piloto.replace(/\*/g, ''))}&season=${item.temporada}`} className="grid-piloto-link">
                                         <span className="grid-piloto">{item.piloto}</span>
                                     </Link>
                                 </div>

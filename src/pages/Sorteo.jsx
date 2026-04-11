@@ -6,20 +6,55 @@ import { getLeaderboardData } from '../services/data';
 
 const Sorteo = () => {
     const resultadoRef = useRef(null);
-    const [karts, setKarts] = useState('');
-    const [historial, setHistorial] = useState('');
-    const [results, setResults] = useState([]);
+    // -- MIGRATION HELPER --
+    const migrateData = (data) => {
+        if (!data) return data;
+        if (data.historial && data.pilotosRows) {
+            const { map } = parseHistory(data.historial);
+            const newRows = data.pilotosRows.map(row => {
+                const nameNorm = (row.name || '').trim().toLowerCase();
+                if (nameNorm && map.has(nameNorm)) {
+                    const kartsFromHistory = Array.from(map.get(nameNorm)).join(', ');
+                    const existing = row.history ? row.history + ', ' : '';
+                    return { ...row, history: existing + kartsFromHistory };
+                }
+                return { ...row, history: row.history || '' };
+            });
+            const { historial, ...rest } = data;
+            return { ...rest, pilotosRows: newRows };
+        }
+        if (data.pilotosRows) {
+            data.pilotosRows = data.pilotosRows.map(r => ({ ...r, history: r.history || '' }));
+        }
+        return data;
+    };
+
+    // -- HELPER FOR INITIAL DATA --
+    const getAutoSaved = () => {
+        try {
+            const saved = localStorage.getItem('sorteo_auto_save');
+            if (!saved) return null;
+            return migrateData(JSON.parse(saved));
+        } catch {
+            return null;
+        }
+    };
+    const autoSaved = getAutoSaved();
+
+    const [karts, setKarts] = useState(autoSaved?.karts || '');
+    const [reservas, setReservas] = useState(autoSaved?.reservas || '');
+    const [results, setResults] = useState(autoSaved?.results || []);
     const [isSorting, setIsSorting] = useState(false);
-    const [isOscuroMode, setIsOscuroMode] = useState(false);
+    const [isOscuroMode, setIsOscuroMode] = useState(autoSaved?.isOscuroMode || false);
     const [copyBtnText, setCopyBtnText] = useState('Copiar al Historial');
 
     // To store the last assignments for copying to history
-    const [lastAssignments, setLastAssignments] = useState([]);
+    const [lastAssignments, setLastAssignments] = useState(autoSaved?.lastAssignments || []);
 
     const [allDrivers, setAllDrivers] = useState([]);
-    const [activeDivision, setActiveDivision] = useState(1);
-    const [activeSeason, setActiveSeason] = useState("2026");
-    const [pilotosRows, setPilotosRows] = useState([]);
+    const [activeDivision, setActiveDivision] = useState(autoSaved?.activeDivision || 1);
+    const [activeSeason, setActiveSeason] = useState(autoSaved?.activeSeason || "2026");
+    const [pilotosRows, setPilotosRows] = useState(autoSaved?.pilotosRows || []);
     const [savedSessions, setSavedSessions] = useState(() => {
         try {
             return JSON.parse(localStorage.getItem('sorteo_saves') || '[]');
@@ -29,13 +64,31 @@ const Sorteo = () => {
     });
     const [selectedSessionId, setSelectedSessionId] = useState('');
 
+    // -- AUTO SAVE EFFECT --
+    useEffect(() => {
+        const dataToSave = {
+            karts,
+            reservas,
+            results: results.map(item => {
+                const { listaAnimada, ...rest } = item;
+                return rest;
+            }),
+            pilotosRows,
+            activeDivision,
+            lastAssignments,
+            isOscuroMode,
+            activeSeason
+        };
+        localStorage.setItem('sorteo_auto_save', JSON.stringify(dataToSave));
+    }, [karts, reservas, results, pilotosRows, activeDivision, lastAssignments, isOscuroMode, activeSeason]);
+
     // -- AUTO FILL HELPER --
     const loadDefaultPilots = (division, drivers = allDrivers) => {
         if (!drivers || drivers.length === 0) return;
         const divDrivers = drivers
             .filter(d => d.division === division && d.season === activeSeason)
             .sort((a, b) => a.name.localeCompare(b.name))
-            .map(d => ({ name: d.name, weight: '' }));
+            .map(d => ({ name: d.name, weight: '', history: '' }));
         setPilotosRows(divDrivers);
     };
 
@@ -65,7 +118,7 @@ const Sorteo = () => {
             id: Date.now().toString(),
             name,
             karts,
-            historial,
+            reservas,
             activeDivision,
             pilotosRows,
             results,
@@ -100,12 +153,13 @@ const Sorteo = () => {
 
         const session = savedSessions.find(s => s.id === id);
         if (session && window.confirm(`¿Cargar la sesión "${session.name}"? Se sobrescribirán los datos actuales en pantalla.`)) {
-            setKarts(session.karts || '');
-            setHistorial(session.historial || '');
-            setActiveDivision(session.activeDivision || 1);
-            setPilotosRows(session.pilotosRows || []);
-            setResults(session.results || []);
-            setLastAssignments(session.lastAssignments || []);
+            const migratedSession = migrateData(session);
+            setKarts(migratedSession.karts || '');
+            setReservas(migratedSession.reservas || '');
+            setActiveDivision(migratedSession.activeDivision || 1);
+            setPilotosRows(migratedSession.pilotosRows || []);
+            setResults(migratedSession.results || []);
+            setLastAssignments(migratedSession.lastAssignments || []);
         }
     };
 
@@ -139,7 +193,7 @@ const Sorteo = () => {
     };
 
     const handleAddPilotRow = () => {
-        setPilotosRows([...pilotosRows, { name: '', weight: '' }]);
+        setPilotosRows([...pilotosRows, { name: '', weight: '', history: '' }]);
     };
 
     const handleRemovePilotRow = (index) => {
@@ -176,7 +230,14 @@ const Sorteo = () => {
         const validPilotos = pilotosRows.filter(p => p.name.trim());
         const nombres = validPilotos.map(p => p.name.trim());
         const kartsList = karts.split(/[\n;]+/).map(k => k.trim()).filter(k => k);
-        const { map: history, originals } = parseHistory(historial);
+        const history = new Map();
+        const originals = new Map();
+        validPilotos.forEach(p => {
+            const nameNorm = p.name.trim().toLowerCase();
+            originals.set(nameNorm, p.name.trim());
+            const kartParts = (p.history || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+            history.set(nameNorm, new Set(kartParts));
+        });
 
         // EXTRA RULE: Karts that cannot be ballasted: 51, 60, 61
         // If a pilot needs > 10kg ballast (difference > 10), they CANNOT get these karts.
@@ -215,6 +276,22 @@ const Sorteo = () => {
         let nombresParaSortear = [...nombres];
         let kartsParaSortear = [...kartsList];
         let forceMappings = {};
+
+        // --- REGLA RICHARD ---
+        const richardIndex = nombresParaSortear.findIndex(n => n.toLowerCase().includes('richard'));
+        if (richardIndex !== -1) {
+            const kart37Index = kartsParaSortear.indexOf('37');
+            if (kart37Index !== -1) {
+                forceMappings[nombresParaSortear[richardIndex]] = '37';
+                nombresParaSortear.splice(richardIndex, 1);
+                kartsParaSortear.splice(kart37Index, 1);
+            } else if (kartsParaSortear.length > 0) {
+                const randomIndex = Math.floor(Math.random() * kartsParaSortear.length);
+                forceMappings[nombresParaSortear[richardIndex]] = kartsParaSortear[randomIndex];
+                nombresParaSortear.splice(richardIndex, 1);
+                kartsParaSortear.splice(randomIndex, 1);
+            }
+        }
 
         if (isOscuroMode && activeDivision === 1) {
             const luisIndex = nombresParaSortear.findIndex(n => n.toLowerCase().includes('luis hidalgo'));
@@ -323,7 +400,7 @@ const Sorteo = () => {
         logEvent('sorteo_karts', {
             pilotos_count: nombres.length,
             karts_count: kartsList.length,
-            has_history: !!historial.trim()
+            has_history: validPilotos.some(p => p.history && p.history.trim())
         });
 
         // Reset sorting state after animation
@@ -347,22 +424,43 @@ const Sorteo = () => {
             alert('⚠️ No hay asignaciones recientes para copiar.');
             return;
         }
-        const lines = lastAssignments.map(a => `${a.name}: ${a.kart}`);
-        const separator = historial.trim() ? '\n' : '';
-        setHistorial(historial.trim() + separator + lines.join('\n'));
+        const newRows = pilotosRows.map(p => {
+            const assignment = lastAssignments.find(a => a.name.trim().toLowerCase() === p.name.trim().toLowerCase());
+            if (assignment && assignment.kart) {
+                const prev = p.history ? p.history.trim() : '';
+                const separator = prev ? ', ' : '';
+                return { ...p, history: prev + separator + assignment.kart };
+            }
+            return p;
+        });
+        setPilotosRows(newRows);
 
         setCopyBtnText('Copiado');
         setTimeout(() => setCopyBtnText('Copiar al Historial'), 2000);
     };
 
     const handleClearAll = () => {
-        if (window.confirm('¿Estás seguro de que quieres limpiar la pantalla (borrar Pilotos, Karts, Historial y Resultados actuales)? \nEsto NO borrará las sesiones guardadas.')) {
+        if (window.confirm('¿Estás seguro de que quieres limpiar la pantalla (borrar Pilotos, Karts, Reservas y Resultados actuales)? \nEsto NO borrará las sesiones guardadas.')) {
             loadDefaultPilots(activeDivision);
             setKarts('');
-            setHistorial('');
+            setReservas('');
             setResults([]);
             setLastAssignments([]);
             setCopyBtnText('Copiar al Historial');
+        }
+    };
+
+    const handleUpdateResultField = (index, field, value) => {
+        const newResults = [...results];
+        newResults[index] = { ...newResults[index], [field]: value };
+        setResults(newResults);
+
+        if (field === 'kart') {
+            const newAssignments = [...lastAssignments];
+            if (newAssignments[index]) {
+                newAssignments[index].kart = value;
+                setLastAssignments(newAssignments);
+            }
         }
     };
 
@@ -419,7 +517,8 @@ const Sorteo = () => {
                         <div className="row-header">
                             <div><i className="fa-solid fa-user"></i> Piloto</div>
                             <div><i className="fa-solid fa-weight-scale"></i> Peso</div>
-                            <div><i className="fa-solid fa-scale-balanced"></i> Ajuste (75kg)</div>
+                            <div><i className="fa-solid fa-timeline"></i> Karts previos</div>
+                            <div><i className="fa-solid fa-scale-balanced"></i> Ajuste</div>
                             <div></div>
                         </div>
                         {pilotosRows.map((pilot, idx) => {
@@ -434,6 +533,7 @@ const Sorteo = () => {
                                 <div key={idx} className="pilot-row">
                                     <input type="text" value={pilot.name} onChange={(e) => handlePilotChange(idx, 'name', e.target.value)} placeholder="Nombre del piloto" />
                                     <input type="number" step="0.1" value={pilot.weight} onChange={(e) => handlePilotChange(idx, 'weight', e.target.value)} placeholder="Ej: 65" />
+                                    <input type="text" value={pilot.history || ''} onChange={(e) => handlePilotChange(idx, 'history', e.target.value)} placeholder="Ej: 33, 45" title="Separados por coma" />
                                     <div className="diff-display" style={{ color: diffColor }}>{diffTxt}</div>
                                     <button className="remove-btn" onClick={() => handleRemovePilotRow(idx)}><i className="fa-solid fa-xmark"></i></button>
                                 </div>
@@ -445,35 +545,40 @@ const Sorteo = () => {
                     </div>
 
                     <div className="table-right">
-                        <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span><i className="fa-solid fa-car-side"></i> Karts</span>
-                            <span style={{ fontSize: '0.85em', background: 'rgba(59, 130, 246, 0.2)', color: '#93c5fd', padding: '2px 8px', borderRadius: '12px' }}>
-                                {karts.split(/[\n;]+/).map(k => k.trim()).filter(k => k).length} total
-                            </span>
-                        </label>
-                        <textarea
-                            id="karts"
-                            placeholder="Separados por salto de línea&#10;33&#10;36&#10;37"
-                            value={karts}
-                            onChange={(e) => setKarts(e.target.value)}
-                            style={{ height: 'calc(100% - 30px)', minHeight: '150px' }}
-                        ></textarea>
+                        <div style={{ display: 'flex', gap: '15px', height: 'calc(100% - 40px)', flexWrap: 'wrap' }}>
+                            <div style={{ flex: 1, minWidth: '150px' }}>
+                                <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <span><i className="fa-solid fa-car-side"></i> Karts</span>
+                                    <span style={{ fontSize: '0.85em', background: 'rgba(59, 130, 246, 0.2)', color: '#93c5fd', padding: '2px 8px', borderRadius: '12px' }}>
+                                        {karts.split(/[\n;]+/).map(k => k.trim()).filter(k => k).length} total
+                                    </span>
+                                </label>
+                                <textarea
+                                    id="karts"
+                                    placeholder="Separados por salto de línea&#10;33&#10;36&#10;37"
+                                    value={karts}
+                                    onChange={(e) => setKarts(e.target.value)}
+                                    style={{ height: '100%', minHeight: '150px' }}
+                                ></textarea>
+                            </div>
+                            <div style={{ flex: 1, minWidth: '150px' }}>
+                                <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <span><i className="fa-solid fa-car-on"></i> Reservas</span>
+                                </label>
+                                <textarea
+                                    id="reservas"
+                                    placeholder="Para sustituciones&#10;35&#10;40"
+                                    value={reservas}
+                                    onChange={(e) => setReservas(e.target.value)}
+                                    style={{ height: '100%', minHeight: '150px' }}
+                                ></textarea>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div style={{ marginTop: '20px' }}>
-                    <label><i className="fa-solid fa-clipboard-list"></i> Historial / Restricciones</label>
-                    <textarea
-                        id="historial"
-                        placeholder="Nombre: kart1, kart2 (evita repetir)"
-                        value={historial}
-                        onChange={(e) => setHistorial(e.target.value)}
-                        style={{ height: '130px' }}
-                    ></textarea>
-                </div>
-
                 <small style={{ marginTop: '15px', display: 'block', lineHeight: '1.5' }}>
-                    <i className="fa-solid fa-circle-info"></i> El sistema asignará karts intentando no repetir los que estén en el historial. Mínimo 75kg.
+                    <i className="fa-solid fa-circle-info"></i> El sistema asignará karts intentando no repetir los que estén en el historial de cada piloto. Mínimo 75kg.
                     <br />
                     <span style={{ color: '#fbbf24' }}>
                         <i className="fa-solid fa-triangle-exclamation"></i> Karts sin lastre ({`51, 60, 61, 39`}) excluidos para pilotos con ajuste &gt; 10kg.
@@ -498,7 +603,7 @@ const Sorteo = () => {
 
             <div className="grid" id="grid">
                 {results.map((item, index) => (
-                    <SlotMachineCard key={index} item={item} />
+                    <SlotMachineCard key={index} item={item} onUpdate={(field, val) => handleUpdateResultField(index, field, val)} />
                 ))}
             </div>
             <br />
@@ -567,7 +672,7 @@ const Sorteo = () => {
                 }
                 .row-header, .pilot-row {
                     display: grid;
-                    grid-template-columns: 2fr 1fr 1fr 40px;
+                    grid-template-columns: 2fr 1fr 2fr 1fr 40px;
                     gap: 15px;
                     align-items: center;
                 }
@@ -797,11 +902,17 @@ const Sorteo = () => {
     );
 };
 
-const SlotMachineCard = ({ item }) => {
+const SlotMachineCard = ({ item, onUpdate }) => {
     const listRef = useRef(null);
     const [finished, setFinished] = useState(false);
+    const hasAnimated = useRef(false);
 
     React.useEffect(() => {
+        if (!item.listaAnimada || item.listaAnimada.length === 0 || hasAnimated.current) {
+            if (!hasAnimated.current) setFinished(true); // fall-safe
+            return;
+        }
+
         const list = listRef.current;
         if (!list) return;
 
@@ -809,6 +920,8 @@ const SlotMachineCard = ({ item }) => {
         const itemsCount = item.listaAnimada.length;
         const finalTop = -itemHeight * (itemsCount - 1);
 
+        hasAnimated.current = true;
+        
         // Delay start
         const timer = setTimeout(() => {
             list.animate(
@@ -824,26 +937,58 @@ const SlotMachineCard = ({ item }) => {
                 }
             ).onfinish = () => {
                 setFinished(true);
+                if (listRef.current) listRef.current.style.top = `${finalTop}px`;
             };
         }, item.delay + 200); // Wait for fade up + a bit
 
         return () => clearTimeout(timer);
     }, [item]);
 
+    const handleKartChange = (e) => {
+        if (onUpdate) onUpdate('kart', e.target.value);
+    };
+
+    const handleLastreClick = () => {
+        const currentM = item.lastradoMsg || 'Verificado';
+        const newVal = window.prompt("Introduce lastre aplicado (o vacío para quitar):", currentM);
+        if (newVal !== null) {
+            if (newVal.trim() === '') {
+                if (onUpdate) onUpdate('isLastrado', false);
+                if (onUpdate) onUpdate('lastradoMsg', '');
+            } else {
+                if (onUpdate) onUpdate('isLastrado', true);
+                if (onUpdate) onUpdate('lastradoMsg', newVal);
+            }
+        }
+    };
+
     return (
         <div className={`card fade-up ${finished ? 'name-up' : ''}`} style={{ animationDelay: `${item.delay}ms` }}>
             <div className="nombre">{item.name}</div>
             {item.diffTxt && (
-                <div className="lastre-badge" style={{ color: item.diffColor }}>
-                    <i className="fa-solid fa-weight-hanging"></i> Lastre: {item.diffTxt}
+                <div onClick={handleLastreClick} className="lastre-badge" style={{ color: item.isLastrado ? '#22c55e' : item.diffColor, cursor: 'pointer', border: item.isLastrado ? '1px solid #22c55e' : '1px solid rgba(255, 255, 255, 0.1)' }} title="Click para marcar o editar lastre">
+                    <i className={item.isLastrado ? "fa-solid fa-check" : "fa-solid fa-weight-hanging"}></i> Lastre: {item.isLastrado && item.lastradoMsg ? item.lastradoMsg : item.diffTxt}
                 </div>
             )}
             <div className="kart-slot">
-                <div className="kart-list" ref={listRef}>
-                    {item.listaAnimada.map((k, i) => (
-                        <div key={i}>{k}</div>
-                    ))}
-                </div>
+                {finished ? (
+                    <input 
+                        type="text" 
+                        value={item.kart || ''} 
+                        onChange={handleKartChange}
+                        style={{
+                            width: '100%', height: '100%', background: 'transparent',
+                            border: 'none', color: 'inherit', font: 'inherit',
+                            textAlign: 'center', outline: 'none'
+                        }}
+                    />
+                ) : (
+                    <div className="kart-list" ref={listRef}>
+                        {item.listaAnimada?.map((k, i) => (
+                            <div key={i}>{k}</div>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );
