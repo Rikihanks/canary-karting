@@ -88,7 +88,7 @@ const Navbar = () => {
                 { to: "/teams?season=2025", label: "Temporada 2025" }
             ]
         },
-        { to: "/news", label: "📰 Noticias" },
+        //{ to: "/news", label: "📰 Noticias" },
         // { to: "/inscripcion", label: "📝 Preinscripción", feature: "inscripcion" },
         { to: "/votar", label: "🗳️ Piloto del día" },
         { to: "/races", label: "🏎️ Calendario Carreras", feature: "races" },
