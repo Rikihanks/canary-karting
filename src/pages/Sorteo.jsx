@@ -272,41 +272,9 @@ const Sorteo = () => {
             return;
         }
 
-        // --- MODO OSCURO ---
         let nombresParaSortear = [...nombres];
         let kartsParaSortear = [...kartsList];
         let forceMappings = {};
-
-        // --- REGLA RICHARD ---
-        const richardIndex = nombresParaSortear.findIndex(n => n.toLowerCase().includes('richard'));
-        if (richardIndex !== -1) {
-            const kart37Index = kartsParaSortear.indexOf('37');
-            if (kart37Index !== -1) {
-                forceMappings[nombresParaSortear[richardIndex]] = '37';
-                nombresParaSortear.splice(richardIndex, 1);
-                kartsParaSortear.splice(kart37Index, 1);
-            } else if (kartsParaSortear.length > 0) {
-                const randomIndex = Math.floor(Math.random() * kartsParaSortear.length);
-                forceMappings[nombresParaSortear[richardIndex]] = kartsParaSortear[randomIndex];
-                nombresParaSortear.splice(richardIndex, 1);
-                kartsParaSortear.splice(randomIndex, 1);
-            }
-        }
-
-        if (isOscuroMode && activeDivision === 1) {
-            const luisIndex = nombresParaSortear.findIndex(n => n.toLowerCase().includes('luis hidalgo'));
-            const targetKarts = ['52', '51', '55'];
-            const availableTargetKarts = kartsParaSortear.filter(k => targetKarts.includes(k));
-
-            if (luisIndex !== -1 && availableTargetKarts.length > 0) {
-                const chosenKart = availableTargetKarts[Math.floor(Math.random() * availableTargetKarts.length)];
-                const kartIndex = kartsParaSortear.indexOf(chosenKart);
-
-                forceMappings[nombresParaSortear[luisIndex]] = chosenKart;
-                nombresParaSortear.splice(luisIndex, 1);
-                kartsParaSortear.splice(kartIndex, 1);
-            }
-        }
 
         // Run matching on the (potentially filtered) lists
         const subMapping = findPerfectMatching(nombresParaSortear, kartsParaSortear, history);

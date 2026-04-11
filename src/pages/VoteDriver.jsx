@@ -350,12 +350,6 @@ const VoteDriver = () => {
                                                                                 </div>
 
                                                                                 <div className="winner-share-actions">
-                                                                                    <button
-                                                                                        className="winner-share-btn"
-                                                                                        onClick={(e) => handleShareWinner(e, winner, divId, totalVotes)}
-                                                                                    >
-                                                                                        <i className="fa-solid fa-share-nodes"></i> Compartir
-                                                                                    </button>
                                                                                     {import.meta.env.DEV && (
                                                                                         <button
                                                                                             className="winner-preview-btn"
