@@ -571,7 +571,7 @@ const Sorteo = () => {
 
             <div className="grid" id="grid">
                 {results.map((item, index) => (
-                    <SlotMachineCard key={index} item={item} onUpdate={(field, val) => handleUpdateResultField(index, field, val)} />
+                    <SlotMachineCard key={`${index}-${item.animationDuration || Math.random()}`} item={item} onUpdate={(field, val) => handleUpdateResultField(index, field, val)} />
                 ))}
             </div>
             <br />
