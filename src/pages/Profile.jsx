@@ -153,13 +153,17 @@ const Profile = () => {
                                     <span className="stat-value">{event.points_gained}</span>
                                 </div>
                             </div>
-                            <div className="stat-box" style={{ gridColumn: 'span 2' }}>
-                                <i className="fa-solid fa-gauge-high stat-icon"></i>
-                                <div className="stat-content">
-                                    <span className="stat-label">Sustituye a</span>
-                                    <span className="stat-value">{event.replaces}</span>
-                                </div>
-                            </div>
+                            {
+                                event.replaces && (
+                                    <div className="stat-box" style={{ gridColumn: 'span 2' }}>
+                                        <i className="fa-solid fa-gauge-high stat-icon"></i>
+                                        <div className="stat-content">
+                                            <span className="stat-label">Sustituye a</span>
+                                            <span className="stat-value">{event.replaces}</span>
+                                        </div>
+                                    </div>
+                                )
+                            }
                         </div>
                     </div>
                 ))}
