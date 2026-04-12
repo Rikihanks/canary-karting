@@ -831,6 +831,7 @@ const Profile = () => {
                         justify-content: center;
                         border-radius: 8px;
                         background: rgba(255, 255, 255, 0.03);
+                        z-index: 10;
                     }
 
                     @media (hover: hover) {
@@ -1033,10 +1034,10 @@ const Profile = () => {
                     @media (max-width: 600px) {
                         .driver-name-hero { font-size: 1.6rem; }
                         .stat-card { padding: 15px; }
-                        .modal { padding: 10px; }
+                        .modal { padding: 60px 15px 15px 15px; }
                         .modal-content { 
                             width: 100%; 
-                            max-height: 90vh; 
+                            max-height: calc(100vh - 90px); 
                             padding: 1.5rem; 
                         }
                         #modal-title { font-size: 1.3rem; }
