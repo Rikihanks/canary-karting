@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import PullToRefresh from 'react-simple-pull-to-refresh';
 import { useConfig } from '../context/ConfigContext';
 import { getLeaderboardData, submitVote, getDOTDResults, DEFAULT_PILOT_PHOTO } from '../services/data';
+import { getBackendData } from '../services/backendService';
 import { useAuth } from '../context/AuthContext';
 import { logEvent } from '../services/telemetry';
 import DOTDStoryShare from '../components/DOTDStoryShare';
@@ -28,6 +29,7 @@ const VoteDriver = () => {
     const [submittingDriver, setSubmittingDriver] = useState(null);
     const [sharingWinner, setSharingWinner] = useState(null);
     const [isPreviewing, setIsPreviewing] = useState(false);
+    const [recentRaceDrivers, setRecentRaceDrivers] = useState(null);
 
     const [revealedDivs, setRevealedDivs] = useState([]);
 
@@ -40,6 +42,43 @@ const VoteDriver = () => {
     const dotdState = getDotdState(activeDivision);
 
     const getTodayStr = () => new Date().toISOString().split('T')[0];
+
+    useEffect(() => {
+        const fetchRecentRace = async () => {
+            setRecentRaceDrivers(null);
+            try {
+                const backendRes = await getBackendData();
+                if (backendRes && backendRes.success) {
+                    const calendar = backendRes.data.calendar || [];
+                    const divRaces = calendar.filter(r => r.division == activeDivision && (r.temporada || "2026") === activeSeason && (r.terminada == 1 || r.activa == 1));
+                    if (divRaces.length > 0) {
+                        const pD = (d) => d && d.includes('/') ? new Date(d.split('/')[2], d.split('/')[1] - 1, d.split('/')[0]).getTime() : new Date(d).getTime();
+                        divRaces.sort((a, b) => pD(b.fecha) - pD(a.fecha));
+                        const lastRace = divRaces[0];
+                        const lastRaceDateParsed = pD(lastRace.fecha);
+
+                        const allResults = backendRes.data.results || [];
+                        const lastRaceResults = allResults.filter(r =>
+                            r.id_circuito == lastRace.id_circuito &&
+                            r.division == activeDivision &&
+                            pD(r.date) === lastRaceDateParsed
+                        );
+
+                        const pilotNames = Array.from(new Set(lastRaceResults.map(r => r.pilot).filter(Boolean)));
+                        setRecentRaceDrivers(pilotNames);
+                    } else {
+                        setRecentRaceDrivers([]);
+                    }
+                } else {
+                    setRecentRaceDrivers([]);
+                }
+            } catch (e) {
+                console.error("Error fetching recent race:", e);
+                setRecentRaceDrivers([]);
+            }
+        };
+        fetchRecentRace();
+    }, [activeDivision, activeSeason]);
 
     // Load revealed state from localStorage on mount
     useEffect(() => {
@@ -188,7 +227,7 @@ const VoteDriver = () => {
     const handleShareWinner = (e, winner, divId, totalVotes) => {
         e.stopPropagation();
         e.preventDefault();
-        const driverInfo = filteredDrivers.find(d => d.name === winner.driver);
+        const driverInfo = filteredDrivers.find(d => d.name === winner.driver) || drivers.find(d => d.name === winner.driver);
         console.log(driverInfo);
 
         setSharingWinner({
@@ -204,7 +243,7 @@ const VoteDriver = () => {
     const handlePreviewWinner = (e, winner, divId, totalVotes) => {
         e.stopPropagation();
         e.preventDefault();
-        const driverInfo = filteredDrivers.find(d => d.name === winner.driver);
+        const driverInfo = filteredDrivers.find(d => d.name === winner.driver) || drivers.find(d => d.name === winner.driver);
         setSharingWinner({
             ...winner,
             photo: driverInfo?.photo,
@@ -215,10 +254,50 @@ const VoteDriver = () => {
         setIsPreviewing(true);
     };
 
-    const filteredDrivers = drivers
-        .filter(driver => driver.division === activeDivision)
-        .filter(driver => driver.season === activeSeason)
-        .sort((a, b) => a.name.localeCompare(b.name));
+    let filteredDrivers = [];
+    if (recentRaceDrivers === null) {
+        filteredDrivers = drivers
+            .filter(driver => driver.division === activeDivision && driver.season === activeSeason);
+    } else if (recentRaceDrivers.length > 0) {
+        const uniqueDrivers = new Map();
+
+        recentRaceDrivers.forEach(name => {
+            // First priority: Exact season and exact division
+            let d = drivers.find(drv => drv.name === name && drv.season === activeSeason && drv.division === activeDivision);
+
+            // Second priority: Exact season, any division
+            if (!d) {
+                d = drivers.find(drv => drv.name === name && drv.season === activeSeason);
+            }
+
+            // Third priority: Fallback to old season (useful for photo and team data)
+            if (!d) {
+                d = drivers.find(drv => drv.name === name);
+            }
+
+            if (d) {
+                uniqueDrivers.set(name, {
+                    ...d,
+                    division: activeDivision, // Lock to active division
+                    season: activeSeason // Lock to active season so they don't look out of place
+                });
+            } else {
+                uniqueDrivers.set(name, {
+                    name,
+                    team: "",
+                    photo: DEFAULT_PILOT_PHOTO,
+                    division: activeDivision,
+                    season: activeSeason
+                });
+            }
+        });
+
+        filteredDrivers = Array.from(uniqueDrivers.values());
+    } else {
+        filteredDrivers = drivers
+            .filter(driver => driver.division === activeDivision && driver.season === activeSeason);
+    }
+    filteredDrivers.sort((a, b) => a.name.localeCompare(b.name));
 
     if (loading) {
         return (
@@ -326,7 +405,7 @@ const VoteDriver = () => {
                                                                     </div>
                                                                 )}
                                                                 {winners.map((winner, idx) => {
-                                                                    const driverInfo = filteredDrivers.find(d => d.name === winner.driver);
+                                                                    const driverInfo = filteredDrivers.find(d => d.name === winner.driver) || drivers.find(d => d.name === winner.driver);
                                                                     return (
                                                                         <Link
                                                                             key={winner.driver}
