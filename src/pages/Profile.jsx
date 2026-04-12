@@ -117,7 +117,6 @@ const Profile = () => {
                                 <i className="fa-solid fa-flag-checkered event-icon"></i>
                                 <span className="race-name">
                                     {event.race}
-                                    {event.replaces && <small title={`Sustituye a ${event.replaces}`}> 🔁</small>}
                                     {event.investigating == 1 && <small title="Bajo Investigación"> ⚠️</small>}
                                     {event.sancion == 1 && <small title="Sanción"> 🟥</small>}
                                     {event.amonestacion == 1 && <small title="Amonestación"> 🟨</small>}
@@ -152,6 +151,13 @@ const Profile = () => {
                                 <div className="stat-content">
                                     <span className="stat-label">Puntos</span>
                                     <span className="stat-value">{event.points_gained}</span>
+                                </div>
+                            </div>
+                            <div className="stat-box" style={{ gridColumn: 'span 2' }}>
+                                <i className="fa-solid fa-gauge-high stat-icon"></i>
+                                <div className="stat-content">
+                                    <span className="stat-label">Sustituye a</span>
+                                    <span className="stat-value">{event.replaces}</span>
                                 </div>
                             </div>
                         </div>
@@ -774,13 +780,14 @@ const Profile = () => {
                         top: 0;
                         width: 100%;
                         height: 100%;
-                        overflow: auto;
+                        overflow: hidden;
                         background-color: rgba(0,0,0,0.85);
                         backdrop-filter: blur(8px);
                         display: flex;
                         align-items: center;
                         justify-content: center;
-                        padding: 20px;
+                        padding: 15px;
+                        overscroll-behavior: contain;
                     }
 
                     .modal-content {
@@ -792,6 +799,8 @@ const Profile = () => {
                         max-width: 650px;
                         max-height: 85vh;
                         overflow-y: auto;
+                        -webkit-overflow-scrolling: touch;
+                        overscroll-behavior-y: contain;
                         box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
                         position: relative;
                         animation: modalSlideIn 0.3s ease-out;
@@ -820,10 +829,12 @@ const Profile = () => {
                         background: rgba(255, 255, 255, 0.03);
                     }
 
-                    .close-button:hover {
-                        color: var(--accent);
-                        background: rgba(59, 130, 246, 0.1);
-                        transform: rotate(90deg);
+                    @media (hover: hover) {
+                        .close-button:hover {
+                            color: var(--accent);
+                            background: rgba(59, 130, 246, 0.1);
+                            transform: rotate(90deg);
+                        }
                     }
 
                     #modal-title {
@@ -862,10 +873,12 @@ const Profile = () => {
                         background: linear-gradient(90deg, var(--accent), #a855f7);
                     }
 
-                    .event-card:hover {
-                        transform: translateY(-4px);
-                        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
-                        border-color: rgba(59, 130, 246, 0.3);
+                    @media (hover: hover) {
+                        .event-card:hover {
+                            transform: translateY(-4px);
+                            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+                            border-color: rgba(59, 130, 246, 0.3);
+                        }
                     }
 
                     .best-lap-card {
@@ -964,9 +977,11 @@ const Profile = () => {
                         transition: all 0.2s;
                     }
 
-                    .stat-box:hover {
-                        background: rgba(255, 255, 255, 0.08);
-                        border-color: rgba(255, 255, 255, 0.12);
+                    @media (hover: hover) {
+                        .stat-box:hover {
+                            background: rgba(255, 255, 255, 0.08);
+                            border-color: rgba(255, 255, 255, 0.12);
+                        }
                     }
 
                     .stat-box.points-box {
