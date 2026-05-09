@@ -1,5 +1,6 @@
 import { fetchWithRetry, getDOTDResults } from './data';
-import { getBackendData } from './backendService';
+// Removed static import to avoid circular dependency with backendService.js
+
 
 // ==========================================
 // NEW V2 SPREADSHEET LINKS (PLACEHOLDERS)

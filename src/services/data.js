@@ -1,5 +1,6 @@
 import { getLeaderboardDataV2, getTeamsDataV2, getResultsDataV2 } from './dataAggregation';
-import { getBackendData } from './backendService';
+// Removed static import to avoid circular dependency with backendService.js
+
 
 const GOOGLE_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTlPsGq-SypD4WPitvnR7JcluA8_6-5ePtuzyf5zFGJ31eppN55iUIHsKo0oduOZ9AVyVTf6VkPvTyu/pub?output=csv";
 const RESULTS_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQP2AF0yixedvzkQcGkkLxnAP4fKl26f46dCFHdL6f11_QbeZP6NHLDshKqBkKtZdYLkyH8Rqrtedp5/pub?output=csv";
@@ -22,6 +23,8 @@ const DOTD_RESULTS_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1v
 export const DEFAULT_PILOT_PHOTO = "https://www.shutterstock.com/image-photo/formula-1-pilot-profile-silhouette-600nw-2666928449.jpg";
 const NEWS_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRguh21pKudFW_SOQW1wyjW-D95dzJ_Rn8LK-tHeaes0zKbRPVQbzRcKy_4xJ1l-tXRyTff4nfkbOLm/pub?output=csv";
 export const RESULTS_V2_EXEC = "https://script.google.com/macros/s/AKfycbxA5js_Adt78HAQHW6851VtqZCtMzZoFEVuqi4A31752DUCM_tc0EtYRrPTGJTBLgap/exec";
+
+
 
 // Direct URLs - Google Sheets published CSVs are already CORS-enabled
 const DOTD_RESULTS_URL = DOTD_RESULTS_CSV_LINK;
@@ -249,7 +252,9 @@ export async function getCalendarData(skipCache = false) {
 
     if (USE_V2) {
         try {
+            const { getBackendData } = await import('./backendService');
             const backendResponse = await getBackendData();
+
             if (backendResponse.success && backendResponse.data.calendar.length > 0) {
                 return backendResponse.data.calendar.map(r => ({
                     ...r,

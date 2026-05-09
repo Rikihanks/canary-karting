@@ -14,6 +14,7 @@ import ScrollToTop from './components/ScrollToTop';
 import TelemetryTracker from './components/TelemetryTracker';
 import { usePWAInstallStatus } from './hooks/usePWAInstallStatus';
 import SwipeNavigation from './components/SwipeNavigation';
+import BackendErrorModal from './components/BackendErrorModal';
 import './App.css';
 
 // Lazy loading pages
@@ -95,6 +96,7 @@ function App() {
               <MessageBanner />
             </header>
             <PWAInstallModal />
+            <BackendErrorModal />
             <div className="app-main-wrapper">
               <div className="app-content">
                 <Suspense fallback={<LoadingFallback />}>

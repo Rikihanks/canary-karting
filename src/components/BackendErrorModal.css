@@ -1,0 +1,96 @@
+.backend-error-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10002;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    animation: backendErrorFadeIn 0.3s ease-out;
+}
+
+@keyframes backendErrorFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.backend-error-modal {
+    background: #1c1b1f;
+    width: 95%;
+    max-width: 360px;
+    border-radius: 28px;
+    overflow: hidden;
+    color: #e6e1e5;
+    font-family: 'Roboto', sans-serif;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
+    animation: backendErrorSlideUp 0.3s ease-out;
+    text-align: center;
+    padding: 32px 24px 24px;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+@keyframes backendErrorSlideUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.backend-error-icon {
+    font-size: 2.5rem;
+    color: #ef4444;
+    margin-bottom: 16px;
+    display: block;
+    text-align: center;
+    filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.4));
+}
+
+.backend-error-modal h2 {
+    font-family: 'Russo One', sans-serif;
+    font-size: 1.3rem;
+    color: #f1f5f9;
+    margin: 0 0 12px 0;
+    text-shadow: none;
+}
+
+.backend-error-modal p {
+    font-size: 0.9rem;
+    color: #94a3b8;
+    line-height: 1.5;
+    margin: 0 0 24px 0;
+}
+
+.backend-error-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.backend-error-btn-primary {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    background: #6750a4;
+    color: #fff;
+    width: 100%;
+}
+
+.backend-error-btn-primary:hover {
+    background: #7c6bc4;
+}
+
+.backend-error-btn-primary:active {
+    transform: scale(0.97);
+}
