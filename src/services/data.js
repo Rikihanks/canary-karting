@@ -716,3 +716,60 @@ export async function getNewsData(skipCache = false) {
         return [];
     }
 }
+
+const ASSISTANCE_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTq8sBXfzKkBmGEUxaqB57exxTbF_0yYsHVaRsQ2F7HzCXoMVK8zW8630R4vtSvRn590pj-N65vFQek/pub?gid=565419597&single=true&output=csv";
+
+export function parseAssistanceCSV(csvText) {
+    const lines = csvText.split('\n').filter(line => line.trim() !== '');
+    const results = [];
+    for (let i = 1; i < lines.length; i++) {
+        const parts = lines[i].split(',');
+        if (parts.length >= 5 && parts[0].trim() && parts[1].trim()) {
+            results.push({
+                fecha_carrera: parts[0].trim(),
+                email: parts[1].trim(),
+                division: parts[2].trim(),
+                codigo: parts[3].trim(),
+                confirmado: parts[4].trim()
+            });
+        }
+    }
+    return results;
+}
+
+export async function getAssistanceData(skipCache = false) {
+    try {
+        const response = await fetchWithRetry(ASSISTANCE_CSV_LINK, 3, skipCache, true);
+        const data = await response.text();
+        return parseAssistanceCSV(data);
+    } catch (error) {
+        console.error("Error fetching assistance data:", error);
+        return [];
+    }
+}
+
+const PILOT_EMAIL_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQP2AF0yixedvzkQcGkkLxnAP4fKl26f46dCFHdL6f11_QbeZP6NHLDshKqBkKtZdYLkyH8Rqrtedp5/pub?gid=1067641183&single=true&output=csv";
+
+export function parsePilotEmailCSV(csvText) {
+    const lines = csvText.split('\n').filter(line => line.trim() !== '');
+    const map = {};
+    for (let i = 1; i < lines.length; i++) {
+        const parts = lines[i].split(',');
+        if (parts.length >= 2 && parts[0].trim() && parts[1].trim()) {
+            const email = parts[1].trim().toLowerCase();
+            map[email] = parts[0].trim();
+        }
+    }
+    return map;
+}
+
+export async function getPilotEmailMap(skipCache = false) {
+    try {
+        const response = await fetchWithRetry(PILOT_EMAIL_CSV_LINK, 3, skipCache, true);
+        const data = await response.text();
+        return parsePilotEmailCSV(data);
+    } catch (error) {
+        console.error("Error fetching pilot email map:", error);
+        return {};
+    }
+}

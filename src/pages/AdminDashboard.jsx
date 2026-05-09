@@ -188,8 +188,8 @@ const AdminDashboard = () => {
                         <Link to="/sorteo" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', padding: '12px 16px', borderRadius: '8px', color: 'white', fontWeight: 'bold' }}>
                             <i className="fa-solid fa-ticket"></i> Sorteo de Karts (Admin)
                         </Link>
-                        <Link to="/admin-results" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none', background: 'rgba(59, 130, 246, 0.2)', border: '1px solid var(--accent)', padding: '12px 16px', borderRadius: '8px', color: 'white', fontWeight: 'bold' }}>
-                            <i className="fa-solid fa-list-ol"></i> Gestión Resultados V2/V3
+                        <Link to="/admin-asistencia" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none', background: 'rgba(16, 185, 129, 0.2)', border: '1px solid #10b981', padding: '12px 16px', borderRadius: '8px', color: 'white', fontWeight: 'bold' }}>
+                            <i className="fa-solid fa-check-to-slot"></i> Panel de Asistencia
                         </Link>
                         <Link to="/admin-results-v3" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none', background: 'rgba(16, 185, 129, 0.2)', border: '1px solid #10b981', padding: '12px 16px', borderRadius: '8px', color: 'white', fontWeight: 'bold' }}>
                             <i className="fa-solid fa-bolt"></i> Gestión Resultados V3 PRO
