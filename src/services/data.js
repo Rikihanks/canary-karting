@@ -225,18 +225,19 @@ export async function getDriverResults() {
         // Normalize V2 results to V1 format expected by Profile.jsx
         return results.map(r => ({
             name: r.pilot,
-            race: r.id_circuito, // V2 uses id_circuito as the identifier
+            race: r.id_circuito,
             date: r.date,
             position: r.pos_final,
             pole_pos: r.pos_clasificacion,
             fastest_lap: r.tiempo_vuelta || "N/A",
             condition: r.condicion || "Seco",
-            points_gained: 0, // Points are aggregated/calculated elsewhere or not needed here
+            points_gained: 0,
             season: r.temporada || r.season || "2026",
             sancion: r.sancion || 0,
             amonestacion: r.amonestacion || 0,
             investigating: r.investigating || 0,
-            replaces: r.replaces || ""
+            replaces: r.replaces || "",
+            kart: r.kart || ""
         }));
     }
     const response = await fetchWithRetry(RESULTS_URL);
@@ -358,18 +359,28 @@ export async function getRaceDetails(id, date, division) {
         const raceResults = allResults.filter(r => r.id_circuito === id && r.date === date && (!division || r.division == division));
 
         // Format for UI (RaceDetail.jsx expects specific naming conventions)
-        const formatForUI = (r, isClasi = false) => ({
-            piloto: r.replaces ? `${r.pilot} *` : r.pilot,
-            posicion: isClasi ? r.pos_clasificacion : r.pos_final,
-            id_circuito: r.id_circuito,
-            fecha: r.date,
-            division: r.division,
-            temporada: "2026",
-            vuelta_rapida: isClasi ? r.tiempo_qualy : r.tiempo_vuelta,
-            es_vuelta_rapida: !isClasi && r.es_vuelta_rapida,
-            sancion: r.sancion,
-            amonestacion: r.amonestacion
-        });
+        const formatForUI = (r, isClasi = false) => {
+            const pos = isClasi ? r.pos_clasificacion : r.pos_final;
+            const ptsTable = { 1: 25, 2: 18, 3: 15, 4: 12, 5: 10, 6: 8, 7: 6, 8: 4, 9: 2, 10: 1 };
+            let ptsBase = isClasi ? 0 : (ptsTable[pos] || 0);
+            let pts = ptsBase + (r.pos_clasificacion === 1 ? 1 : 0) + (r.es_vuelta_rapida ? 1 : 0);
+            return {
+                piloto: r.replaces ? `${r.pilot} *` : r.pilot,
+                posicion: pos,
+                id_circuito: r.id_circuito,
+                fecha: r.date,
+                division: r.division,
+                temporada: "2026",
+                vuelta_rapida: isClasi ? r.tiempo_qualy : r.tiempo_vuelta,
+                es_vuelta_rapida: !isClasi && r.es_vuelta_rapida,
+                pole_pos: !isClasi && r.pos_clasificacion === 1 ? 1 : 0,
+                sancion: r.sancion,
+                amonestacion: r.amonestacion,
+                kart: r.kart || "",
+                pts,
+                pts_base: ptsBase
+            };
+        };
 
         return {
             clasi: raceResults

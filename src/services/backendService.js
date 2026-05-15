@@ -36,9 +36,9 @@ async function _v3Fetch(url, options) {
 
 
 async function getApiBaseUrl() {
-    /*if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
         return 'http://localhost:3001';
-    }*/
+    }
     if (cachedBaseUrl) return cachedBaseUrl;
 
     try {

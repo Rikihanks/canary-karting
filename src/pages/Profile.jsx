@@ -242,6 +242,10 @@ const Profile = () => {
     const amonestacionCount = driverHistory.filter(r => r.amonestacion == 1).length;
     const dotd = driverStats.dotdTimes;
 
+    const kartHistory = driverHistory
+        .filter(r => r.kart)
+        .map(r => ({ kart: r.kart, race: r.race, date: r.date, position: r.position }));
+
 
     const handleRefresh = async () => {
         const { clearCache } = await import('../services/data');
@@ -419,6 +423,17 @@ const Profile = () => {
                             <span className="stat-title">Veces elegido como piloto del día</span>
                         </div>
                     </div>
+
+                    {kartHistory.length > 0 && (
+                        <div className="kart-history-section">
+                            <span className='stat-title'>Karts utilizados</span>
+                            <div className="kart-history-grid">
+                                {kartHistory.map((entry, i) => (
+                                    <span key={i} className="stat-number" style={{ marginTop: '5px' }}>{entry.kart} - </span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {modalOpen && (
@@ -726,6 +741,43 @@ const Profile = () => {
                     .stat-card.purple { background: linear-gradient(145deg, #1e293b, rgba(168, 85, 247, 0.1)); border-bottom: 3px solid #a855f7; }
                     .stat-card.orange { background: linear-gradient(145deg, #1e293b, rgba(249, 115, 22, 0.1)); border-bottom: 3px solid #f97316; }
                     .stat-card.dotd { background: linear-gradient(145deg, #1e293b, rgba(39, 36, 251, 0.1)); border-bottom: 3px solid #244bfbff; border-top: 0 }
+
+                    .kart-history-section {
+                        margin-top: 24px;
+                        background: #1e293b;
+                        border-radius: 10px;
+                        padding: 16px 20px 20px;
+                        border: 1px solid rgba(255, 255, 255, 0.05);
+                        border-bottom: 3px solid var(--accent);
+                    }
+
+                    .kart-history-section h3 {
+                        font-family: 'Russo One', sans-serif;
+                        color: var(--accent);
+                        font-size: 1rem;
+                        margin: 0 0 14px 0;
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                    }
+
+                    .kart-history-grid {
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 6px;
+                    }
+
+                    .kart-chip {
+                        font-family: 'Russo One', sans-serif;
+                        font-size: 1rem;
+                        color: var(--accent);
+                        background: rgba(59, 130, 246, 0.1);
+                        border: 1px solid rgba(59, 130, 246, 0.2);
+                        padding: 4px 12px;
+                        border-radius: 8px;
+                        min-width: 38px;
+                        text-align: center;
+                    }
 
                     .stat-icon-wrapper {
                         width: 30px;

@@ -837,7 +837,7 @@ h2 {
 }
 
 .grid-item[data-pos]:nth-child(even) {
-    margin-top: 25px;
+    margin-top: 30px;
     grid-column: 2;
 }
 

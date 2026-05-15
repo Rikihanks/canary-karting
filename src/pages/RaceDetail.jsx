@@ -91,6 +91,21 @@ const RaceDetail = () => {
 
                     return (
                         <div key={index} className={`grid-item ${posClass}`} data-pos={item.posicion}>
+                            {type === 'clasificacion' && item.posicion === 1 && (
+                                <div className="grid-points-badge pole-pos">
+                                    +1 pts
+                                </div>
+                            )}
+                            {type === 'resultados' && item.pts > 0 && (
+                                <div className={`grid-points-badge${item.es_vuelta_rapida ? ' fastest-lap' : ''}`}>
+                                    {item.es_vuelta_rapida ? `${item.pts_base}+1` : item.pts} pts
+                                </div>
+                            )}
+                            {type === 'resultados' && item.kart && (
+                                <div className="grid-penalty grid-kart kart-top-left" title="Kart">
+                                    Kart - {item.kart}
+                                </div>
+                            )}
                             <div className="grid-piloto-container">
                                 <span className="grid-pos">{item.posicion}.</span>
                                 <div className="grid-piloto-info">
@@ -284,6 +299,9 @@ const RaceDetail = () => {
                                             </div>
                                             <div className="fl-time">
                                                 ⏱️ {fastestLapDriver.vuelta_rapida}
+                                            </div>
+                                            <div className="fl-time" style={{ fontSize: '0.8em', marginTop: '5px' }}>
+                                                (+1 pto)
                                             </div>
                                         </div>
                                     </div>
@@ -649,6 +667,53 @@ const RaceDetail = () => {
                         border: 2px solid rgba(234, 179, 8, 0.4);
                     }
 
+                    .grid-kart {
+                        border: 2px solid rgba(59, 130, 246, 0.4);
+                    }
+
+                    .kart-top-left {
+                        position: absolute;
+                        top: -17px;
+                        left: 8px;
+                        z-index: 20;
+                    }
+
+                    .grid-points-badge {
+                        position: absolute;
+                        top: -17px;
+                        right: 8px;
+                        background: rgba(15, 23, 42, 0.85);
+                        border: 2px solid rgba(251, 191, 36, 0.4);
+                        backdrop-filter: blur(8px);
+                        -webkit-backdrop-filter: blur(8px);
+                        padding: 2px 8px;
+                        border-radius: 8px;
+                        font-size: 0.75rem;
+                        font-weight: bold;
+                        color: #fbbf24;
+                        display: flex;
+                        align-items: center;
+                        gap: 4px;
+                        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+                        z-index: 20;
+                        transition: all 0.3s ease;
+                    }
+
+                    .grid-points-badge.fastest-lap {
+                        border-color: rgba(168, 85, 247, 0.5);
+                        color: #c084fc;
+                    }
+
+                    .grid-points-badge.pole-pos {
+                        border-color: rgba(16, 185, 129, 0.5);
+                        color: #34d399;
+                    }
+
+                    .grid-item:hover .grid-points-badge {
+                        transform: translateY(-2px);
+                        background: rgba(30, 41, 59, 0.95);
+                    }
+
                     .grid-item:hover .grid-penalty {
                         transform: translateY(-2px);
                         background: rgba(30, 41, 59, 0.95);
@@ -688,7 +753,7 @@ const RaceDetail = () => {
                         }
                         .grid-penalty {
                             padding: 2px 5px;
-                            font-size: 0.65rem;
+                            font-size: 0.70rem;
                         }
                     }
                 `}</style>
