@@ -114,54 +114,17 @@ async function buildAggregatedData() {
     let pilotsData = [];
     let resultsData = [];
     let teamsMeta = [];
-    let dataLoaded = false;
 
-    // 1. Try V3 Backend
-    try {
-        const { getBackendData, USE_V3 } = await import('./backendService');
-        if (USE_V3) {
-            const backendResponse = await getBackendData();
+    const { getBackendData } = await import('./backendService');
+    const backendResponse = await getBackendData();
 
-            if (backendResponse.success) {
-                pilotsData = backendResponse.data.pilots;
-                resultsData = backendResponse.data.results;
-                teamsMeta = backendResponse.data.teams;
-                // Normalize calendar data if it exists in response (though usually retrieved via getCalendarData)
-                if (backendResponse.data.calendar) {
-                    backendResponse.data.calendar = backendResponse.data.calendar.map(r => ({
-                        ...r,
-                        activa: r.activa != null ? (parseFloat(r.activa) == 1 ? '1' : '0') : '0',
-                        terminada: r.terminada != null ? (parseFloat(r.terminada) == 1 ? '1' : '0') : '0'
-                    }));
-                }
-                dataLoaded = true;
-                console.log("V3 Data Loaded Successfully");
-            }
-        }
-    } catch (e) {
-        console.warn("V3 fetch failed, falling back to V2.", e);
+    if (!backendResponse.success) {
+        throw new Error('V3 backend error: ' + (backendResponse.error || 'Unknown'));
     }
 
-    // 2. V2 Sheets Fallback (Only if V3 didn't load)
-    if (!dataLoaded) {
-        try {
-            const [pilotsRes, resultsRes, teamsRes] = await Promise.all([
-                fetchWithRetry(PILOTS_V2_CSV_LINK, 1, false, false),
-                fetchWithRetry(RESULTS_V2_CSV_LINK, 1, false, false),
-                fetchWithRetry(TEAMS_V2_CSV_LINK, 1, false, false).catch(() => null)
-            ]);
-
-            pilotsData = parsePilotsV2CSV(await pilotsRes.text());
-            resultsData = parseResultsV2CSV(await resultsRes.text());
-            if (teamsRes) {
-                teamsMeta = parseTeamsV2CSV(await teamsRes.text());
-            }
-            dataLoaded = true;
-        } catch (e) {
-            console.warn("V2 CSVs failed.", e);
-            return { pilotsMap: new Map(), teamsMap: new Map(), resultsData: [] };
-        }
-    }
+    pilotsData = backendResponse.data.pilots;
+    resultsData = backendResponse.data.results;
+    teamsMeta = backendResponse.data.teams;
 
     const pilotsMap = new Map();
     const teamsMap = new Map();

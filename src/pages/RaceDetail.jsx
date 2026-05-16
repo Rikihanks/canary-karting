@@ -39,7 +39,7 @@ const RaceDetail = () => {
 
     // Animate Qualy open when data finishes loading
     useEffect(() => {
-        if (!loading && (raceStatus == 1 || window.location.hostname === 'localhost')) {
+        if (!loading && raceStatus == 1) {
             const timer = setTimeout(() => {
                 setIsQualyOpen(true);
             }, 300); // Slight delay to allow render before animating
@@ -217,7 +217,7 @@ const RaceDetail = () => {
                     </p>
                 </div>
 
-                {raceStatus == 1 || window.location.hostname === 'localhost' ? (
+                {raceStatus == 1 ? (
                     <>
                         <section id="clasificacion-section">
                             <h2

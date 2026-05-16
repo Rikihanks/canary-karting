@@ -1,13 +1,8 @@
 import { getLeaderboardDataV2, getTeamsDataV2, getResultsDataV2 } from './dataAggregation';
 // Removed static import to avoid circular dependency with backendService.js
-
-
 const GOOGLE_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTlPsGq-SypD4WPitvnR7JcluA8_6-5ePtuzyf5zFGJ31eppN55iUIHsKo0oduOZ9AVyVTf6VkPvTyu/pub?output=csv";
 const RESULTS_CSV_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQP2AF0yixedvzkQcGkkLxnAP4fKl26f46dCFHdL6f11_QbeZP6NHLDshKqBkKtZdYLkyH8Rqrtedp5/pub?output=csv";
-
 const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-const USE_V2 = window.location.hostname.includes('rikihanks') || isLocalhost || window.location.hostname.includes('canarykarting');
-
 // Flag to use mock data for development
 const USE_MOCK_DATA = false;
 
@@ -211,38 +206,27 @@ export function parseRaceDetailCSV(csvText) {
 }
 
 export async function getLeaderboardData(skipCache = false) {
-    if (USE_V2) {
-        return await getLeaderboardDataV2(skipCache);
-    }
-    const response = await fetchWithRetry(SHEET_URL, 3, skipCache, true);
-    const data = await response.text();
-    return parseCSV(data);
+    return await getLeaderboardDataV2(skipCache);
 }
 
 export async function getDriverResults() {
-    if (USE_V2) {
-        const results = await getResultsDataV2();
-        // Normalize V2 results to V1 format expected by Profile.jsx
-        return results.map(r => ({
-            name: r.pilot,
-            race: r.id_circuito,
-            date: r.date,
-            position: r.pos_final,
-            pole_pos: r.pos_clasificacion,
-            fastest_lap: r.tiempo_vuelta || "N/A",
-            condition: r.condicion || "Seco",
-            points_gained: 0,
-            season: r.temporada || r.season || "2026",
-            sancion: r.sancion || 0,
-            amonestacion: r.amonestacion || 0,
-            investigating: r.investigating || 0,
-            replaces: r.replaces || "",
-            kart: r.kart || ""
-        }));
-    }
-    const response = await fetchWithRetry(RESULTS_URL);
-    const data = await response.text();
-    return parseResultsCSV(data);
+    const results = await getResultsDataV2();
+    return results.map(r => ({
+        name: r.pilot,
+        race: r.id_circuito,
+        date: r.date,
+        position: r.pos_final,
+        pole_pos: r.pos_clasificacion,
+        fastest_lap: r.tiempo_vuelta || "N/A",
+        condition: r.condicion || "Seco",
+        points_gained: 0,
+        season: r.temporada || r.season || "2026",
+        sancion: r.sancion || 0,
+        amonestacion: r.amonestacion || 0,
+        investigating: r.investigating || 0,
+        replaces: r.replaces || "",
+        kart: r.kart || ""
+    }));
 }
 
 export async function getCalendarData(skipCache = false) {
@@ -251,26 +235,17 @@ export async function getCalendarData(skipCache = false) {
         return mockCalendarData;
     }
 
-    if (USE_V2) {
-        try {
-            const { getBackendData } = await import('./backendService');
-            const backendResponse = await getBackendData();
+    const { getBackendData } = await import('./backendService');
+    const backendResponse = await getBackendData();
 
-            if (backendResponse.success && backendResponse.data.calendar.length > 0) {
-                return backendResponse.data.calendar.map(r => ({
-                    ...r,
-                    activa: r.activa != null ? (parseFloat(r.activa) == 1 ? '1' : '0') : '0',
-                    terminada: r.terminada != null ? (parseFloat(r.terminada) == 1 ? '1' : '0') : '0'
-                }));
-            }
-        } catch (e) {
-            console.warn("Backend calendar v3 fetch failed, falling back to Sheets", e);
-        }
+    if (backendResponse.success && backendResponse.data.calendar.length > 0) {
+        return backendResponse.data.calendar.map(r => ({
+            ...r,
+            activa: r.activa != null ? (parseFloat(r.activa) == 1 ? '1' : '0') : '0',
+            terminada: r.terminada != null ? (parseFloat(r.terminada) == 1 ? '1' : '0') : '0'
+        }));
     }
-
-    const response = await fetchWithRetry(CALENDAR_CSV_LINK, 3, skipCache, true);
-    const data = await response.text();
-    return parseCalendarCSV(data);
+    return [];
 }
 
 export async function getDOTDResults(skipCache = false) {
@@ -338,73 +313,44 @@ export function parseTeamsCSV(csvText) {
 }
 
 export async function getTeamsData(skipCache = false) {
-    if (USE_V2) {
-        return await getTeamsDataV2(skipCache);
-    }
-    const response = await fetchWithRetry(TEAMS_URL, 3, skipCache, true);
-    const data = await response.text();
-    return parseTeamsCSV(data);
+    return await getTeamsDataV2(skipCache);
 }
 
 export async function getRaceDetails(id, date, division) {
-    if (USE_V2) {
-        const [allResults, calendarData] = await Promise.all([
-            getResultsDataV2(),
-            getCalendarData()
-        ]);
-
-        const raceInfo = calendarData.find(r => r.id_circuito === id && r.fecha === date && (!division || r.division == division));
-
-        // Filter results for this specific race and division
-        const raceResults = allResults.filter(r => r.id_circuito === id && r.date === date && (!division || r.division == division));
-
-        // Format for UI (RaceDetail.jsx expects specific naming conventions)
-        const formatForUI = (r, isClasi = false) => {
-            const pos = isClasi ? r.pos_clasificacion : r.pos_final;
-            const ptsTable = { 1: 25, 2: 18, 3: 15, 4: 12, 5: 10, 6: 8, 7: 6, 8: 4, 9: 2, 10: 1 };
-            let ptsBase = isClasi ? 0 : (ptsTable[pos] || 0);
-            let pts = ptsBase + (r.pos_clasificacion === 1 ? 1 : 0) + (r.es_vuelta_rapida ? 1 : 0);
-            return {
-                piloto: r.replaces ? `${r.pilot} *` : r.pilot,
-                posicion: pos,
-                id_circuito: r.id_circuito,
-                fecha: r.date,
-                division: r.division,
-                temporada: "2026",
-                vuelta_rapida: isClasi ? r.tiempo_qualy : r.tiempo_vuelta,
-                es_vuelta_rapida: !isClasi && r.es_vuelta_rapida,
-                pole_pos: !isClasi && r.pos_clasificacion === 1 ? 1 : 0,
-                sancion: r.sancion,
-                amonestacion: r.amonestacion,
-                kart: r.kart || "",
-                pts,
-                pts_base: ptsBase
-            };
-        };
-
-        return {
-            clasi: raceResults
-                .map(r => formatForUI(r, true))
-                .sort((a, b) => a.posicion - b.posicion),
-            results: raceResults
-                .map(r => formatForUI(r, false))
-                .sort((a, b) => a.posicion - b.posicion),
-            raceInfo: raceInfo
-        };
-    }
-
-    const [clasiData, resultData, calendarData] = await Promise.all([
-        fetchWithRetry(CLASI_URL).then(r => r.text()),
-        fetchWithRetry(RESULT_URL).then(r => r.text()),
+    const [allResults, calendarData] = await Promise.all([
+        getResultsDataV2(),
         getCalendarData()
     ]);
 
     const raceInfo = calendarData.find(r => r.id_circuito === id && r.fecha === date && (!division || r.division == division));
+    const raceResults = allResults.filter(r => r.id_circuito === id && r.date === date && (!division || r.division == division));
+    const ptsTable = { 1: 25, 2: 18, 3: 15, 4: 12, 5: 10, 6: 8, 7: 6, 8: 4, 9: 2, 10: 1 };
+
+    const toUI = (r, isClasi) => {
+        const pos = isClasi ? r.pos_clasificacion : r.pos_final;
+        const ptsBase = isClasi ? 0 : (ptsTable[pos] || 0);
+        return {
+            piloto: r.replaces ? `${r.pilot} *` : r.pilot,
+            posicion: pos,
+            id_circuito: r.id_circuito,
+            fecha: r.date,
+            division: r.division,
+            temporada: "2026",
+            vuelta_rapida: isClasi ? r.tiempo_qualy : r.tiempo_vuelta,
+            es_vuelta_rapida: !isClasi && r.es_vuelta_rapida,
+            pole_pos: !isClasi && r.pos_clasificacion === 1 ? 1 : 0,
+            sancion: r.sancion,
+            amonestacion: r.amonestacion,
+            kart: r.kart || "",
+            pts: ptsBase + (r.pos_clasificacion === 1 ? 1 : 0) + (r.es_vuelta_rapida ? 1 : 0),
+            pts_base: ptsBase
+        };
+    };
 
     return {
-        clasi: parseRaceDetailCSV(clasiData),
-        results: parseRaceDetailCSV(resultData),
-        raceInfo: raceInfo
+        clasi: raceResults.map(r => toUI(r, true)).sort((a, b) => a.posicion - b.posicion),
+        results: raceResults.map(r => toUI(r, false)).sort((a, b) => a.posicion - b.posicion),
+        raceInfo
     };
 }
 

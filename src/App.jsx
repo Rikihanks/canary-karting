@@ -7,6 +7,7 @@ import FeatureGuard from './components/FeatureGuard';
 import AdminGuard from './components/AdminGuard';
 import MessageBanner from './components/MessageBanner';
 import MaintenanceGuard from './components/MaintenanceGuard';
+import ErrorBoundary from './components/ErrorBoundary';
 import { onMessage } from 'firebase/messaging';
 import { messaging } from './services/firebase';
 import PWAInstallModal from './components/PWAInstallModal';
@@ -89,6 +90,7 @@ function App() {
       <AuthProvider>
         <MaintenanceGuard>
           <HashRouter>
+            <ErrorBoundary>
             <SwipeNavigation />
             <TelemetryTracker />
             <ScrollToTop />
@@ -208,6 +210,7 @@ function App() {
                 </Suspense>
               </div>
             </div>
+          </ErrorBoundary>
           </HashRouter>
         </MaintenanceGuard>
       </AuthProvider>
