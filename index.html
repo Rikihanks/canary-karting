@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Canary Karting</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Russo+One&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="apple-touch-icon" href="./icons/512.png">
+
+  <link rel="apple-touch-startup-image" href="./splash/iPhone_17_Pro_Max__iPhone_16_Pro_Max_portrait.png"
+    media="(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+
+  <link rel="apple-touch-startup-image" href="./splash/iPhone_17_Pro__iPhone_17__iPhone_16_Pro_portrait.png"
+    media="(device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+
+  <link rel="apple-touch-startup-image"
+    href="./splash/iPhone_16_Plus__iPhone_15_Pro_Max__iPhone_15_Plus__iPhone_14_Pro_Max_portrait.png"
+    media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+
+  <link rel="apple-touch-startup-image" href="./splash/iPhone_16__iPhone_15_Pro__iPhone_15__iPhone_14_Pro_portrait.png"
+    media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+
+  <link rel="apple-touch-startup-image"
+    href="./splash/iPhone_14_Plus__iPhone_13_Pro_Max__iPhone_12_Pro_Max_portrait.png"
+    media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+
+  <link rel="apple-touch-startup-image"
+    href="./splash/iPhone_16e__iPhone_14__iPhone_13_Pro__iPhone_13__iPhone_12_Pro__iPhone_12_portrait.png"
+    media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+
+  <link rel="apple-touch-startup-image"
+    href="./splash/iPhone_13_mini__iPhone_12_mini__iPhone_11_Pro__iPhone_XS__iPhone_X_portrait.png"
+    media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+
+  <link rel="apple-touch-startup-image" href="./splash/iPhone_11_Pro_Max__iPhone_XS_Max_portrait.png"
+    media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+
+  <link rel="apple-touch-startup-image" href="./splash/iPhone_11__iPhone_XR_portrait.png"
+    media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+
+  <link rel="apple-touch-startup-image"
+    href="./splash/iPhone_8_Plus__iPhone_7_Plus__iPhone_6s_Plus__iPhone_6_Plus_portrait.png"
+    media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+
+  <link rel="apple-touch-startup-image"
+    href="./splash/iPhone_8__iPhone_7__iPhone_6s__iPhone_6__4.7__iPhone_SE_portrait.png"
+    media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+
+  <link rel="apple-touch-startup-image" href="./splash/12.9__iPad_Pro_portrait.png"
+    media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+
+  <link rel="apple-touch-startup-image" href="./splash/11__iPad_Pro_M4_portrait.png"
+    media="(device-width: 834px) and (device-height: 1210px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+
+
+  <link rel="manifest" href="./manifest.json" />
+
+  <script src="https://cdn.jsdelivr.net/npm/ios-pwa-splash@1.0.0/cdn.min.js" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script type="module" crossorigin src="/canary-karting/assets/index-DEHvOCR0.js"></script>
+  <link rel="stylesheet" crossorigin href="/canary-karting/assets/index-DeAfXq3h.css">
+</head>
+
+<body>
+  <div id="root"></div>
+  <script>
+    // --- EmailJS Config ---
+    // Please set your actual credentials here:
+    const EMAILJS_PUBLIC_KEY = "Yc4gpMVIpo28UJALy";
+    const EMAILJS_SERVICE_ID = "service_07oa5oa";
+    const EMAILJS_TEMPLATE_ID = "template_g81x7ri";
+
+    if (EMAILJS_PUBLIC_KEY !== "YOUR_PUBLIC_KEY") {
+      emailjs.init(EMAILJS_PUBLIC_KEY);
+    }
+
+    window.onerror = function (msg, url, lineNo, columnNo, error) {
+      const errorStack = error ? error.stack : 'N/A';
+
+      // Send via EmailJS if configured
+      if (typeof emailjs !== 'undefined' && EMAILJS_PUBLIC_KEY !== "YOUR_PUBLIC_KEY") {
+
+        if (window.location.hostname !== "localhost") {
+          emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+            error_message: msg,
+            error_url: url,
+            error_line: lineNo,
+            error_column: columnNo,
+            error_stack: errorStack,
+            user_agent: navigator.userAgent,
+            email: "rilhi22@gmail.com",
+            timestamp: new Date().toISOString()
+          }).then(
+            () => console.log('Error report sent via EmailJS'),
+            (err) => console.error('Failed to send error via EmailJS', err)
+          );
+        }
+
+        return false;
+      };
+  </script>
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <script>
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      OneSignalDeferred.push(async function (OneSignal) {
+        await OneSignal.init({
+          appId: "3771123c-5424-4f99-9b0b-4b507cd155f7",
+          serviceWorkerPath: "canary-karting-app/OneSignalSDKWorker.js",
+          serviceWorkerUpdaterPath: "canary-karting-app/OneSignalSDKUpdaterWorker.js",
+          serviceWorkerParam: { scope: "/canary-karting-app/" },
+          notifyButton: { enable: false }, // ❌ campana
+          promptOptions: {
+            slidedown: { autoPrompt: false } // ❌ prompt automático
+          }
+        });
+      });
+  </script>
+</body>
+
+</html>

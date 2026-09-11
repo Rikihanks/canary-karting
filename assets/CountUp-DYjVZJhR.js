@@ -1,0 +1,1 @@
+import{r as i,j as m}from"./index-DEHvOCR0.js";const x=({end:e,duration:n=1e3})=>{const[f,r]=i.useState(0);return i.useEffect(()=>{let t=null;const s=0,o=parseInt(e)||0;if(o===0){r(0);return}const a=u=>{t||(t=u);const c=Math.min((u-t)/n,1),l=Math.floor(c*(o-s)+s);r(l),c<1&&requestAnimationFrame(a)};requestAnimationFrame(a)},[e,n]),m.jsx(m.Fragment,{children:f})};export{x as C};
